@@ -89,11 +89,17 @@ func chooseClass(c *Client, p *Player) {
 	}
 }
 
+// Client represents a connected player's network connection and I/O handler.
+// Each client connection runs in its own goroutine and maintains a buffered
+// reader for efficient line-based command input.
 type Client struct {
-	conn   net.Conn
-	reader *bufio.Reader
+	conn   net.Conn      // TCP connection to the client
+	reader *bufio.Reader // Buffered reader for line reading
 }
 
+// Write sends a message to the client over the TCP connection.
+// Messages are sent as raw bytes. The caller should include appropriate
+// line endings (\r\n for telnet compatibility).
 func (c *Client) Write(msg string) {
 	c.conn.Write([]byte(msg))
 }

@@ -15,7 +15,7 @@ func TestPhase1_Inventory(t *testing.T) {
 
 	// 1. Verify 'phone' is in loading_program
 	room := w.Rooms["loading_program"]
-	if _, ok := room.Items["phone"]; !ok {
+	if _, ok := room.ItemMap["phone"]; !ok {
 		t.Fatal("Expected phone in loading_program, found nothing")
 	}
 
@@ -24,7 +24,7 @@ func TestPhase1_Inventory(t *testing.T) {
 	if len(p.Inventory) != 1 {
 		t.Errorf("Inventory count expected 1, got %d", len(p.Inventory))
 	}
-	if _, ok := room.Items["phone"]; ok {
+	if _, ok := room.ItemMap["phone"]; ok {
 		t.Error("Phone should be gone from room, but it's still there")
 	}
 	t.Logf("Get Result: %s", res)
@@ -34,7 +34,7 @@ func TestPhase1_Inventory(t *testing.T) {
 	if len(p.Inventory) != 0 {
 		t.Errorf("Inventory count expected 0, got %d", len(p.Inventory))
 	}
-	if _, ok := room.Items["phone"]; !ok {
+	if _, ok := room.ItemMap["phone"]; !ok {
 		t.Error("Phone should be back in room, but it's not")
 	}
 	t.Logf("Drop Result: %s", res)

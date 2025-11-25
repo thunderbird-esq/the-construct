@@ -1,3 +1,5 @@
+// Package main implements the administrative server for Matrix MUD.
+// This file provides monitoring, management, and debugging endpoints with HTTP Basic Auth.
 package main
 
 import (
@@ -5,9 +7,15 @@ import (
 	"net/http"
 )
 
-// Global reference to world for the admin panel
+// adminWorld is a global reference to the world state for admin panel access.
+// This allows admin handlers to access player data and perform management operations.
 var adminWorld *World
 
+// startAdminServer initializes the admin HTTP server on port 9090.
+// Provides endpoints:
+//   GET /        - Admin dashboard showing connected players and stats
+//   GET /kick    - Forcibly disconnect a player by name
+// All endpoints require HTTP Basic Auth (admin/admin).
 func startAdminServer(w *World) {
 	adminWorld = w
 
@@ -21,6 +29,9 @@ func startAdminServer(w *World) {
 	go http.ListenAndServe("0.0.0.0:9090", mux)
 }
 
+// adminDashboard renders the main admin interface showing all connected players.
+// Displays player name, current room, HP status, and provides kick buttons.
+// Requires HTTP Basic Auth with username "admin" and password "admin".
 func adminDashboard(w http.ResponseWriter, r *http.Request) {
 	// Basic Auth (admin / admin)
 	user, pass, ok := r.BasicAuth()
@@ -56,6 +67,10 @@ func adminDashboard(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(html))
 }
 
+// adminKick forcibly disconnects a player from the server.
+// Takes a "name" query parameter to identify the player to kick.
+// Sends a warning message to the player before closing their connection.
+// Requires HTTP Basic Auth matching adminDashboard credentials.
 func adminKick(w http.ResponseWriter, r *http.Request) {
 	user, pass, ok := r.BasicAuth()
 	if !ok || user != "admin" || pass != "admin" {

@@ -9,7 +9,7 @@ func TestPhase2_NPCs(t *testing.T) {
 
 	// 1. Check for Morpheus in the Dojo
 	dojo := w.Rooms["dojo"]
-	if _, ok := dojo.NPCs["morpheus"]; !ok {
+	if _, ok := dojo.NPCMap["morpheus"]; !ok {
 		t.Fatal("Morpheus is missing from the Dojo!")
 	}
 

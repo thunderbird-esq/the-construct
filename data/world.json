@@ -879,7 +879,20 @@
       },
       "Symbol": "+",
       "Color": "white",
-      "Items": [],
+      "Items": [
+        {
+          "ID": "phone",
+          "Name": "Nokia Phone",
+          "Description": "An old school slider phone.",
+          "Damage": 1,
+          "AC": 0,
+          "Slot": "hand",
+          "Type": "",
+          "Effect": "",
+          "Value": 0,
+          "Price": 10
+        }
+      ],
       "NPCs": [
         {
           "ID": "merchant",

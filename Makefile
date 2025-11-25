@@ -36,7 +36,7 @@ run: build ## Build and run the application
 	./bin/$(BINARY_NAME)
 
 dev: ## Run in development mode with hot reload (requires air)
-	@which air > /dev/null || (echo "Installing air..." && go install github.com/cosmtrek/air@latest)
+	@which air > /dev/null || (echo "Installing air..." && go install github.com/air-verse/air@latest)
 	air
 
 test: test-unit test-integration ## Run all tests

@@ -1,3 +1,6 @@
+// Package main implements the Matrix MUD game world simulation.
+// This file contains the core game state, player management, world mechanics,
+// combat system, inventory management, and procedural generation.
 package main
 
 import (
@@ -12,6 +15,10 @@ import (
 )
 
 // --- Structs ---
+
+// Item represents an object that can be picked up, equipped, or used.
+// Items have different slots (hand, body, head) and can provide AC bonuses or damage.
+// Items are generated with varying rarity levels that affect their stats and value.
 type Item struct {
 	ID, Name, Description string
 	Damage, AC            int
@@ -20,11 +27,18 @@ type Item struct {
 	// NEW: Rarity (0=Common, 1=Uncommon, 2=Rare, 3=Legendary)
 	Rarity int `json:"rarity"`
 }
+
+// Quest represents an NPC quest that rewards the player for delivering a specific item.
+// Quests provide XP rewards and display custom messages upon completion.
 type Quest struct {
 	WantedItem string `json:"wanted_item"`
 	RewardXP   int    `json:"reward_xp"`
 	RewardMsg  string `json:"reward_msg"`
 }
+
+// NPC represents a non-player character that can engage in combat, dialogue, or trading.
+// NPCs have AI behaviors, loot tables, respawn mechanics, and can be hostile or friendly.
+// Merchants are protected NPCs that sell items from their inventory.
 type NPC struct {
 	ID, Name, Description, RoomID, State string
 	HP, MaxHP, Damage, AC                int
@@ -38,6 +52,10 @@ type NPC struct {
 	DeathTime                            time.Time
 	IsDead                               bool
 }
+
+// Room represents a location in the game world with connections to other rooms.
+// Rooms contain NPCs, items, exits to adjacent rooms, and visual symbols for the automap.
+// The ItemMap and NPCMap provide fast lookups for entities in the room.
 type Room struct {
 	ID, Description string
 	Exits           map[string]string
@@ -47,8 +65,14 @@ type Room struct {
 	ItemMap         map[string]*Item
 	NPCMap          map[string]*NPC
 }
+
+// WorldData is a container for serializing the world state to JSON.
+// It wraps the room data for persistence to data/world.json.
 type WorldData struct{ Rooms map[string]*Room }
 
+// Player represents a connected player character with stats, inventory, and position.
+// Player data is persisted to data/players/<name>.json on disconnect and periodically.
+// Players have equipment slots (hand, body, head) and can be in combat or idle state.
 type Player struct {
 	Name, RoomID                string
 	Conn                        *Client
@@ -64,6 +88,9 @@ type Player struct {
 	Money                       int
 }
 
+// World represents the entire game state including all rooms, players, NPCs, and items.
+// It uses sync.RWMutex for concurrent access from multiple player goroutines.
+// The game loop calls World.Update() every 500ms to handle combat, NPC AI, and respawns.
 type World struct {
 	Rooms         map[string]*Room
 	Players       map[*Client]*Player
@@ -74,6 +101,11 @@ type World struct {
 }
 
 // --- Init ---
+
+// NewWorld creates and initializes a new game world.
+// It loads world data from data/world.json, initializes item templates,
+// loads NPC dialogue, and sets up room connections. If no world file exists,
+// default rooms are created.
 func NewWorld() *World {
 	w := &World{Rooms: make(map[string]*Room), Players: make(map[*Client]*Player), Dialogue: make(map[string]map[string]string), DeadNPCs: make([]*NPC, 0), ItemTemplates: make(map[string]*Item)}
 	w.loadWorldData()
@@ -121,12 +153,21 @@ func (w *World) loadDialogue() {
 }
 
 // --- Persistence ---
+
+// SavePlayer persists player data to data/players/<name>.json.
+// This is called on disconnect and periodically during gameplay.
+// Uses RLock to allow concurrent saves while preventing data corruption.
 func (w *World) SavePlayer(p *Player) {
 	w.mutex.RLock()
 	defer w.mutex.RUnlock()
 	data, _ := json.MarshalIndent(p, "", "  ")
-	os.WriteFile("data/players/"+strings.ToLower(p.Name)+".json", data, 0644)
+	os.WriteFile("data/players/"+strings.ToLower(p.Name)+".json", data, 0600) // Owner read/write only
 }
+
+// LoadPlayer retrieves or creates a player from persistent storage.
+// Player data is loaded from data/players/<name>.json if it exists.
+// If the player is new, returns a fresh player with default stats at the starting room.
+// Ensures backward compatibility by initializing missing fields (Equipment, Bank, MP, etc.).
 func (w *World) LoadPlayer(name string, client *Client) *Player {
 	data, err := os.ReadFile("data/players/" + strings.ToLower(name) + ".json")
 	if err != nil {
@@ -151,6 +192,10 @@ func (w *World) LoadPlayer(name string, client *Client) *Player {
 	p.State = "IDLE"
 	return &p
 }
+
+// SaveWorld persists the entire world state to data/world.json.
+// Converts ItemMap and NPCMap back to slices for JSON serialization.
+// Uses RLock to prevent modifications during save.
 func (w *World) SaveWorld() {
 	w.mutex.RLock()
 	defer w.mutex.RUnlock()
@@ -166,11 +211,16 @@ func (w *World) SaveWorld() {
 	}
 	data := WorldData{Rooms: w.Rooms}
 	jsonData, _ := json.MarshalIndent(data, "", "  ")
-	os.WriteFile("data/world.json", jsonData, 0644)
+	os.WriteFile("data/world.json", jsonData, 0600) // Owner read/write only
 	fmt.Println("World Saved.")
 }
 
 // --- LOOT GENERATION ---
+
+// GenerateLoot creates a randomized item instance from a template.
+// Items are rolled for rarity (Common, Uncommon, Rare, Legendary) with
+// higher rarities providing stat bonuses and increased value.
+// Each generated item receives a unique ID to prevent stack conflicts.
 func (w *World) GenerateLoot(templateID string) *Item {
 	tmpl, ok := w.ItemTemplates[templateID]
 	if !ok {
@@ -209,6 +259,8 @@ func (w *World) GenerateLoot(templateID string) *Item {
 	return &item
 }
 
+// ColorizeItem returns the item name with ANSI color codes based on rarity.
+// Common items are white, Uncommon are bright green, Rare are cyan, and Legendary are magenta.
 func ColorizeItem(i *Item) string {
 	switch i.Rarity {
 	case 1:
@@ -223,6 +275,11 @@ func ColorizeItem(i *Item) string {
 }
 
 // --- PROCEDURAL GENERATION ---
+
+// GenerateCity procedurally generates a grid of interconnected city rooms.
+// Creates rows x cols rooms with random descriptions, occasional NPCs (10% chance),
+// and items (20% chance). All rooms are automatically connected in a grid pattern
+// and linked to the player's current room via a south exit.
 func (w *World) GenerateCity(p *Player, rows, cols int) string {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
@@ -406,6 +463,11 @@ func (w *World) GenerateAutomapInternal(p *Player, radius int) string {
 }
 
 // --- Logic ---
+
+// Update is called every game tick (500ms) to process combat, NPC AI, and respawns.
+// This runs in its own goroutine and uses the world mutex for safe concurrent access.
+// Handles NPC respawning (30 second timer), aggressive NPC attacks, MP regeneration,
+// and automatic combat round resolution.
 func (w *World) Update() {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
@@ -454,6 +516,12 @@ func (w *World) Update() {
 }
 
 // --- Skills & Combat ---
+
+// CastSkill allows players to use class-specific abilities.
+// Hacker: "glitch" - logic bomb attack
+// Rebel: "smash" - powerful melee strike
+// Operator: "patch" - self-healing ability
+// Skills cost MP and some can target NPCs to deal damage.
 func (w *World) CastSkill(p *Player, skillName string, targetName string) string {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
@@ -549,6 +617,10 @@ func (w *World) CastSkill(p *Player, skillName string, targetName string) string
 	return desc
 }
 
+// ResolveCombatRound processes one round of combat for a player and their target NPC.
+// Calculates attack rolls vs AC (d20 + modifiers), applies damage, checks for death,
+// awards XP and level-ups, generates loot drops, and handles player death (respawn).
+// Combat rounds occur automatically every 1.5 seconds when player State is COMBAT.
 func (w *World) ResolveCombatRound(p *Player) {
 	room := w.Rooms[p.RoomID]
 	targetNPC, ok := room.NPCMap[p.Target]
@@ -632,6 +704,10 @@ func (w *World) ResolveCombatRound(p *Player) {
 }
 
 // --- Standard Actions ---
+
+// GiveItem allows players to give items from their inventory to NPCs.
+// If the NPC has a quest for that item, completes the quest and awards XP.
+// Handles fuzzy item ID matching for generated items with random suffixes.
 func (w *World) GiveItem(p *Player, itemName string, targetName string) string {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
@@ -687,6 +763,10 @@ func findItemInMap(items map[string]*Item, target string) *Item {
 	}
 	return nil
 }
+
+// Look displays the current room description, exits, items, NPCs, and other players.
+// If a target is specified, shows detailed information about that NPC or item.
+// Includes an ASCII automap showing the local area (2-room radius).
 func (w *World) Look(p *Player, target string) string {
 	w.mutex.RLock()
 	defer w.mutex.RUnlock()
@@ -823,6 +903,11 @@ func (w *World) SellItem(p *Player, itemName string) string {
 	}
 	return "You don't have that."
 }
+
+// StartCombat initiates combat between a player and an NPC.
+// Validates the target exists and is not a protected merchant.
+// Sets player state to COMBAT and marks the first attack time.
+// Combat runs automatically in the Update() loop until one side dies or flees.
 func (w *World) StartCombat(p *Player, targetName string) string {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
@@ -851,6 +936,10 @@ func (w *World) StopCombat(p *Player) string {
 	p.State = "IDLE"
 	return "Stopped."
 }
+
+// UseItem consumes a consumable item from inventory.
+// Supports healing items and stat buff items (like red pill for STR).
+// Removes the item from inventory after use.
 func (w *World) UseItem(p *Player, itemName string) string {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
@@ -877,6 +966,9 @@ func (w *World) UseItem(p *Player, itemName string) string {
 	}
 	return "Don't have."
 }
+
+// GetItem picks up an item from the current room and adds it to player inventory.
+// Uses fuzzy name matching to find items by partial name or exact ID.
 func (w *World) GetItem(p *Player, itemName string) string {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
@@ -888,6 +980,8 @@ func (w *World) GetItem(p *Player, itemName string) string {
 	}
 	return "Not here."
 }
+
+// DropItem removes an item from player inventory and places it in the current room.
 func (w *World) DropItem(p *Player, itemName string) string {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
@@ -900,6 +994,9 @@ func (w *World) DropItem(p *Player, itemName string) string {
 	}
 	return "Don't have."
 }
+
+// WearItem equips an item from inventory to its designated slot (hand, body, or head).
+// Automatically unequips and returns to inventory any item already in that slot.
 func (w *World) WearItem(p *Player, itemName string) string {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
@@ -918,6 +1015,8 @@ func (w *World) WearItem(p *Player, itemName string) string {
 	}
 	return "Don't have."
 }
+
+// RemoveItem unequips an item from the specified slot and returns it to inventory.
 func (w *World) RemoveItem(p *Player, slot string) string {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
@@ -928,6 +1027,10 @@ func (w *World) RemoveItem(p *Player, slot string) string {
 	}
 	return "Nothing there."
 }
+
+// MovePlayer attempts to move a player in the specified direction.
+// Cancels combat state and returns a message describing the result.
+// Returns an error message if the exit doesn't exist.
 func (w *World) MovePlayer(p *Player, direction string) string {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
@@ -938,6 +1041,9 @@ func (w *World) MovePlayer(p *Player, direction string) string {
 	}
 	return "No exit."
 }
+
+// ShowInventory displays the player's current stats, equipped items, and inventory.
+// Shows HP, MP, STR, calculated AC (base + equipment bonuses), and all items.
 func (w *World) ShowInventory(p *Player) string {
 	w.mutex.RLock()
 	defer w.mutex.RUnlock()
@@ -970,6 +1076,9 @@ func (w *World) ShowInventory(p *Player) string {
 	}
 	return s
 }
+
+// ShowScore displays the player's character sheet.
+// Shows name, class, level, XP progress to next level, money, and core stats.
 func (w *World) ShowScore(p *Player) string {
 	w.mutex.RLock()
 	defer w.mutex.RUnlock()

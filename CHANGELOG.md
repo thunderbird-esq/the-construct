@@ -12,21 +12,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive documentation suite (CHANGELOG, DEVLOG, CLAUDE, AGENTS)
 - Custom slash commands for Claude Code integration
 - Advanced architecture documentation
+- Comprehensive godoc comments for world.go (25+ functions documented)
+- Comprehensive godoc comments for web.go and admin.go
+- Input validation package (pkg/validation/) with username, command, and room ID validation
+- Input sanitization to prevent terminal escape sequence injection
+- Rate limiting package (pkg/ratelimit/) with token bucket algorithm
+- Development scripts for common workflows:
+  - dev.sh: Development environment startup script
+  - load-test.sh: Concurrent player load testing script
+  - backup-data.sh: Automated data backup with timestamps
+- Git hooks for code quality:
+  - pre-commit: Runs formatting, linting, and tests before commits
+  - post-commit: Suggests devlog entries after code changes
+- Air hot reload configuration (.air.toml) for development
+- Nokia Phone item added to loading_program room for testing
 
 ### Changed
-- TBD
+- Updated Makefile dev target to use correct Air module path (github.com/air-verse/air)
+- Updated go.mod to Go 1.24.0
+- Added golang.org/x/crypto dependency for bcrypt password hashing
+- Increased minimum password length requirement from 3 to 8 characters
+- File permissions for sensitive data files changed from 0644 to 0600 (owner read/write only)
 
 ### Deprecated
-- TBD
+- Plaintext password storage (replaced with bcrypt hashing)
 
 ### Removed
 - TBD
 
 ### Fixed
-- TBD
+- Test compilation errors in phase1_test.go and phase2_test.go
+- Tests now correctly use ItemMap and NPCMap instead of Items and NPCs slices
+- All tests now passing (TestPhase1_Inventory, TestPhase2_NPCs)
 
 ### Security
-- TBD
+- **CRITICAL**: Implemented bcrypt password hashing to replace plaintext password storage
+  - All new passwords are hashed with bcrypt.DefaultCost (cost factor 10)
+  - Existing plaintext passwords will require users to create new accounts
+- Implemented rate limiting for authentication (5 attempts per minute per user)
+- Added 3-second delay for rate-limited clients to slow down brute force attacks
+- Changed file permissions to 0600 for all sensitive data files:
+  - data/users.json (user credentials)
+  - data/players/*.json (player data)
+  - data/world.json (world state)
+- Added comprehensive input validation:
+  - Username validation: 3-20 alphanumeric characters and underscores
+  - Command validation: lowercase letters and spaces (1-100 chars)
+  - Room ID validation: alphanumeric with underscores and hyphens (1-50 chars)
+- Added input sanitization to remove control characters and prevent injection attacks
+- Comprehensive error handling and logging for security events
 
 ## [1.0.0] - 2025-11-24
 

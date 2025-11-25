@@ -11,38 +11,104 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
+
+	"github.com/yourusername/matrix-mud/pkg/ratelimit"
+	"github.com/yourusername/matrix-mud/pkg/validation"
 )
 
-var userMutex sync.Mutex
+var (
+	userMutex   sync.Mutex
+	authLimiter = ratelimit.New(5, 1*time.Minute) // 5 auth attempts per minute
+)
 
 func authenticate(c *Client, name string) bool {
+	// Apply rate limiting to prevent brute force attacks
+	if !authLimiter.Allow(name) {
+		c.Write(Red + "Too many authentication attempts. Try again later.\r\n" + Reset)
+		log.Printf("Rate limit exceeded for user: %s", name)
+		time.Sleep(3 * time.Second) // Add delay for rate-limited clients
+		return false
+	}
+
 	userMutex.Lock()
 	defer userMutex.Unlock()
+
+	// Load existing user database (stores password hashes)
 	users := make(map[string]string)
-	file, _ := os.ReadFile("data/users.json")
-	json.Unmarshal(file, &users)
-	cleanName := strings.ToLower(name)
-	if storedPass, exists := users[cleanName]; exists {
-		c.Write("Password: ")
-		pass, _ := c.reader.ReadString('\n')
-		pass = strings.TrimSpace(pass)
-		if pass == storedPass {
-			return true
-		}
-		c.Write(Red + "Access Denied.\r\n" + Reset)
+	file, err := os.ReadFile("data/users.json")
+	if err != nil && !os.IsNotExist(err) {
+		log.Printf("Error reading users.json: %v", err)
+		c.Write(Red + "Authentication error.\r\n" + Reset)
 		return false
-	} else {
-		c.Write("New identity detected. Set a password: ")
-		pass, _ := c.reader.ReadString('\n')
-		pass = strings.TrimSpace(pass)
-		if len(pass) < 3 {
-			c.Write("Password too short.\r\n")
+	}
+
+	if file != nil {
+		if err := json.Unmarshal(file, &users); err != nil {
+			log.Printf("Error parsing users.json: %v", err)
+			c.Write(Red + "Authentication error.\r\n" + Reset)
 			return false
 		}
-		users[cleanName] = pass
+	}
+
+	cleanName := strings.ToLower(name)
+
+	if storedHash, exists := users[cleanName]; exists {
+		// Existing user - verify password with bcrypt
+		c.Write("Password: ")
+		pass, err := c.reader.ReadString('\n')
+		if err != nil {
+			log.Printf("Error reading password: %v", err)
+			return false
+		}
+		pass = strings.TrimSpace(pass)
+
+		// Compare password with stored bcrypt hash
+		err = bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(pass))
+		if err == nil {
+			log.Printf("User %s authenticated successfully", cleanName)
+			return true
+		}
+
+		c.Write(Red + "Access Denied.\r\n" + Reset)
+		log.Printf("Failed auth attempt for user %s", cleanName)
+		return false
+	} else {
+		// New user - create account with bcrypt hashed password
+		c.Write("New identity detected. Set a password: ")
+		pass, err := c.reader.ReadString('\n')
+		if err != nil {
+			log.Printf("Error reading password: %v", err)
+			return false
+		}
+		pass = strings.TrimSpace(pass)
+
+		// Enforce minimum password length of 8 characters
+		if len(pass) < 8 {
+			c.Write("Password must be at least 8 characters.\r\n")
+			return false
+		}
+
+		// Hash password with bcrypt
+		hash, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
+		if err != nil {
+			log.Printf("Error hashing password: %v", err)
+			c.Write(Red + "Error creating account.\r\n" + Reset)
+			return false
+		}
+
+		// Store hashed password
+		users[cleanName] = string(hash)
 		data, _ := json.MarshalIndent(users, "", "  ")
-		os.WriteFile("data/users.json", data, 0644)
+		if err := os.WriteFile("data/users.json", data, 0600); err != nil { // Owner read/write only
+			log.Printf("Error saving user: %v", err)
+			c.Write(Red + "Error creating account.\r\n" + Reset)
+			return false
+		}
+
 		c.Write("Identity created.\r\n")
+		log.Printf("New user created: %s", cleanName)
 		return true
 	}
 }
@@ -138,10 +204,23 @@ func handleConnection(conn net.Conn, world *World) {
 
 	client.Write(Clear + Green + "Wake up...\r\n" + Reset)
 	client.Write("Identify yourself: ")
-	name, _ := client.reader.ReadString('\n')
-	name = strings.TrimSpace(name)
+	name, err := client.reader.ReadString('\n')
+	if err != nil {
+		log.Printf("Error reading name: %v", err)
+		return
+	}
+
+	// Sanitize and validate input
+	name = validation.SanitizeInput(name)
 	if name == "" {
 		client.Write("Identification required.\r\n")
+		return
+	}
+
+	// Validate username format
+	if !validation.ValidateUsername(name) {
+		client.Write(Red + "Invalid username. Use 3-20 alphanumeric characters (and underscores).\r\n" + Reset)
+		log.Printf("Invalid username attempt: %s", name)
 		return
 	}
 

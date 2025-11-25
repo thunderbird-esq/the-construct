@@ -1,3 +1,6 @@
+// Package main implements the HTTP web server for Matrix MUD.
+// This file provides a WebSocket-based web client interface that connects to the main telnet server.
+// The web client includes xterm.js for terminal emulation and mobile-friendly touch controls.
 package main
 
 import (
@@ -7,10 +10,17 @@ import (
 	"net/http"
 )
 
+// upgrader handles upgrading HTTP connections to WebSocket protocol.
+// CheckOrigin is set to allow connections from any origin for development ease.
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
+// startWebServer initializes the HTTP server on port 8080.
+// Provides endpoints:
+//   GET  /    - Web client interface (xterm.js-based terminal)
+//   GET  /ws  - WebSocket endpoint for bi-directional communication
+// The web server acts as a proxy to the main telnet server on port 2323.
 func startWebServer(w *World) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", serveHome)
@@ -22,10 +32,15 @@ func startWebServer(w *World) {
 	}
 }
 
+// serveHome serves the HTML web client interface.
+// Returns an embedded xterm.js terminal with Matrix-themed styling and mobile controls.
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(htmlClient))
 }
 
+// handleWebSocket upgrades the HTTP connection to WebSocket and proxies data to/from the telnet server.
+// Creates a TCP connection to localhost:2323 (main MUD server) and bidirectionally forwards data.
+// Runs two goroutines: one for reading from telnet and writing to WebSocket, another for the reverse.
 func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {

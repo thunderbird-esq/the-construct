@@ -1,0 +1,11 @@
+{
+    "morpheus": {
+        "hello": "Do you believe in fate, Neo?",
+        "pill": "You take the blue pill, the story ends. You take the red pill, you stay in Wonderland.",
+        "matrix": "The Matrix is everywhere. It is all around us."
+    },
+    "agent": {
+        "hello": "Mr. Anderson...",
+        "virus": "Human beings are a disease, a cancer of this planet."
+    }
+}

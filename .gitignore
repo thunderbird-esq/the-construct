@@ -1,0 +1,63 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+construct
+matrix-mud
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.txt
+coverage.html
+
+# Go workspace file
+go.work
+
+# Dependency directories
+vendor/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build output
+bin/
+dist/
+build/
+
+# Data files (player data, world saves)
+data/players/*.json
+data/world_backup.json
+
+# Keep data structure but not content
+!data/players/.gitkeep
+!data/world.json
+
+# Logs
+*.log
+logs/
+
+# Python virtual environment
+.venv/
+venv/
+__pycache__/
+
+# Docker
+.dockerignore
+
+# Backup files
+*.bak

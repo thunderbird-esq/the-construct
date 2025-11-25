@@ -51,6 +51,37 @@ telnet localhost 2323
 
 Or use any MUD client that supports telnet.
 
+## Documentation
+
+Comprehensive documentation is available to help you understand, develop, and extend Matrix MUD:
+
+### Core Documentation
+
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history and notable changes
+- **[DEVLOG.md](DEVLOG.md)** - Development journal with technical decisions and insights
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development workflow and contribution guidelines
+
+### Technical Documentation
+
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - System design, components, and concurrency model
+- **[docs/API.md](docs/API.md)** - Complete protocol reference and command documentation
+- **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** - Development environment setup and debugging
+
+### Claude Code Integration
+
+- **[CLAUDE.md](CLAUDE.md)** - Claude Code integration guide with custom commands and MCP servers
+- **[AGENTS.md](AGENTS.md)** - Multi-agent development patterns and workflows
+
+### Quick Links
+
+| Document | Purpose |
+|----------|---------|
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Understand system design |
+| [API.md](docs/API.md) | Command reference |
+| [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Set up dev environment |
+| [CLAUDE.md](CLAUDE.md) | Use Claude Code effectively |
+| [AGENTS.md](AGENTS.md) | Multi-agent workflows |
+
 ## Project Structure
 
 ```

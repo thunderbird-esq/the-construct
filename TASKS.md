@@ -1,9 +1,10 @@
 # Matrix MUD Task Management
 
-## Current Status: Phase 2 Complete ✅
+## Current Status: Phase 2 Complete ✅ | Phase 3 Ready 🚀
 
-**Last Updated**: 2025-11-28 11:15 UTC
+**Last Updated**: 2025-11-28 11:20 UTC
 **Current Version**: v1.30.0
+**All Tests**: 15/15 PASSING ✅
 
 ---
 
@@ -218,12 +219,130 @@ Time 20-30min: Integration & Validation
 
 ## Phase 3: Enhancements (PLANNED)
 
-| Task ID | Description | Priority | Agent |
-|---------|-------------|----------|-------|
-| P3-ENH-12 | Update xterm.js 3.14.5 → 5.x | MEDIUM | frontend-dev |
-| P3-ENH-15 | Fix duplicate NPC/Item data in JSON | LOW | data-fixer |
-| P3-ENH-18 | Implement skipped tests | LOW | test-engineer |
-| P3-ENH-19 | Add password echo suppression (IAC) | HIGH | golang-pro |
+| Task ID | Description | Priority | Agent | Status |
+|---------|-------------|----------|-------|--------|
+| P3-ENH-12 | Update xterm.js 3.14.5 → 5.x | MEDIUM | frontend-dev | 🔄 TODO |
+| P3-ENH-15 | Fix duplicate NPC/Item data in JSON | LOW | data-fixer | 🔄 TODO |
+| P3-ENH-18 | Implement skipped tests | LOW | test-engineer | 🔄 TODO |
+| P3-ENH-19 | Add password echo suppression (IAC) | HIGH | golang-pro | 🔄 TODO |
+| P3-ENH-20 | Implement actual connection timeouts | MEDIUM | golang-pro | 🔄 TODO |
+| P3-ENH-21 | Add 'dn' alias for down command | LOW | golang-pro | 🔄 TODO |
+| P3-ENH-22 | Broadcast nil safety check | MEDIUM | golang-pro | 🔄 TODO |
+
+---
+
+## Phase 3 Detailed Plan
+
+### Stream A: Network & Security Enhancements (HIGH Priority)
+
+#### P3-ENH-19: Password Echo Suppression (IAC)
+**File**: main.go (handleConnection, password input)
+**Problem**: Password visible during terminal input
+**Solution**: Send IAC WILL ECHO / IAC WONT ECHO telnet commands
+**Test**: Manual telnet test (automated test difficult)
+```go
+// Telnet IAC commands for echo suppression
+const (
+    IAC  = 255 // Interpret As Command
+    WILL = 251
+    WONT = 252
+    ECHO = 1
+)
+
+// Before password prompt
+conn.Write([]byte{IAC, WILL, ECHO})  // Server will echo (suppress client echo)
+
+// After password received
+conn.Write([]byte{IAC, WONT, ECHO})  // Resume normal echoing
+```
+
+#### P3-ENH-20: Implement Connection Timeouts
+**File**: main.go (handleConnection)
+**Problem**: Constants exist but not applied to connections
+**Solution**: Set deadlines on connections
+```go
+// Set initial connection deadline
+conn.SetDeadline(time.Now().Add(ConnectionTimeout))
+
+// Reset deadline on each valid input
+conn.SetDeadline(time.Now().Add(IdleTimeout))
+```
+**Test**: `TestConnectionTimeoutImplementation`
+
+### Stream B: Code Quality (MEDIUM Priority)
+
+#### P3-ENH-21: Down Command Alias
+**File**: main.go (command parsing)
+**Problem**: No 'dn' alias for 'down' command
+**Solution**: Add 'dn' to command switch
+**Test**: `TestDownAlias` (update existing)
+
+#### P3-ENH-22: Broadcast Nil Safety
+**File**: world.go (Broadcast function)
+**Problem**: Potential nil pointer dereference
+**Solution**: Add nil check in player iteration
+**Test**: `TestBroadcastNilSafety`
+
+### Stream C: Frontend & Data (MEDIUM/LOW Priority)
+
+#### P3-ENH-12: Update xterm.js
+**File**: static/index.html, static/js/
+**Problem**: xterm.js 3.14.5 is from 2019, security vulnerabilities possible
+**Solution**: Update to xterm.js 5.x with proper fit addon
+**Test**: Manual browser test
+```html
+<!-- Old -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.5/xterm.min.js"></script>
+
+<!-- New -->
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
+```
+
+#### P3-ENH-15: Fix Duplicate JSON Data
+**File**: data/world.json
+**Problem**: Both arrays (Items, NPCs) and maps (ItemMap, NPCMap) exist
+**Solution**: Remove arrays, keep maps only
+**Test**: `TestWorldJSONStructure`
+
+#### P3-ENH-18: Implement Skipped Tests
+**Files**: tests/unit/, tests/integration/
+**Problem**: 6 tests are skipped
+**Solution**: Implement actual test logic
+**Test**: All tests should run (no SKIPs)
+
+---
+
+## Phase 3 Execution Plan
+
+### Time Allocation: ~45 minutes
+
+```
+Time 0-15min:  Stream A (Security/Network)
+               - P3-ENH-19: IAC password suppression
+               - P3-ENH-20: Connection timeout implementation
+               
+Time 15-25min: Stream B (Code Quality)
+               - P3-ENH-21: Down alias
+               - P3-ENH-22: Broadcast nil safety
+               
+Time 25-40min: Stream C (Frontend/Data)
+               - P3-ENH-12: xterm.js update
+               - P3-ENH-15: JSON cleanup
+               
+Time 40-45min: Integration & Validation
+               - Run all tests
+               - Manual telnet/web test
+               - Update CHANGELOG
+               - Git commit
+```
+
+### Memory Budget
+- Total Available: 10GB
+- Stream A: 3GB (network code analysis)
+- Stream B: 2GB (quick fixes)
+- Stream C: 4GB (frontend analysis, JSON parsing)
+- Integration: 1GB
 
 ---
 

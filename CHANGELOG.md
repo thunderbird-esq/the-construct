@@ -7,6 +7,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.30.0] - 2025-11-28 - Phase 2 Bug Fixes
+
+### Added
+- **phase2_fixes_test.go**: Comprehensive test suite for Phase 2 bug fixes
+  - TestNilRoomAccessNoPanic: Validates nil room handling
+  - TestInventorySizeLimit: Validates inventory cap at 20 items
+  - TestDownAlias: Documents command alias design
+  - TestNPCHPValues: Validates all NPCs have valid HP/MaxHP
+  - TestJSONLoadErrorHandling: Validates graceful JSON error recovery
+  - TestConnectionTimeoutConfig: Validates timeout constants
+  - TestWorldInitialization: Validates world setup
+- **TASKS.md**: Comprehensive task tracking for multi-phase development
+- Game balance constants in config.go:
+  - MaxInventorySize = 20 items
+  - ConnectionTimeout = 30 seconds
+  - IdleTimeout = 30 minutes
+  - DefaultNPCHP = 50
+  - DefaultNPCMaxHP = 50
+
+### Fixed
+- **Issue #4**: Nil room access no longer causes panic
+  - world.go Look() now returns error message for invalid rooms
+  - Players in void can use 'recall' to return to safety
+- **Issue #7**: JSON unmarshal errors now handled gracefully
+  - loadWorldData() logs warnings and creates default world on error
+  - createDefaultWorld() provides minimal fallback world
+- **Issue #8**: Inventory size now limited to 20 items
+  - GetItem() checks inventory size before adding
+  - Returns "inventory full" message when at capacity
+- **Issue #13-14**: NPC HP values validated during world load
+  - NPCs with HP <= 0 get DefaultNPCHP (50)
+  - NPCs with MaxHP <= 0 or MaxHP < HP get corrected
+  - Warnings logged for each correction
+
+### Changed
+- **world.go**: Added 'log' import for error logging
+- **config.go**: Added time import and game balance constants
+- Version bumped to v1.30
+
+### Tests
+All 15 tests passing:
+```
+=== RUN   TestPhase1_Inventory               --- PASS
+=== RUN   TestNilRoomAccessNoPanic           --- PASS
+=== RUN   TestInventorySizeLimit             --- PASS
+=== RUN   TestDownAlias                      --- PASS
+=== RUN   TestNPCHPValues                    --- PASS
+=== RUN   TestJSONLoadErrorHandling          --- PASS
+=== RUN   TestConnectionTimeoutConfig        --- PASS
+=== RUN   TestWorldInitialization            --- PASS
+=== RUN   TestPhase2_NPCs                    --- PASS
+=== RUN   TestConfigEnvironmentVariables     --- PASS
+=== RUN   TestConfigDefaultPorts             --- PASS
+=== RUN   TestAllowedOriginsConfig           --- PASS
+=== RUN   TestGetEnvFunction                 --- PASS
+=== RUN   TestAdminBindAddressNotExposed     --- PASS
+PASS ok github.com/yourusername/matrix-mud 0.201s
+```
+
+---
+
 ## [1.29.0] - 2025-11-28 - ULTRATHINK Security Overhaul (Phase 1)
 
 ### Added

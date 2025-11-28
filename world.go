@@ -122,7 +122,7 @@ func (w *World) loadWorldData() {
 		w.createDefaultWorld()
 		return
 	}
-	
+
 	var data WorldData
 	if err := json.Unmarshal(file, &data); err != nil {
 		// Issue #7 fix: Handle JSON parse errors gracefully
@@ -131,12 +131,12 @@ func (w *World) loadWorldData() {
 		w.createDefaultWorld()
 		return
 	}
-	
+
 	w.Rooms = data.Rooms
 	if w.Rooms == nil {
 		w.Rooms = make(map[string]*Room)
 	}
-	
+
 	w.ItemTemplates["phone"] = &Item{ID: "phone", Name: "Nokia Phone", Description: "An old school slider phone.", Damage: 1, Slot: "hand", Price: 10}
 	w.ItemTemplates["coat"] = &Item{ID: "coat", Name: "Leather Trenchcoat", Description: "Black leather. Very cool.", AC: 2, Slot: "body", Price: 100}
 	w.ItemTemplates["katana"] = &Item{ID: "katana", Name: "Training Katana", Description: "A dull blade.", Damage: 5, Slot: "hand", Price: 50}
@@ -157,7 +157,7 @@ func (w *World) loadWorldData() {
 		for _, npc := range room.NPCs {
 			npc.RoomID = roomID
 			npc.OriginalRoom = roomID
-			
+
 			// Issue #13-14 fix: Ensure NPCs have valid HP values
 			if npc.HP <= 0 {
 				npc.HP = DefaultNPCHP
@@ -167,7 +167,7 @@ func (w *World) loadWorldData() {
 				npc.MaxHP = npc.HP
 				log.Printf("WARNING: NPC %s in room %s had invalid MaxHP, set to %d", npc.ID, roomID, npc.MaxHP)
 			}
-			
+
 			room.NPCMap[npc.ID] = npc
 		}
 		if room.Symbol == "" {
@@ -815,12 +815,12 @@ func (w *World) Look(p *Player, target string) string {
 	w.mutex.RLock()
 	defer w.mutex.RUnlock()
 	room := w.Rooms[p.RoomID]
-	
+
 	// Issue #4 fix: Handle nil room access
 	if room == nil {
 		return fmt.Sprintf("%sError: You are in the void (room %s not found). Use 'recall' to return to safety.%s\r\n", Red, p.RoomID, Reset)
 	}
-	
+
 	if target == "" {
 		automap := w.GenerateAutomapInternal(p, 2)
 		desc := fmt.Sprintf("%s\r\n%s*** %s ***%s\r\n%s\r\nExits: ", automap, White, room.ID, Green, room.Description)
@@ -1022,17 +1022,17 @@ func (w *World) UseItem(p *Player, itemName string) string {
 func (w *World) GetItem(p *Player, itemName string) string {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
-	
+
 	// Issue #8 fix: Check inventory size limit
 	if len(p.Inventory) >= MaxInventorySize {
 		return fmt.Sprintf("Your inventory is full (max %d items). Drop something first.", MaxInventorySize)
 	}
-	
+
 	room := w.Rooms[p.RoomID]
 	if room == nil {
 		return "You cannot pick up items here."
 	}
-	
+
 	item := findItemInMap(room.ItemMap, itemName)
 	if item != nil {
 		delete(room.ItemMap, item.ID)

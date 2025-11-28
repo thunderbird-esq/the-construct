@@ -4,30 +4,71 @@
 package main
 
 import (
-	"github.com/gorilla/websocket"
 	"log"
 	"net"
 	"net/http"
+	"strings"
+
+	"github.com/gorilla/websocket"
 )
 
 // upgrader handles upgrading HTTP connections to WebSocket protocol.
-// CheckOrigin is set to allow connections from any origin for development ease.
+// Origin checking is configurable via ALLOWED_ORIGINS environment variable.
 var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool { return true },
+	CheckOrigin: checkWebSocketOrigin,
 }
 
-// startWebServer initializes the HTTP server on port 8080.
+// checkWebSocketOrigin validates the Origin header against allowed origins.
+// If ALLOWED_ORIGINS is "*" (default for development), all origins are allowed.
+// In production, set ALLOWED_ORIGINS to a comma-separated list of allowed domains.
+func checkWebSocketOrigin(r *http.Request) bool {
+	origin := r.Header.Get("Origin")
+
+	// If no origin header, allow (same-origin requests)
+	if origin == "" {
+		return true
+	}
+
+	allowedOrigins := Config.AllowedOrigins
+
+	// Development mode: allow all origins
+	if allowedOrigins == "*" {
+		return true
+	}
+
+	// Production mode: check against whitelist
+	allowed := strings.Split(allowedOrigins, ",")
+	for _, a := range allowed {
+		a = strings.TrimSpace(a)
+		if a == origin {
+			return true
+		}
+		// Also check without protocol for flexibility
+		if strings.HasSuffix(origin, "://"+a) {
+			return true
+		}
+	}
+
+	log.Printf("WebSocket origin rejected: %s (allowed: %s)", origin, allowedOrigins)
+	return false
+}
+
+// startWebServer initializes the HTTP server.
 // Provides endpoints:
-//   GET  /    - Web client interface (xterm.js-based terminal)
-//   GET  /ws  - WebSocket endpoint for bi-directional communication
-// The web server acts as a proxy to the main telnet server on port 2323.
+//
+//	GET  /    - Web client interface (xterm.js-based terminal)
+//	GET  /ws  - WebSocket endpoint for bi-directional communication
+//
+// The web server acts as a proxy to the main telnet server.
 func startWebServer(w *World) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", serveHome)
 	mux.HandleFunc("/ws", handleWebSocket)
 
-	log.Println("Web Portal active on http://0.0.0.0:8080")
-	if err := http.ListenAndServe("0.0.0.0:8080", mux); err != nil {
+	bindAddr := "0.0.0.0:" + Config.WebPort
+	log.Printf("Web Portal active on http://%s", bindAddr)
+
+	if err := http.ListenAndServe(bindAddr, mux); err != nil {
 		log.Fatal("Web server error:", err)
 	}
 }
@@ -35,26 +76,32 @@ func startWebServer(w *World) {
 // serveHome serves the HTML web client interface.
 // Returns an embedded xterm.js terminal with Matrix-themed styling and mobile controls.
 func serveHome(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Write([]byte(htmlClient))
 }
 
 // handleWebSocket upgrades the HTTP connection to WebSocket and proxies data to/from the telnet server.
-// Creates a TCP connection to localhost:2323 (main MUD server) and bidirectionally forwards data.
+// Creates a TCP connection to the main MUD server and bidirectionally forwards data.
 // Runs two goroutines: one for reading from telnet and writing to WebSocket, another for the reverse.
 func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
+		log.Printf("WebSocket upgrade failed: %v", err)
 		return
 	}
 	defer ws.Close()
 
-	tcpConn, err := net.Dial("tcp", "localhost:2323")
+	// Connect to telnet server
+	telnetAddr := "localhost:" + Config.TelnetPort
+	tcpConn, err := net.Dial("tcp", telnetAddr)
 	if err != nil {
 		ws.WriteMessage(websocket.TextMessage, []byte("Error: Could not connect to Matrix Construct\r\n"))
+		log.Printf("Failed to connect to telnet server at %s: %v", telnetAddr, err)
 		return
 	}
 	defer tcpConn.Close()
 
+	// Telnet -> WebSocket
 	go func() {
 		buf := make([]byte, 4096)
 		for {
@@ -68,6 +115,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
+	// WebSocket -> Telnet
 	for {
 		_, message, err := ws.ReadMessage()
 		if err != nil {
@@ -204,6 +252,8 @@ const htmlClient = `
 
         socket.onopen = () => { term.writeln('\x1b[37m[Signal established...]\x1b[0m'); };
         socket.onmessage = (event) => { term.write(event.data); };
+        socket.onclose = () => { term.writeln('\x1b[31m[Connection lost]\x1b[0m'); };
+        socket.onerror = (err) => { term.writeln('\x1b[31m[Connection error]\x1b[0m'); };
         
         // Helper to send commands via buttons
         function cmd(str) {

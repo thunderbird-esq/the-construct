@@ -23,6 +23,18 @@ var (
 	authLimiter = ratelimit.New(5, 1*time.Minute) // 5 auth attempts per minute
 )
 
+// init starts background goroutines for maintenance tasks.
+func init() {
+	// Start rate limiter cleanup goroutine to prevent memory leaks
+	go func() {
+		ticker := time.NewTicker(1 * time.Hour)
+		for range ticker.C {
+			authLimiter.CleanupOldEntries()
+			log.Println("Rate limiter cleanup completed")
+		}
+	}()
+}
+
 func authenticate(c *Client, name string) bool {
 	// Apply rate limiting to prevent brute force attacks
 	if !authLimiter.Allow(name) {
@@ -171,9 +183,11 @@ func (c *Client) Write(msg string) {
 }
 
 func main() {
-	listener, err := net.Listen("tcp", ":2323")
+	// Use configured port
+	listenAddr := ":" + Config.TelnetPort
+	listener, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to start telnet server on %s: %v", listenAddr, err)
 	}
 
 	world := NewWorld()
@@ -187,11 +201,14 @@ func main() {
 		}
 	}()
 
-	fmt.Println("Matrix Construct Server v1.28 (Phase 28) started on port 2323...")
+	log.Printf("Matrix Construct Server v1.29 started on port %s", Config.TelnetPort)
+	log.Printf("Web client: http://localhost:%s", Config.WebPort)
+	log.Printf("Admin panel: http://%s", Config.AdminBindAddr)
 
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
+			log.Printf("Accept error: %v", err)
 			continue
 		}
 		go handleConnection(conn, world)

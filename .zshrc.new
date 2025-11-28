@@ -1,0 +1,575 @@
+# ============================================================================
+# POWERLEVEL10K INSTANT PROMPT - MUST STAY AT TOP
+# ============================================================================
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# ============================================================================
+# OH MY ZSH CONFIGURATION
+# ============================================================================
+export ZSH="$HOME/.oh-my-zsh"
+
+# Theme
+ZSH_THEME="powerlevel10k/powerlevel10k"
+
+# Disable insecure directory warnings (Docker completions)
+ZSH_DISABLE_COMPFIX=true
+
+# History configuration
+HIST_STAMPS="yyyy-mm-dd"
+HISTSIZE=50000
+SAVEHIST=50000
+setopt HIST_IGNORE_DUPS       # Don't record duplicates
+setopt HIST_IGNORE_SPACE      # Don't record commands starting with space
+setopt HIST_REDUCE_BLANKS     # Remove superfluous blanks
+setopt SHARE_HISTORY          # Share history between sessions
+setopt EXTENDED_HISTORY       # Record timestamp of command
+
+# Plugins - Carefully selected for performance and utility
+plugins=(
+  git
+  docker
+  docker-compose
+  brew
+  npm
+  node
+  yarn
+  vscode
+  macos
+  colored-man-pages
+  command-not-found
+  sudo                        # Press ESC twice to add sudo to command
+  web-search                  # google/bing/etc from terminal
+  copypath                    # copypath command copies pwd to clipboard
+  copyfile                    # copyfile <file> copies file contents to clipboard
+  golang                      # Go language support
+  zsh-autosuggestions         # Must be installed separately
+  zsh-syntax-highlighting     # Must be installed separately - MUST BE LAST
+)
+
+source $ZSH/oh-my-zsh.sh
+
+# ============================================================================
+# ENVIRONMENT VARIABLES
+# ============================================================================
+export LANG=en_US.UTF-8
+export EDITOR='code'
+export VISUAL='code'
+export TERM="xterm-256color"
+
+# ============================================================================
+# HOMEBREW (macOS)
+# ============================================================================
+if [[ -f /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
+# ============================================================================
+# GO LANGUAGE
+# ============================================================================
+export GOPATH="$HOME/go"
+export GOROOT="/opt/homebrew/opt/go/libexec"
+export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
+export GO111MODULE=on
+
+# ============================================================================
+# NODE.JS / NPM / NVM
+# ============================================================================
+export NVM_DIR="$HOME/.nvm"
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && . "/opt/homebrew/opt/nvm/nvm.sh"
+[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && . "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
+
+# NPM global packages
+export PATH="$HOME/.npm-global/bin:$PATH"
+
+# ============================================================================
+# PYTHON
+# ============================================================================
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+command -v pyenv >/dev/null && eval "$(pyenv init -)"
+
+# UV (fast Python package manager)
+export PATH="$HOME/.local/bin:$PATH"
+
+# ============================================================================
+# RUST
+# ============================================================================
+[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+
+# ============================================================================
+# PATH MODIFICATIONS
+# ============================================================================
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/bin:$PATH"
+
+# Added by Antigravity
+export PATH="/Users/edsaga/.antigravity/antigravity/bin:$PATH"
+
+# ============================================================================
+# CLAUDE CODE / MCP CONFIGURATION
+# ============================================================================
+export CLAUDE_CODE_ROOT="$HOME/.claude"
+export CLAUDE_RESOURCE_ROOT="$HOME/claude-code-templates"
+
+# MCP Server paths for development
+export MCP_SERVERS_DIR="$HOME/mcp-servers"
+export ASEPRITE_PATH="/Applications/Aseprite.app/Contents/MacOS/aseprite"
+
+# ============================================================================
+# NAVIGATION ALIASES
+# ============================================================================
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+alias .....="cd ../../../.."
+
+# Quick directory access
+alias projects="cd ~/Projects"
+alias desktop="cd ~/Desktop"
+alias downloads="cd ~/Downloads"
+alias docs="cd ~/Documents"
+alias cw="cd ~/claudes-world"
+alias mud="cd ~/claudes-world/matrix-mud"
+
+# ============================================================================
+# SYSTEM ALIASES
+# ============================================================================
+alias zshconfig="code ~/.zshrc"
+alias zshreload="source ~/.zshrc && echo '✅ ZSH config reloaded'"
+alias ohmyzsh="code ~/.oh-my-zsh"
+
+# List files (using eza if available, else ls)
+if command -v eza &> /dev/null; then
+  alias ls="eza --icons --group-directories-first"
+  alias ll="eza -la --icons --group-directories-first --git"
+  alias la="eza -a --icons --group-directories-first"
+  alias lt="eza --tree --level=2 --icons"
+  alias lta="eza --tree --level=3 --icons -a"
+else
+  alias ls="ls -G"
+  alias ll="ls -lAh"
+  alias la="ls -A"
+fi
+alias l="ls -CF"
+
+# File operations (safer defaults)
+alias cp="cp -iv"
+alias mv="mv -iv"
+alias rm="rm -iv"
+alias mkdir="mkdir -pv"
+
+# macOS specific
+alias showfiles="defaults write com.apple.finder AppleShowAllFiles YES; killall Finder"
+alias hidefiles="defaults write com.apple.finder AppleShowAllFiles NO; killall Finder"
+alias cleanup="find . -type f -name '*.DS_Store' -ls -delete"
+alias flushdns="sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder"
+alias emptytrash="rm -rf ~/.Trash/*"
+
+# System monitoring
+alias cpu="top -o cpu"
+alias mem="top -o rsize"
+alias psmem="ps aux | sort -nrk 4 | head"
+alias pscpu="ps aux | sort -nrk 3 | head"
+
+# ============================================================================
+# GIT ALIASES (Beyond what git plugin provides)
+# ============================================================================
+alias g="git"
+alias gst="git status"
+alias gaa="git add -A"
+alias ga="git add"
+alias gc="git commit"
+alias gcm="git commit -m"
+alias gca="git commit --amend"
+alias gco="git checkout"
+alias gcb="git checkout -b"
+alias gb="git branch"
+alias gbd="git branch -d"
+alias gbD="git branch -D"
+alias gps="git push"
+alias gpsf="git push --force-with-lease"
+alias gpsu="git push -u origin HEAD"
+alias gpl="git pull"
+alias gplr="git pull --rebase"
+alias gf="git fetch"
+alias gfa="git fetch --all"
+alias gm="git merge"
+alias gr="git rebase"
+alias gri="git rebase -i"
+alias glog="git log --oneline --graph --decorate --all"
+alias gd="git diff"
+alias gdc="git diff --cached"
+alias gss="git stash save"
+alias gsp="git stash pop"
+alias gsl="git stash list"
+alias gwip="git add -A && git commit -m 'WIP'"
+alias gunwip="git log -1 --format='%s' | grep -q 'WIP' && git reset HEAD~1"
+
+# ============================================================================
+# DOCKER ALIASES
+# ============================================================================
+alias d="docker"
+alias dps="docker ps"
+alias dpsa="docker ps -a"
+alias di="docker images"
+alias drm="docker rm"
+alias drmi="docker rmi"
+alias dstop="docker stop"
+alias dstart="docker start"
+alias drestart="docker restart"
+alias dlog="docker logs -f"
+alias dexec="docker exec -it"
+alias dinspect="docker inspect"
+
+# Docker Compose
+alias dc="docker-compose"
+alias dcu="docker-compose up"
+alias dcud="docker-compose up -d"
+alias dcd="docker-compose down"
+alias dcr="docker-compose restart"
+alias dcl="docker-compose logs -f"
+alias dcps="docker-compose ps"
+
+# Docker cleanup
+alias dprune="docker system prune -af"
+alias dvprune="docker volume prune -f"
+alias dclean="docker container prune -f && docker image prune -af && docker volume prune -f"
+
+# ============================================================================
+# GO ALIASES
+# ============================================================================
+alias gob="go build"
+alias got="go test ./..."
+alias gotv="go test -v ./..."
+alias gor="go run"
+alias gof="go fmt ./..."
+alias goi="go install"
+alias gomod="go mod tidy"
+alias golint="golangci-lint run"
+
+# ============================================================================
+# NODE/NPM/YARN ALIASES
+# ============================================================================
+alias n="npm"
+alias ni="npm install"
+alias nid="npm install --save-dev"
+alias nu="npm uninstall"
+alias nup="npm update"
+alias nr="npm run"
+alias nrd="npm run dev"
+alias nrb="npm run build"
+alias nrs="npm run start"
+alias nrt="npm run test"
+alias nrl="npm run lint"
+
+# Yarn
+alias y="yarn"
+alias ya="yarn add"
+alias yad="yarn add --dev"
+alias yr="yarn remove"
+alias yup="yarn upgrade"
+alias ys="yarn start"
+alias yd="yarn dev"
+alias yb="yarn build"
+alias yt="yarn test"
+
+# Bun (fast JS runtime)
+alias b="bun"
+alias bi="bun install"
+alias br="bun run"
+alias bx="bunx"
+
+# NPM/Yarn utilities
+alias npkill="npx npkill"
+alias ncu="npx npm-check-updates"
+
+# ============================================================================
+# PYTHON ALIASES
+# ============================================================================
+alias py="python3"
+alias pip="pip3"
+alias venv="python3 -m venv"
+alias activate="source .venv/bin/activate"
+alias uvpip="uv pip"
+alias uvvenv="uv venv"
+
+# ============================================================================
+# DEVELOPMENT ALIASES
+# ============================================================================
+# VS Code
+alias c="code ."
+alias code.="code ."
+
+# Serve current directory
+alias serve="python3 -m http.server 8000"
+
+# JSON pretty print
+alias json="python3 -m json.tool"
+
+# ============================================================================
+# NETWORK ALIASES
+# ============================================================================
+alias myip="curl -s ifconfig.me"
+alias localip="ipconfig getifaddr en0"
+alias ports="lsof -PiTCP -sTCP:LISTEN"
+alias ping="ping -c 5"
+
+# ============================================================================
+# CLAUDE CODE ALIASES
+# ============================================================================
+alias cc="claude"
+alias ccc="claude --continue"
+alias ccr="claude --resume"
+alias ccd="claude --dangerously-skip-permissions"
+
+# ============================================================================
+# CUSTOM FUNCTIONS
+# ============================================================================
+
+# Unalias conflicting git plugin aliases before defining functions
+unalias gcp 2>/dev/null
+unalias gcpr 2>/dev/null
+
+# Make directory and cd into it
+mkcd() {
+  mkdir -p "$1" && cd "$1"
+}
+
+# Quick git commit all and push
+gcp() {
+  if [ -z "$1" ]; then
+    echo "Error: Commit message required"
+    echo "Usage: gcp \"commit message\""
+    return 1
+  fi
+  git add -A
+  git commit -m "$1"
+  git push
+}
+
+# Quick git commit all, push, and create PR (requires gh CLI)
+gcpr() {
+  if [ -z "$1" ]; then
+    echo "Error: Commit message required"
+    echo "Usage: gcpr \"commit message\""
+    return 1
+  fi
+  git add -A
+  git commit -m "$1"
+  git push
+  gh pr create --fill
+}
+
+# Extract various archive types
+extract() {
+  if [ -f "$1" ]; then
+    case "$1" in
+      *.tar.bz2)   tar xjf "$1"    ;;
+      *.tar.gz)    tar xzf "$1"    ;;
+      *.bz2)       bunzip2 "$1"    ;;
+      *.rar)       unrar x "$1"    ;;
+      *.gz)        gunzip "$1"     ;;
+      *.tar)       tar xf "$1"     ;;
+      *.tbz2)      tar xjf "$1"    ;;
+      *.tgz)       tar xzf "$1"    ;;
+      *.zip)       unzip "$1"      ;;
+      *.Z)         uncompress "$1" ;;
+      *.7z)        7z x "$1"       ;;
+      *)           echo "'$1' cannot be extracted via extract()" ;;
+    esac
+  else
+    echo "'$1' is not a valid file"
+  fi
+}
+
+# Find and kill process by port
+killport() {
+  if [ -z "$1" ]; then
+    echo "Error: Port number required"
+    echo "Usage: killport 3000"
+    return 1
+  fi
+  lsof -ti:$1 | xargs kill -9 2>/dev/null && echo "Killed process on port $1" || echo "No process found on port $1"
+}
+
+# Create a backup of a file
+backup() {
+  if [ -z "$1" ]; then
+    echo "Error: File path required"
+    echo "Usage: backup /path/to/file"
+    return 1
+  fi
+  cp "$1" "$1.backup-$(date +%Y%m%d-%H%M%S)"
+  echo "Backed up to $1.backup-$(date +%Y%m%d-%H%M%S)"
+}
+
+# Quick project initialization
+initproject() {
+  if [ -z "$1" ]; then
+    echo "Error: Project name required"
+    echo "Usage: initproject myproject"
+    return 1
+  fi
+  mkdir -p "$1"
+  cd "$1"
+  git init
+  echo "# $1" > README.md
+  echo "node_modules/\n.DS_Store\n.env\n.env.local\n*.log\ndist/\nbuild/\n.venv/" > .gitignore
+  echo "Project initialized: $1"
+}
+
+# Search for text in files (using ripgrep if available)
+search() {
+  if [ -z "$1" ]; then
+    echo "Error: Search term required"
+    echo "Usage: search \"term\""
+    return 1
+  fi
+  if command -v rg &> /dev/null; then
+    rg "$1"
+  else
+    grep -r "$1" . --exclude-dir={node_modules,.git,dist,build,.venv}
+  fi
+}
+
+# Weather (requires curl)
+weather() {
+  local city="${1:-Philadelphia}"
+  curl -s "wttr.in/$city?format=3"
+}
+
+# Quick note taking
+note() {
+  local notes_dir="$HOME/notes"
+  mkdir -p "$notes_dir"
+  if [ -z "$1" ]; then
+    # List recent notes
+    ls -lt "$notes_dir" | head -10
+  else
+    # Create/edit note
+    code "$notes_dir/$1.md"
+  fi
+}
+
+# MCP Server management
+mcp-list() {
+  echo "📦 Installed MCP Servers:"
+  echo ""
+  if [ -f "$HOME/Library/Application Support/Claude/claude_desktop_config.json" ]; then
+    cat "$HOME/Library/Application Support/Claude/claude_desktop_config.json" | python3 -m json.tool
+  else
+    echo "No claude_desktop_config.json found"
+  fi
+}
+
+mcp-logs() {
+  echo "📋 Recent MCP logs:"
+  tail -100 "$HOME/Library/Logs/Claude/mcp*.log" 2>/dev/null || echo "No MCP logs found"
+}
+
+# Start Chrome with remote debugging for MCP
+chrome-debug() {
+  local port="${1:-9222}"
+  echo "🌐 Starting Chrome with remote debugging on port $port..."
+  /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=$port &
+  echo "Chrome started. Connect MCP with --browser-url=http://127.0.0.1:$port"
+}
+
+# Go project initialization
+goinit() {
+  if [ -z "$1" ]; then
+    echo "Usage: goinit module-name"
+    return 1
+  fi
+  mkdir -p "$1"
+  cd "$1"
+  go mod init "$1"
+  mkdir -p cmd pkg internal
+  echo "package main\n\nfunc main() {\n\t// TODO\n}" > cmd/main.go
+  git init
+  echo "Go project initialized: $1"
+}
+
+# Random greeting function
+random_greeting() {
+  greetings=("WELCOME BACK" "HELLO WORLD" "GREETINGS" "SYSTEM READY" "ONLINE" "ACTIVE" "INITIALIZED" "LOGGED IN")
+  fonts=("slant" "doom" "banner" "big" "cyberlarge")
+  
+  greeting=${greetings[$RANDOM % ${#greetings[@]}]}
+  font=${fonts[$RANDOM % ${#fonts[@]}]}
+  
+  figlet -f "$font" "$greeting" 2>/dev/null | lolcat 2>/dev/null || echo "$greeting"
+}
+
+# ============================================================================
+# FZF CONFIGURATION (if installed)
+# ============================================================================
+if command -v fzf &> /dev/null; then
+  export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
+  
+  # Use fd if available (faster than find)
+  if command -v fd &> /dev/null; then
+    export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+  fi
+  
+  # fzf key bindings
+  [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+  
+  # Custom fzf functions
+  fcd() { cd "$(fd --type d | fzf)" }  # Fuzzy cd
+  fcode() { code "$(fzf)" }            # Fuzzy open in vscode
+fi
+
+# ============================================================================
+# TERMINAL GREETING
+# ============================================================================
+clear
+
+# Get terminal width and calculate centering
+TERM_WIDTH=$(tput cols)
+BOX_WIDTH=66
+PADDING=$(( (TERM_WIDTH - BOX_WIDTH) / 2 ))
+PAD=$(printf '%*s' $PADDING '')
+
+echo ""
+echo "${PAD}╭──────────────────────────────────────────────────────────────────╮"
+echo "${PAD}│                                                                  │"
+toilet -f mono12 "ED SAGA" --metal 2>/dev/null | sed "s/^/${PAD}│  /" || echo "${PAD}│  ED SAGA                                                         │"
+echo "${PAD}│                                                                  │"
+echo "${PAD}│  ════════════════════════════════════════════════════════════    │"
+echo "${PAD}│                                                                  │"
+random_greeting | sed "s/^/${PAD}│  /"
+echo "${PAD}│                                                                  │"
+echo "${PAD}│  ════════════════════════════════════════════════════════════    │"
+echo "${PAD}│                                                                  │"
+echo "${PAD}│  User: $(whoami)                                                  │"
+echo "${PAD}│  Date: $(date '+%A, %B %d, %Y')                                   │"
+echo "${PAD}│  Time: $(date '+%I:%M:%S %p')                                     │"
+echo "${PAD}│  Shell: zsh $(zsh --version 2>/dev/null | awk '{print $2}')                  │"
+echo "${PAD}│  Node: $(node -v 2>/dev/null || echo 'N/A')                                          │"
+echo "${PAD}│  Go: $(go version 2>/dev/null | awk '{print $3}' || echo 'N/A')                                            │"
+echo "${PAD}│  Local IP: $(ipconfig getifaddr en0 2>/dev/null || echo 'Not connected')                                  │"
+# Git branch detection - only show if in a git repository
+if git rev-parse --is-inside-work-tree &>/dev/null; then
+  BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null)
+  echo "${PAD}│  Git Branch: $BRANCH                                             │"
+fi
+echo "${PAD}│                                                                  │"
+echo "${PAD}│  [DEVELOPMENT WORKSTATION READY]                                 │"
+echo "${PAD}│                                                                  │"
+echo "${PAD}╰──────────────────────────────────────────────────────────────────╯"
+echo ""
+
+# ============================================================================
+# POWERLEVEL10K CONFIGURATION
+# ============================================================================
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# ============================================================================
+# API KEYS (loaded from secure location)
+# ============================================================================
+# Load API keys from .env file if it exists (not tracked in git)
+[[ -f ~/.env.keys ]] && source ~/.env.keys

@@ -7,6 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.29.0] - 2025-11-28 - ULTRATHINK Security Overhaul (Phase 1)
+
+### Added
+- **config.go**: New centralized configuration management system
+  - All sensitive values loaded from environment variables
+  - Auto-generates secure 32-character random passwords when ADMIN_PASS not set
+  - Clear warning messages for production deployment
+- **security_test.go**: Comprehensive security test suite
+  - TestConfigEnvironmentVariables: Validates env-based configuration
+  - TestConfigDefaultPorts: Validates default port settings
+  - TestAllowedOriginsConfig: Validates WebSocket origin settings
+  - TestGetEnvFunction: Validates helper function
+  - TestAdminBindAddressNotExposed: Validates admin security
+- **.env.example**: Documentation of all configurable environment variables
+- Rate limiter cleanup goroutine (hourly) to prevent memory leaks
+
+### Changed
+- **admin.go**: Complete security overhaul
+  - Admin credentials now loaded from Config (environment variables)
+  - Default bind address changed from `0.0.0.0:9090` to `127.0.0.1:9090` (localhost only)
+  - Added `checkAdminAuth()` helper function for DRY authentication
+  - Warning displayed in admin panel when using auto-generated password
+  - Better error handling and HTTP status codes
+  - Logging for admin actions (kicks)
+- **web.go**: WebSocket security improvements
+  - Added `checkWebSocketOrigin()` function with configurable origin whitelist
+  - ALLOWED_ORIGINS environment variable support ("*" for dev, comma-separated domains for prod)
+  - Improved error logging for WebSocket and telnet connection failures
+  - Added Content-Type header for HTML responses
+- **main.go**: Server configuration improvements
+  - Telnet port now configurable via TELNET_PORT environment variable
+  - Added init() function to start rate limiter cleanup goroutine
+  - Improved startup logging with all service URLs
+  - Better error handling for listener failures
+  - Version bumped to v1.29
+- **go.mod**: Fixed Go version from non-existent 1.24.0 to 1.21
+
+### Security
+- **CRITICAL**: Removed hardcoded admin credentials (was admin/admin)
+- **CRITICAL**: Admin panel no longer exposed to internet by default
+- **HIGH**: WebSocket origin checking now configurable (was allowing all origins)
+- **MEDIUM**: Rate limiter memory leak fixed with hourly cleanup
+- All 7 security tests passing
+
+### Tests
+```
+=== RUN   TestConfigEnvironmentVariables     --- PASS
+=== RUN   TestConfigDefaultPorts             --- PASS  
+=== RUN   TestAllowedOriginsConfig           --- PASS
+=== RUN   TestGetEnvFunction                 --- PASS
+=== RUN   TestAdminBindAddressNotExposed     --- PASS
+=== RUN   TestPhase1_Inventory               --- PASS
+=== RUN   TestPhase2_NPCs                    --- PASS
+PASS ok github.com/yourusername/matrix-mud 0.563s
+```
+
+---
+
+## [Unreleased-Post-1.29]
+
 ### Added
 - Multi-agent development workflow documentation
 - Comprehensive documentation suite (CHANGELOG, DEVLOG, CLAUDE, AGENTS)

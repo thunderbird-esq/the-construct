@@ -6,6 +6,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"math/rand"
 	"os"
@@ -113,10 +114,29 @@ func NewWorld() *World {
 	return w
 }
 func (w *World) loadWorldData() {
-	file, _ := os.ReadFile("data/world.json")
+	file, err := os.ReadFile("data/world.json")
+	if err != nil {
+		// Issue #7 fix: Handle file read errors gracefully
+		log.Printf("WARNING: Could not read data/world.json: %v", err)
+		log.Println("Creating default world...")
+		w.createDefaultWorld()
+		return
+	}
+	
 	var data WorldData
-	json.Unmarshal(file, &data)
+	if err := json.Unmarshal(file, &data); err != nil {
+		// Issue #7 fix: Handle JSON parse errors gracefully
+		log.Printf("WARNING: Could not parse data/world.json: %v", err)
+		log.Println("Creating default world...")
+		w.createDefaultWorld()
+		return
+	}
+	
 	w.Rooms = data.Rooms
+	if w.Rooms == nil {
+		w.Rooms = make(map[string]*Room)
+	}
+	
 	w.ItemTemplates["phone"] = &Item{ID: "phone", Name: "Nokia Phone", Description: "An old school slider phone.", Damage: 1, Slot: "hand", Price: 10}
 	w.ItemTemplates["coat"] = &Item{ID: "coat", Name: "Leather Trenchcoat", Description: "Black leather. Very cool.", AC: 2, Slot: "body", Price: 100}
 	w.ItemTemplates["katana"] = &Item{ID: "katana", Name: "Training Katana", Description: "A dull blade.", Damage: 5, Slot: "hand", Price: 50}
@@ -137,6 +157,17 @@ func (w *World) loadWorldData() {
 		for _, npc := range room.NPCs {
 			npc.RoomID = roomID
 			npc.OriginalRoom = roomID
+			
+			// Issue #13-14 fix: Ensure NPCs have valid HP values
+			if npc.HP <= 0 {
+				npc.HP = DefaultNPCHP
+				log.Printf("WARNING: NPC %s in room %s had invalid HP, set to default %d", npc.ID, roomID, DefaultNPCHP)
+			}
+			if npc.MaxHP <= 0 || npc.MaxHP < npc.HP {
+				npc.MaxHP = npc.HP
+				log.Printf("WARNING: NPC %s in room %s had invalid MaxHP, set to %d", npc.ID, roomID, npc.MaxHP)
+			}
+			
 			room.NPCMap[npc.ID] = npc
 		}
 		if room.Symbol == "" {
@@ -145,6 +176,19 @@ func (w *World) loadWorldData() {
 		if room.Color == "" {
 			room.Color = "white"
 		}
+	}
+}
+
+// createDefaultWorld creates a minimal world when world.json is missing or corrupt
+func (w *World) createDefaultWorld() {
+	w.Rooms["spawn"] = &Room{
+		ID:          "spawn",
+		Description: "You are in a blank white space. The world data could not be loaded.",
+		Symbol:      "@",
+		Color:       "white",
+		ItemMap:     make(map[string]*Item),
+		NPCMap:      make(map[string]*NPC),
+		Exits:       make(map[string]string),
 	}
 }
 func (w *World) loadDialogue() {
@@ -771,6 +815,12 @@ func (w *World) Look(p *Player, target string) string {
 	w.mutex.RLock()
 	defer w.mutex.RUnlock()
 	room := w.Rooms[p.RoomID]
+	
+	// Issue #4 fix: Handle nil room access
+	if room == nil {
+		return fmt.Sprintf("%sError: You are in the void (room %s not found). Use 'recall' to return to safety.%s\r\n", Red, p.RoomID, Reset)
+	}
+	
 	if target == "" {
 		automap := w.GenerateAutomapInternal(p, 2)
 		desc := fmt.Sprintf("%s\r\n%s*** %s ***%s\r\n%s\r\nExits: ", automap, White, room.ID, Green, room.Description)
@@ -972,9 +1022,20 @@ func (w *World) UseItem(p *Player, itemName string) string {
 func (w *World) GetItem(p *Player, itemName string) string {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
-	item := findItemInMap(w.Rooms[p.RoomID].ItemMap, itemName)
+	
+	// Issue #8 fix: Check inventory size limit
+	if len(p.Inventory) >= MaxInventorySize {
+		return fmt.Sprintf("Your inventory is full (max %d items). Drop something first.", MaxInventorySize)
+	}
+	
+	room := w.Rooms[p.RoomID]
+	if room == nil {
+		return "You cannot pick up items here."
+	}
+	
+	item := findItemInMap(room.ItemMap, itemName)
 	if item != nil {
-		delete(w.Rooms[p.RoomID].ItemMap, item.ID)
+		delete(room.ItemMap, item.ID)
 		p.Inventory = append(p.Inventory, item)
 		return fmt.Sprintf("Got %s.", ColorizeItem(item))
 	}

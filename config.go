@@ -7,6 +7,25 @@ import (
 	"encoding/hex"
 	"log"
 	"os"
+	"time"
+)
+
+// Game balance constants
+const (
+	// MaxInventorySize is the maximum number of items a player can carry
+	MaxInventorySize = 20
+
+	// ConnectionTimeout is how long to wait for initial connection handshake
+	ConnectionTimeout = 30 * time.Second
+
+	// IdleTimeout is how long a player can be idle before being disconnected
+	IdleTimeout = 30 * time.Minute
+
+	// DefaultNPCHP is the default HP for NPCs if not specified
+	DefaultNPCHP = 50
+
+	// DefaultNPCMaxHP is the default MaxHP for NPCs if not specified
+	DefaultNPCMaxHP = 50
 )
 
 // Config holds all configuration values for the server.

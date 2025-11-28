@@ -297,7 +297,7 @@ func handleConnection(conn net.Conn, world *World) {
 			response = Matrixify(world.MovePlayer(player, "east"))
 		case "up", "u":
 			response = Matrixify(world.MovePlayer(player, "up"))
-		case "down":
+		case "down", "dn":
 			response = Matrixify(world.MovePlayer(player, "down"))
 		case "get", "g":
 			response = Matrixify(world.GetItem(player, arg))

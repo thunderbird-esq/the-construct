@@ -1,0 +1,86 @@
+# =============================================================================
+# FLY.IO CONFIGURATION - Matrix MUD
+# =============================================================================
+# Deploy with: fly launch --config fly.toml
+# Update with: fly deploy
+# =============================================================================
+
+app = "matrix-mud"
+primary_region = "ewr"  # Newark, US East - low latency for East Coast
+
+[build]
+  dockerfile = "Dockerfile"
+
+# =============================================================================
+# ENVIRONMENT VARIABLES
+# =============================================================================
+# Set secrets with: fly secrets set ADMIN_PASS=your-secure-password
+# These are non-sensitive defaults only
+[env]
+  TELNET_PORT = "2323"
+  WEB_PORT = "8080"
+  ADMIN_PORT = "9090"
+  ADMIN_USER = "admin"
+  ADMIN_BIND_ADDR = "127.0.0.1:9090"  # Localhost only - access via fly proxy
+  ALLOWED_ORIGINS = "*"  # Set to your domain in production
+  GO_ENV = "production"
+
+# =============================================================================
+# HTTP SERVICE (Web Client)
+# =============================================================================
+[[services]]
+  internal_port = 8080
+  protocol = "tcp"
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = 80
+    force_https = true
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+  [[services.http_checks]]
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/health"
+
+# =============================================================================
+# TCP SERVICE (Telnet MUD)
+# =============================================================================
+[[services]]
+  internal_port = 2323
+  protocol = "tcp"
+
+  [[services.ports]]
+    port = 2323
+
+  [[services.tcp_checks]]
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "10s"
+
+# =============================================================================
+# PERSISTENT STORAGE
+# =============================================================================
+[mounts]
+  source = "matrix_mud_data"
+  destination = "/app/data"
+
+# =============================================================================
+# RESOURCES
+# =============================================================================
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256  # Minimal for Go binary
+
+# =============================================================================
+# DEPLOYMENT STRATEGY
+# =============================================================================
+[deploy]
+  strategy = "rolling"
+  release_command = "echo 'Matrix MUD v1.31 deploying...'"

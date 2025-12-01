@@ -208,7 +208,7 @@ func (c *Client) readPassword() (string, error) {
 		c.resumeEcho()
 		c.Write("\r\n") // Add newline since echo was suppressed
 	}()
-	
+
 	pass, err := c.reader.ReadString('\n')
 	if err != nil {
 		return "", err
@@ -235,7 +235,7 @@ func main() {
 		}
 	}()
 
-	log.Printf("Matrix Construct Server v1.31 started on port %s", Config.TelnetPort)
+	log.Printf("Matrix Construct Server v1.32 started on port %s", Config.TelnetPort)
 	log.Printf("Web client: http://localhost:%s", Config.WebPort)
 	log.Printf("Admin panel: http://%s", Config.AdminBindAddr)
 
@@ -315,10 +315,10 @@ func handleConnection(conn net.Conn, world *World) {
 			}
 			break
 		}
-		
+
 		// Reset idle timeout on each valid input
 		conn.SetDeadline(time.Now().Add(IdleTimeout))
-		
+
 		input = strings.TrimSpace(input)
 		if input == "" {
 			client.Write("> ")

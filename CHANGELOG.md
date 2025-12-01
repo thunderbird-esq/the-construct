@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.32.0] - 2025-12-01 - Phase 4 Deployment Ready
+
+### Added
+- **fly.toml**: Complete Fly.io deployment configuration
+  - TCP service for telnet (port 2323)
+  - HTTP service for web client (ports 80/443 with TLS)
+  - Persistent volume for game data
+  - Health checks for both services
+- **scripts/deploy.sh**: Automated deployment script
+  - Supports local, Docker, and Fly.io deployments
+  - Pre-flight checks (tests, build verification)
+  - Color-coded output with clear instructions
+- **.env.production.example**: Production configuration guide
+  - Security checklist
+  - Docker and Fly.io deployment examples
+  - Secret management instructions
+- **phase4_test.go**: Deployment configuration tests
+- **GET /health**: Health check endpoint for load balancers
+  - Returns JSON: `{"status":"healthy","version":"1.31.0","service":"matrix-mud"}`
+
+### Changed
+- **Dockerfile**: Complete rewrite with security best practices
+  - Multi-stage build for minimal image size
+  - Non-root user (mud:mud) for security
+  - Built-in health check
+  - Optimized layer caching
+- **web.go**: Added /health endpoint handler
+- Version bumped to v1.32
+
+### Security
+- Docker container runs as non-root user
+- Health endpoint enables proper load balancer integration
+- Production documentation includes security checklist
+
+### Deployment Options
+1. **Local**: `./scripts/deploy.sh local`
+2. **Docker**: `./scripts/deploy.sh docker`
+3. **Fly.io**: `./scripts/deploy.sh fly`
+
+### Tests
+All 25 tests passing (3 new deployment tests)
+
+---
+
 ## [1.31.0] - 2025-12-01 - Phase 3 Enhancements
 
 ### Added

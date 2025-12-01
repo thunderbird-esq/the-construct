@@ -56,14 +56,16 @@ func checkWebSocketOrigin(r *http.Request) bool {
 // startWebServer initializes the HTTP server.
 // Provides endpoints:
 //
-//	GET  /    - Web client interface (xterm.js-based terminal)
-//	GET  /ws  - WebSocket endpoint for bi-directional communication
+//	GET  /        - Web client interface (xterm.js-based terminal)
+//	GET  /ws      - WebSocket endpoint for bi-directional communication
+//	GET  /health  - Health check endpoint for load balancers/monitoring
 //
 // The web server acts as a proxy to the main telnet server.
 func startWebServer(w *World) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", serveHome)
 	mux.HandleFunc("/ws", handleWebSocket)
+	mux.HandleFunc("/health", handleHealth)
 
 	bindAddr := "0.0.0.0:" + Config.WebPort
 	log.Printf("Web Portal active on http://%s", bindAddr)
@@ -71,6 +73,14 @@ func startWebServer(w *World) {
 	if err := http.ListenAndServe(bindAddr, mux); err != nil {
 		log.Fatal("Web server error:", err)
 	}
+}
+
+// handleHealth returns a simple health check response for load balancers and monitoring.
+// Returns HTTP 200 with JSON status if the server is healthy.
+func handleHealth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"status":"healthy","version":"1.32.0","service":"matrix-mud"}`))
 }
 
 // serveHome serves the HTML web client interface.

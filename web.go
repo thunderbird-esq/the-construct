@@ -133,9 +133,9 @@ const htmlClient = `
 <head>
     <title>The Construct</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.5/xterm.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.5/xterm.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.5/addons/fit/fit.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.min.js"></script>
     <style>
         :root { --matrix-green: #00FF41; --dark-bg: #0D0208; }
         body { 
@@ -235,17 +235,22 @@ const htmlClient = `
     </div>
 
     <script>
-        Terminal.applyAddon(fit);
+        // xterm.js 5.x API
         const term = new Terminal({
             cursorBlink: true,
             fontFamily: 'Courier New, monospace',
             fontSize: 16,
             theme: { background: '#0D0208', foreground: '#00FF41', cursor: '#00FF41' }
         });
+        
+        // Fit addon for xterm 5.x
+        const fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+        
         term.open(document.getElementById('terminal'));
-        term.fit();
+        fitAddon.fit();
 
-        window.onresize = function() { term.fit(); };
+        window.onresize = function() { fitAddon.fit(); };
 
         const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
         const socket = new WebSocket(protocol + window.location.host + '/ws');
@@ -261,15 +266,15 @@ const htmlClient = `
             term.focus();
         }
 
-        // Keyboard Input
+        // Keyboard Input (xterm 5.x API)
         let currentLine = "";
-        term.on('key', (key, ev) => {
-            const printable = !ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey;
-            if (ev.keyCode === 13) { 
+        term.onKey(({ key, domEvent }) => {
+            const printable = !domEvent.altKey && !domEvent.altGraphKey && !domEvent.ctrlKey && !domEvent.metaKey;
+            if (domEvent.keyCode === 13) { 
                 term.write('\r\n'); 
                 socket.send(currentLine + '\n'); 
                 currentLine = ""; 
-            } else if (ev.keyCode === 8) { 
+            } else if (domEvent.keyCode === 8) { 
                 if (currentLine.length > 0) { 
                     currentLine = currentLine.slice(0, -1); 
                     term.write('\b \b'); 

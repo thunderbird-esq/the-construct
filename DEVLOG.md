@@ -880,6 +880,6 @@ Details...
 
 ---
 
-**Last Updated**: 2025-11-28
+**Last Updated**: 2025-12-01
 **Project Status**: Active Development
-**Current Version**: v1.29.0
+**Current Version**: v1.31.0

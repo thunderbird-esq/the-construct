@@ -18,6 +18,14 @@ import (
 	"github.com/yourusername/matrix-mud/pkg/validation"
 )
 
+// Telnet IAC (Interpret As Command) codes for echo suppression
+const (
+	TelnetIAC  = 255 // Interpret As Command
+	TelnetWILL = 251 // Will perform option
+	TelnetWONT = 252 // Won't perform option
+	TelnetECHO = 1   // Echo option
+)
+
 var (
 	userMutex   sync.Mutex
 	authLimiter = ratelimit.New(5, 1*time.Minute) // 5 auth attempts per minute
@@ -69,12 +77,11 @@ func authenticate(c *Client, name string) bool {
 	if storedHash, exists := users[cleanName]; exists {
 		// Existing user - verify password with bcrypt
 		c.Write("Password: ")
-		pass, err := c.reader.ReadString('\n')
+		pass, err := c.readPassword()
 		if err != nil {
 			log.Printf("Error reading password: %v", err)
 			return false
 		}
-		pass = strings.TrimSpace(pass)
 
 		// Compare password with stored bcrypt hash
 		err = bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(pass))
@@ -89,12 +96,11 @@ func authenticate(c *Client, name string) bool {
 	} else {
 		// New user - create account with bcrypt hashed password
 		c.Write("New identity detected. Set a password: ")
-		pass, err := c.reader.ReadString('\n')
+		pass, err := c.readPassword()
 		if err != nil {
 			log.Printf("Error reading password: %v", err)
 			return false
 		}
-		pass = strings.TrimSpace(pass)
 
 		// Enforce minimum password length of 8 characters
 		if len(pass) < 8 {
@@ -182,6 +188,34 @@ func (c *Client) Write(msg string) {
 	c.conn.Write([]byte(msg))
 }
 
+// suppressEcho sends telnet IAC WILL ECHO to suppress client-side echo.
+// This should be called before reading sensitive input like passwords.
+func (c *Client) suppressEcho() {
+	c.conn.Write([]byte{TelnetIAC, TelnetWILL, TelnetECHO})
+}
+
+// resumeEcho sends telnet IAC WONT ECHO to resume normal client-side echo.
+// This should be called after reading sensitive input.
+func (c *Client) resumeEcho() {
+	c.conn.Write([]byte{TelnetIAC, TelnetWONT, TelnetECHO})
+}
+
+// readPassword reads a password with echo suppression for security.
+// Returns the password string (trimmed) and any error.
+func (c *Client) readPassword() (string, error) {
+	c.suppressEcho()
+	defer func() {
+		c.resumeEcho()
+		c.Write("\r\n") // Add newline since echo was suppressed
+	}()
+	
+	pass, err := c.reader.ReadString('\n')
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(pass), nil
+}
+
 func main() {
 	// Use configured port
 	listenAddr := ":" + Config.TelnetPort
@@ -201,7 +235,7 @@ func main() {
 		}
 	}()
 
-	log.Printf("Matrix Construct Server v1.29 started on port %s", Config.TelnetPort)
+	log.Printf("Matrix Construct Server v1.31 started on port %s", Config.TelnetPort)
 	log.Printf("Web client: http://localhost:%s", Config.WebPort)
 	log.Printf("Admin panel: http://%s", Config.AdminBindAddr)
 
@@ -219,11 +253,14 @@ func handleConnection(conn net.Conn, world *World) {
 	client := &Client{conn: conn, reader: bufio.NewReader(conn)}
 	defer conn.Close()
 
+	// Set initial connection timeout for login
+	conn.SetDeadline(time.Now().Add(ConnectionTimeout))
+
 	client.Write(Clear + Green + "Wake up...\r\n" + Reset)
 	client.Write("Identify yourself: ")
 	name, err := client.reader.ReadString('\n')
 	if err != nil {
-		log.Printf("Error reading name: %v", err)
+		log.Printf("Error reading name (timeout or disconnect): %v", err)
 		return
 	}
 
@@ -265,11 +302,23 @@ func handleConnection(conn net.Conn, world *World) {
 	client.Write(Matrixify(world.Look(player, "")))
 	client.Write("> ")
 
+	// Switch to idle timeout for active session
+	conn.SetDeadline(time.Now().Add(IdleTimeout))
+
 	for {
 		input, err := client.reader.ReadString('\n')
 		if err != nil {
+			// Could be timeout or disconnect
+			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+				client.Write("\r\n" + Yellow + "Connection timed out due to inactivity.\r\n" + Reset)
+				log.Printf("Player %s timed out after %v of inactivity", player.Name, IdleTimeout)
+			}
 			break
 		}
+		
+		// Reset idle timeout on each valid input
+		conn.SetDeadline(time.Now().Add(IdleTimeout))
+		
 		input = strings.TrimSpace(input)
 		if input == "" {
 			client.Write("> ")
@@ -448,11 +497,14 @@ func handleConnection(conn net.Conn, world *World) {
 }
 
 func broadcast(w *World, sender *Player, msg string) {
+	if sender == nil {
+		return
+	}
 	w.mutex.RLock()
 	defer w.mutex.RUnlock()
 	formatted := fmt.Sprintf("\r\n%s%s says: \"%s\"%s\r\n> ", White, sender.Name, msg, Green)
 	for _, p := range w.Players {
-		if p.RoomID == sender.RoomID && p != sender {
+		if p != nil && p.Conn != nil && p.RoomID == sender.RoomID && p != sender {
 			p.Conn.Write(formatted)
 		}
 	}

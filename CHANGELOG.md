@@ -7,6 +7,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.31.0] - 2025-12-01 - Phase 3 Enhancements
+
+### Added
+- **phase3_test.go**: Comprehensive test suite for Phase 3 enhancements (8 tests)
+  - TestIACEchoConstants: Validates telnet IAC codes
+  - TestConnectionTimeoutValues: Validates sensible timeout ranges
+  - TestDownCommandAlias: Documents command design
+  - TestBroadcastNilSafety: Validates nil handling in broadcast
+  - TestXtermJSVersion: Validates xterm.js 5.x usage
+  - TestWorldJSONIntegrity: Validates world data structure
+  - TestGameVersion: Documents version tracking
+
+### Changed
+- **main.go**: Complete Phase 3 implementation
+  - P3-ENH-19: IAC echo suppression for secure password input
+  - P3-ENH-20: Connection timeouts now enforced (30s initial, 30min idle)
+  - P3-ENH-21: 'dn' alias added for 'down' command
+  - P3-ENH-22: Broadcast function handles nil sender safely
+- **web.go**: xterm.js updated from 3.14.5 to 5.3.0
+  - Modern terminal emulation with fit addon
+  - Better mobile support
+- Version bumped to v1.31
+
+### Security
+- Password input now suppresses echo via telnet IAC commands
+- Idle connections automatically disconnected after 30 minutes
+- Login timeout prevents hanging connections (30 seconds)
+
+### Tests
+All 22 tests passing:
+```
+=== PHASE 1 (Security) ===
+TestConfigEnvironmentVariables     ✅ PASS
+TestConfigDefaultPorts             ✅ PASS
+TestAllowedOriginsConfig           ✅ PASS
+TestGetEnvFunction                 ✅ PASS
+TestAdminBindAddressNotExposed     ✅ PASS
+
+=== PHASE 2 (Bug Fixes) ===
+TestPhase1_Inventory               ✅ PASS
+TestNilRoomAccessNoPanic           ✅ PASS
+TestInventorySizeLimit             ✅ PASS
+TestDownAlias                      ✅ PASS
+TestNPCHPValues                    ✅ PASS
+TestJSONLoadErrorHandling          ✅ PASS
+TestConnectionTimeoutConfig        ✅ PASS
+TestWorldInitialization            ✅ PASS
+TestPhase2_NPCs                    ✅ PASS
+
+=== PHASE 3 (Enhancements) ===
+TestIACEchoConstants               ✅ PASS
+TestConnectionTimeoutValues        ✅ PASS
+TestDownCommandAlias               ✅ PASS
+TestBroadcastNilSafety             ✅ PASS
+TestXtermJSVersion                 ✅ PASS
+TestWorldJSONIntegrity             ✅ PASS
+TestGameVersion                    ✅ PASS
+
+TOTAL: 22/22 PASSING
+```
+
+---
+
 ## [1.30.0] - 2025-11-28 - Phase 2 Bug Fixes
 
 ### Added

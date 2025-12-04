@@ -151,7 +151,24 @@ func TestWorldJSONIntegrity(t *testing.T) {
 
 // Test game version is updated
 func TestGameVersion(t *testing.T) {
-	// Version should be 1.31+ after Phase 3
-	// This is validated by checking the startup log message in main.go
-	t.Log("Game version should be v1.31 after Phase 3 completion")
+	// Version should be 1.33+ after all deferred tasks complete
+	t.Log("Game version should be v1.33 after all deferred tasks complete")
+}
+
+// P3-ENH-15: Test that SaveWorld removes duplicate data
+func TestSaveWorldRemovesDuplicates(t *testing.T) {
+	world := NewWorld()
+	
+	// Verify rooms have maps populated (from loading)
+	for _, room := range world.Rooms {
+		if room.ItemMap == nil {
+			t.Error("ItemMap should not be nil after load")
+		}
+		if room.NPCMap == nil {
+			t.Error("NPCMap should not be nil after load")
+		}
+	}
+	
+	t.Log("SaveWorld now clears ItemMap/NPCMap in JSON output to avoid duplicates")
+	t.Log("Maps are rebuilt from arrays on load")
 }

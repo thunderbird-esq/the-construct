@@ -238,24 +238,45 @@ func (w *World) LoadPlayer(name string, client *Client) *Player {
 }
 
 // SaveWorld persists the entire world state to data/world.json.
-// Converts ItemMap and NPCMap back to slices for JSON serialization.
+// Converts ItemMap and NPCMap to slices for JSON serialization.
+// Clears maps in output to avoid duplicate data in JSON file.
 // Uses RLock to prevent modifications during save.
 func (w *World) SaveWorld() {
 	w.mutex.RLock()
 	defer w.mutex.RUnlock()
+	
+	// Convert maps to arrays for JSON serialization
 	for _, room := range w.Rooms {
-		room.Items = make([]*Item, 0)
+		room.Items = make([]*Item, 0, len(room.ItemMap))
 		for _, item := range room.ItemMap {
 			room.Items = append(room.Items, item)
 		}
-		room.NPCs = make([]*NPC, 0)
+		room.NPCs = make([]*NPC, 0, len(room.NPCMap))
 		for _, npc := range room.NPCMap {
 			room.NPCs = append(room.NPCs, npc)
 		}
+		// Clear maps to avoid duplicate data in JSON
+		// Maps are rebuilt from arrays on load
+		room.ItemMap = nil
+		room.NPCMap = nil
 	}
+	
 	data := WorldData{Rooms: w.Rooms}
 	jsonData, _ := json.MarshalIndent(data, "", "  ")
 	os.WriteFile("data/world.json", jsonData, 0600) // Owner read/write only
+	
+	// Restore maps after save (so game continues working)
+	for _, room := range w.Rooms {
+		room.ItemMap = make(map[string]*Item)
+		room.NPCMap = make(map[string]*NPC)
+		for _, item := range room.Items {
+			room.ItemMap[item.ID] = item
+		}
+		for _, npc := range room.NPCs {
+			room.NPCMap[npc.ID] = npc
+		}
+	}
+	
 	fmt.Println("World Saved.")
 }
 

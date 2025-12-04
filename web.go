@@ -80,7 +80,7 @@ func startWebServer(w *World) {
 func handleHealth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"status":"healthy","version":"1.32.0","service":"matrix-mud"}`))
+	w.Write([]byte(`{"status":"healthy","version":"1.33.0","service":"matrix-mud"}`))
 }
 
 // serveHome serves the HTML web client interface.

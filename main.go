@@ -235,7 +235,7 @@ func main() {
 		}
 	}()
 
-	log.Printf("Matrix Construct Server v1.32 started on port %s", Config.TelnetPort)
+	log.Printf("Matrix Construct Server v1.33 started on port %s", Config.TelnetPort)
 	log.Printf("Web client: http://localhost:%s", Config.WebPort)
 	log.Printf("Admin panel: http://%s", Config.AdminBindAddr)
 

@@ -1,204 +1,138 @@
 {
   "Rooms": {
     "city_1764026757_0_0": {
-      "ID": "city_1764026757_0_0",
+      "Color": "white",
       "Description": "A subway entrance covered in graffiti.",
       "Exits": {
         "east": "city_1764026757_0_1",
         "north": "subway",
         "south": "city_1764026757_1_0"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_0_0",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_0_1": {
-      "ID": "city_1764026757_0_1",
+      "Color": "white",
       "Description": "A busy intersection. Faceless crowds rush by.",
       "Exits": {
         "east": "city_1764026757_0_2",
         "south": "city_1764026757_1_1",
         "west": "city_1764026757_0_0"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_0_1",
       "Items": [
         {
+          "AC": 0,
+          "Damage": 0,
+          "Description": "Useless data.",
+          "Effect": "",
           "ID": "trash_0_1",
           "Name": "Digital Trash",
-          "Description": "Useless data.",
-          "Damage": 0,
-          "AC": 0,
+          "Price": 1,
           "Slot": "",
           "Type": "",
-          "Effect": "",
-          "Value": 0,
-          "Price": 1
+          "Value": 0
         }
       ],
       "NPCs": [],
-      "ItemMap": {
-        "trash_0_1": {
-          "ID": "trash_0_1",
-          "Name": "Digital Trash",
-          "Description": "Useless data.",
-          "Damage": 0,
-          "AC": 0,
-          "Slot": "",
-          "Type": "",
-          "Effect": "",
-          "Value": 0,
-          "Price": 1
-        }
-      },
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_0_2": {
-      "ID": "city_1764026757_0_2",
+      "Color": "white",
       "Description": "A dark alleyway smelling of ozone and garbage.",
       "Exits": {
         "east": "city_1764026757_0_3",
         "south": "city_1764026757_1_2",
         "west": "city_1764026757_0_1"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_0_2",
       "Items": [
         {
+          "AC": 0,
+          "Damage": 0,
+          "Description": "Useless data.",
+          "Effect": "",
           "ID": "trash_0_2",
           "Name": "Digital Trash",
-          "Description": "Useless data.",
-          "Damage": 0,
-          "AC": 0,
+          "Price": 1,
           "Slot": "",
           "Type": "",
-          "Effect": "",
-          "Value": 0,
-          "Price": 1
+          "Value": 0
         }
       ],
       "NPCs": [],
-      "ItemMap": {
-        "trash_0_2": {
-          "ID": "trash_0_2",
-          "Name": "Digital Trash",
-          "Description": "Useless data.",
-          "Damage": 0,
-          "AC": 0,
-          "Slot": "",
-          "Type": "",
-          "Effect": "",
-          "Value": 0,
-          "Price": 1
-        }
-      },
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_0_3": {
-      "ID": "city_1764026757_0_3",
+      "Color": "white",
       "Description": "The base of a monolithic skyscraper.",
       "Exits": {
         "east": "city_1764026757_0_4",
         "south": "city_1764026757_1_3",
         "west": "city_1764026757_0_2"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_0_3",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_0_4": {
-      "ID": "city_1764026757_0_4",
+      "Color": "red",
       "Description": "A dark alleyway smelling of ozone and garbage.",
       "Exits": {
         "south": "city_1764026757_1_4",
         "west": "city_1764026757_0_3"
       },
-      "Symbol": "!",
-      "Color": "red",
+      "ID": "city_1764026757_0_4",
       "Items": [],
       "NPCs": [
         {
-          "ID": "cop_0_4",
-          "Name": "Riot Cop",
-          "Description": "Armored police unit.",
-          "RoomID": "city_1764026757_0_4",
-          "State": "IDLE",
-          "HP": 25,
-          "MaxHP": 25,
-          "Damage": 3,
           "AC": 11,
+          "Aggro": false,
+          "Damage": 3,
+          "DeathTime": "2025-11-25T00:36:15.323922168Z",
+          "Description": "Armored police unit.",
+          "DropMoney": 10,
+          "HP": 25,
+          "ID": "cop_0_4",
+          "Inventory": null,
+          "IsDead": false,
           "Loot": [
             "baton"
           ],
-          "XP": 50,
-          "DropMoney": 10,
-          "Vendor": false,
-          "Inventory": null,
-          "Aggro": false,
-          "quest": {
-            "wanted_item": "",
-            "reward_xp": 0,
-            "reward_msg": ""
-          },
+          "MaxHP": 25,
+          "Name": "Riot Cop",
           "OriginalRoom": "city_1764026757_0_4",
-          "DeathTime": "2025-11-25T00:36:15.323922168Z",
-          "IsDead": false
+          "RoomID": "city_1764026757_0_4",
+          "State": "IDLE",
+          "Vendor": false,
+          "XP": 50,
+          "quest": {
+            "reward_msg": "",
+            "reward_xp": 0,
+            "wanted_item": ""
+          }
         }
       ],
-      "ItemMap": {},
-      "NPCMap": {
-        "cop_0_4": {
-          "ID": "cop_0_4",
-          "Name": "Riot Cop",
-          "Description": "Armored police unit.",
-          "RoomID": "city_1764026757_0_4",
-          "State": "IDLE",
-          "HP": 25,
-          "MaxHP": 25,
-          "Damage": 3,
-          "AC": 11,
-          "Loot": [
-            "baton"
-          ],
-          "XP": 50,
-          "DropMoney": 10,
-          "Vendor": false,
-          "Inventory": null,
-          "Aggro": false,
-          "quest": {
-            "wanted_item": "",
-            "reward_xp": 0,
-            "reward_msg": ""
-          },
-          "OriginalRoom": "city_1764026757_0_4",
-          "DeathTime": "2025-11-25T00:36:15.323922168Z",
-          "IsDead": false
-        }
-      }
+      "Symbol": "!"
     },
     "city_1764026757_1_0": {
-      "ID": "city_1764026757_1_0",
+      "Color": "white",
       "Description": "The base of a monolithic skyscraper.",
       "Exits": {
         "east": "city_1764026757_1_1",
         "north": "city_1764026757_0_0",
         "south": "city_1764026757_2_0"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_1_0",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_1_1": {
-      "ID": "city_1764026757_1_1",
+      "Color": "white",
       "Description": "A subway entrance covered in graffiti.",
       "Exits": {
         "east": "city_1764026757_1_2",
@@ -206,15 +140,13 @@
         "south": "city_1764026757_2_1",
         "west": "city_1764026757_1_0"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_1_1",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_1_2": {
-      "ID": "city_1764026757_1_2",
+      "Color": "white",
       "Description": "A quiet park with dead, digital trees.",
       "Exits": {
         "east": "city_1764026757_1_3",
@@ -222,15 +154,13 @@
         "south": "city_1764026757_2_2",
         "west": "city_1764026757_1_1"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_1_2",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_1_3": {
-      "ID": "city_1764026757_1_3",
+      "Color": "white",
       "Description": "A rain-slicked city street under neon lights.",
       "Exits": {
         "east": "city_1764026757_1_4",
@@ -238,71 +168,52 @@
         "south": "city_1764026757_2_3",
         "west": "city_1764026757_1_2"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_1_3",
       "Items": [
         {
+          "AC": 0,
+          "Damage": 0,
+          "Description": "Useless data.",
+          "Effect": "",
           "ID": "trash_1_3",
           "Name": "Digital Trash",
-          "Description": "Useless data.",
-          "Damage": 0,
-          "AC": 0,
+          "Price": 1,
           "Slot": "",
           "Type": "",
-          "Effect": "",
-          "Value": 0,
-          "Price": 1
+          "Value": 0
         }
       ],
       "NPCs": [],
-      "ItemMap": {
-        "trash_1_3": {
-          "ID": "trash_1_3",
-          "Name": "Digital Trash",
-          "Description": "Useless data.",
-          "Damage": 0,
-          "AC": 0,
-          "Slot": "",
-          "Type": "",
-          "Effect": "",
-          "Value": 0,
-          "Price": 1
-        }
-      },
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_1_4": {
-      "ID": "city_1764026757_1_4",
+      "Color": "white",
       "Description": "A quiet park with dead, digital trees.",
       "Exits": {
         "north": "city_1764026757_0_4",
         "south": "city_1764026757_2_4",
         "west": "city_1764026757_1_3"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_1_4",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_2_0": {
-      "ID": "city_1764026757_2_0",
+      "Color": "white",
       "Description": "A quiet park with dead, digital trees.",
       "Exits": {
         "east": "city_1764026757_2_1",
         "north": "city_1764026757_1_0",
         "south": "city_1764026757_3_0"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_2_0",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_2_1": {
-      "ID": "city_1764026757_2_1",
+      "Color": "red",
       "Description": "A dark alleyway smelling of ozone and garbage.",
       "Exits": {
         "east": "city_1764026757_2_2",
@@ -310,71 +221,41 @@
         "south": "city_1764026757_3_1",
         "west": "city_1764026757_2_0"
       },
-      "Symbol": "!",
-      "Color": "red",
+      "ID": "city_1764026757_2_1",
       "Items": [],
       "NPCs": [
         {
-          "ID": "cop_2_1",
-          "Name": "Riot Cop",
-          "Description": "Armored police unit.",
-          "RoomID": "city_1764026757_2_1",
-          "State": "IDLE",
-          "HP": 25,
-          "MaxHP": 25,
-          "Damage": 3,
           "AC": 11,
+          "Aggro": false,
+          "Damage": 3,
+          "DeathTime": "0001-01-01T00:00:00Z",
+          "Description": "Armored police unit.",
+          "DropMoney": 10,
+          "HP": 25,
+          "ID": "cop_2_1",
+          "Inventory": null,
+          "IsDead": false,
           "Loot": [
             "baton"
           ],
-          "XP": 50,
-          "DropMoney": 10,
-          "Vendor": false,
-          "Inventory": null,
-          "Aggro": false,
-          "quest": {
-            "wanted_item": "",
-            "reward_xp": 0,
-            "reward_msg": ""
-          },
+          "MaxHP": 25,
+          "Name": "Riot Cop",
           "OriginalRoom": "city_1764026757_2_1",
-          "DeathTime": "0001-01-01T00:00:00Z",
-          "IsDead": false
+          "RoomID": "city_1764026757_2_1",
+          "State": "IDLE",
+          "Vendor": false,
+          "XP": 50,
+          "quest": {
+            "reward_msg": "",
+            "reward_xp": 0,
+            "wanted_item": ""
+          }
         }
       ],
-      "ItemMap": {},
-      "NPCMap": {
-        "cop_2_1": {
-          "ID": "cop_2_1",
-          "Name": "Riot Cop",
-          "Description": "Armored police unit.",
-          "RoomID": "city_1764026757_2_1",
-          "State": "IDLE",
-          "HP": 25,
-          "MaxHP": 25,
-          "Damage": 3,
-          "AC": 11,
-          "Loot": [
-            "baton"
-          ],
-          "XP": 50,
-          "DropMoney": 10,
-          "Vendor": false,
-          "Inventory": null,
-          "Aggro": false,
-          "quest": {
-            "wanted_item": "",
-            "reward_xp": 0,
-            "reward_msg": ""
-          },
-          "OriginalRoom": "city_1764026757_2_1",
-          "DeathTime": "0001-01-01T00:00:00Z",
-          "IsDead": false
-        }
-      }
+      "Symbol": "!"
     },
     "city_1764026757_2_2": {
-      "ID": "city_1764026757_2_2",
+      "Color": "white",
       "Description": "A busy intersection. Faceless crowds rush by.",
       "Exits": {
         "east": "city_1764026757_2_3",
@@ -382,41 +263,26 @@
         "south": "city_1764026757_3_2",
         "west": "city_1764026757_2_1"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_2_2",
       "Items": [
         {
+          "AC": 0,
+          "Damage": 0,
+          "Description": "Useless data.",
+          "Effect": "",
           "ID": "trash_2_2",
           "Name": "Digital Trash",
-          "Description": "Useless data.",
-          "Damage": 0,
-          "AC": 0,
+          "Price": 1,
           "Slot": "",
           "Type": "",
-          "Effect": "",
-          "Value": 0,
-          "Price": 1
+          "Value": 0
         }
       ],
       "NPCs": [],
-      "ItemMap": {
-        "trash_2_2": {
-          "ID": "trash_2_2",
-          "Name": "Digital Trash",
-          "Description": "Useless data.",
-          "Damage": 0,
-          "AC": 0,
-          "Slot": "",
-          "Type": "",
-          "Effect": "",
-          "Value": 0,
-          "Price": 1
-        }
-      },
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_2_3": {
-      "ID": "city_1764026757_2_3",
+      "Color": "white",
       "Description": "A subway entrance covered in graffiti.",
       "Exits": {
         "east": "city_1764026757_2_4",
@@ -424,45 +290,39 @@
         "south": "city_1764026757_3_3",
         "west": "city_1764026757_2_2"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_2_3",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_2_4": {
-      "ID": "city_1764026757_2_4",
+      "Color": "white",
       "Description": "A busy intersection. Faceless crowds rush by.",
       "Exits": {
         "north": "city_1764026757_1_4",
         "south": "city_1764026757_3_4",
         "west": "city_1764026757_2_3"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_2_4",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_3_0": {
-      "ID": "city_1764026757_3_0",
+      "Color": "white",
       "Description": "A rain-slicked city street under neon lights.",
       "Exits": {
         "east": "city_1764026757_3_1",
         "north": "city_1764026757_2_0",
         "south": "city_1764026757_4_0"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_3_0",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_3_1": {
-      "ID": "city_1764026757_3_1",
+      "Color": "white",
       "Description": "A rain-slicked city street under neon lights.",
       "Exits": {
         "east": "city_1764026757_3_2",
@@ -470,15 +330,13 @@
         "south": "city_1764026757_4_1",
         "west": "city_1764026757_3_0"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_3_1",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_3_2": {
-      "ID": "city_1764026757_3_2",
+      "Color": "red",
       "Description": "The base of a monolithic skyscraper.",
       "Exits": {
         "east": "city_1764026757_3_3",
@@ -486,71 +344,41 @@
         "south": "city_1764026757_4_2",
         "west": "city_1764026757_3_1"
       },
-      "Symbol": "!",
-      "Color": "red",
+      "ID": "city_1764026757_3_2",
       "Items": [],
       "NPCs": [
         {
-          "ID": "cop_3_2",
-          "Name": "Riot Cop",
-          "Description": "Armored police unit.",
-          "RoomID": "city_1764026757_3_2",
-          "State": "IDLE",
-          "HP": 25,
-          "MaxHP": 25,
-          "Damage": 3,
           "AC": 11,
+          "Aggro": false,
+          "Damage": 3,
+          "DeathTime": "2025-11-25T00:37:17.326255377Z",
+          "Description": "Armored police unit.",
+          "DropMoney": 10,
+          "HP": 25,
+          "ID": "cop_3_2",
+          "Inventory": null,
+          "IsDead": false,
           "Loot": [
             "baton"
           ],
-          "XP": 50,
-          "DropMoney": 10,
-          "Vendor": false,
-          "Inventory": null,
-          "Aggro": false,
-          "quest": {
-            "wanted_item": "",
-            "reward_xp": 0,
-            "reward_msg": ""
-          },
+          "MaxHP": 25,
+          "Name": "Riot Cop",
           "OriginalRoom": "city_1764026757_3_2",
-          "DeathTime": "2025-11-25T00:37:17.326255377Z",
-          "IsDead": false
+          "RoomID": "city_1764026757_3_2",
+          "State": "IDLE",
+          "Vendor": false,
+          "XP": 50,
+          "quest": {
+            "reward_msg": "",
+            "reward_xp": 0,
+            "wanted_item": ""
+          }
         }
       ],
-      "ItemMap": {},
-      "NPCMap": {
-        "cop_3_2": {
-          "ID": "cop_3_2",
-          "Name": "Riot Cop",
-          "Description": "Armored police unit.",
-          "RoomID": "city_1764026757_3_2",
-          "State": "IDLE",
-          "HP": 25,
-          "MaxHP": 25,
-          "Damage": 3,
-          "AC": 11,
-          "Loot": [
-            "baton"
-          ],
-          "XP": 50,
-          "DropMoney": 10,
-          "Vendor": false,
-          "Inventory": null,
-          "Aggro": false,
-          "quest": {
-            "wanted_item": "",
-            "reward_xp": 0,
-            "reward_msg": ""
-          },
-          "OriginalRoom": "city_1764026757_3_2",
-          "DeathTime": "2025-11-25T00:37:17.326255377Z",
-          "IsDead": false
-        }
-      }
+      "Symbol": "!"
     },
     "city_1764026757_3_3": {
-      "ID": "city_1764026757_3_3",
+      "Color": "white",
       "Description": "The base of a monolithic skyscraper.",
       "Exits": {
         "east": "city_1764026757_3_4",
@@ -558,476 +386,300 @@
         "south": "city_1764026757_4_3",
         "west": "city_1764026757_3_2"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_3_3",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_3_4": {
-      "ID": "city_1764026757_3_4",
+      "Color": "white",
       "Description": "The base of a monolithic skyscraper.",
       "Exits": {
         "north": "city_1764026757_2_4",
         "south": "city_1764026757_4_4",
         "west": "city_1764026757_3_3"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_3_4",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_4_0": {
-      "ID": "city_1764026757_4_0",
+      "Color": "white",
       "Description": "The base of a monolithic skyscraper.",
       "Exits": {
         "east": "city_1764026757_4_1",
         "north": "city_1764026757_3_0"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_4_0",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_4_1": {
-      "ID": "city_1764026757_4_1",
+      "Color": "red",
       "Description": "A rain-slicked city street under neon lights.",
       "Exits": {
         "east": "city_1764026757_4_2",
         "north": "city_1764026757_3_1",
         "west": "city_1764026757_4_0"
       },
-      "Symbol": "!",
-      "Color": "red",
+      "ID": "city_1764026757_4_1",
       "Items": [],
       "NPCs": [
         {
-          "ID": "cop_4_1",
-          "Name": "Riot Cop",
-          "Description": "Armored police unit.",
-          "RoomID": "city_1764026757_4_1",
-          "State": "IDLE",
-          "HP": 25,
-          "MaxHP": 25,
-          "Damage": 3,
           "AC": 11,
+          "Aggro": false,
+          "Damage": 3,
+          "DeathTime": "2025-11-25T00:37:47.820804211Z",
+          "Description": "Armored police unit.",
+          "DropMoney": 10,
+          "HP": 25,
+          "ID": "cop_4_1",
+          "Inventory": null,
+          "IsDead": false,
           "Loot": [
             "baton"
           ],
-          "XP": 50,
-          "DropMoney": 10,
-          "Vendor": false,
-          "Inventory": null,
-          "Aggro": false,
-          "quest": {
-            "wanted_item": "",
-            "reward_xp": 0,
-            "reward_msg": ""
-          },
+          "MaxHP": 25,
+          "Name": "Riot Cop",
           "OriginalRoom": "city_1764026757_4_1",
-          "DeathTime": "2025-11-25T00:37:47.820804211Z",
-          "IsDead": false
+          "RoomID": "city_1764026757_4_1",
+          "State": "IDLE",
+          "Vendor": false,
+          "XP": 50,
+          "quest": {
+            "reward_msg": "",
+            "reward_xp": 0,
+            "wanted_item": ""
+          }
         }
       ],
-      "ItemMap": {},
-      "NPCMap": {
-        "cop_4_1": {
-          "ID": "cop_4_1",
-          "Name": "Riot Cop",
-          "Description": "Armored police unit.",
-          "RoomID": "city_1764026757_4_1",
-          "State": "IDLE",
-          "HP": 25,
-          "MaxHP": 25,
-          "Damage": 3,
-          "AC": 11,
-          "Loot": [
-            "baton"
-          ],
-          "XP": 50,
-          "DropMoney": 10,
-          "Vendor": false,
-          "Inventory": null,
-          "Aggro": false,
-          "quest": {
-            "wanted_item": "",
-            "reward_xp": 0,
-            "reward_msg": ""
-          },
-          "OriginalRoom": "city_1764026757_4_1",
-          "DeathTime": "2025-11-25T00:37:47.820804211Z",
-          "IsDead": false
-        }
-      }
+      "Symbol": "!"
     },
     "city_1764026757_4_2": {
-      "ID": "city_1764026757_4_2",
+      "Color": "white",
       "Description": "A rain-slicked city street under neon lights.",
       "Exits": {
         "east": "city_1764026757_4_3",
         "north": "city_1764026757_3_2",
         "west": "city_1764026757_4_1"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_4_2",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_4_3": {
-      "ID": "city_1764026757_4_3",
+      "Color": "white",
       "Description": "A subway entrance covered in graffiti.",
       "Exits": {
         "east": "city_1764026757_4_4",
         "north": "city_1764026757_3_3",
         "west": "city_1764026757_4_2"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_4_3",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "city_1764026757_4_4": {
-      "ID": "city_1764026757_4_4",
+      "Color": "white",
       "Description": "A busy intersection. Faceless crowds rush by.",
       "Exits": {
         "north": "city_1764026757_3_4",
         "west": "city_1764026757_4_3"
       },
-      "Symbol": ".",
-      "Color": "white",
+      "ID": "city_1764026757_4_4",
       "Items": [],
       "NPCs": [],
-      "ItemMap": {},
-      "NPCMap": {}
+      "Symbol": "."
     },
     "construct_archive": {
-      "ID": "construct_archive",
+      "Color": "cyan",
       "Description": "The Archive. Endless rows of stainless steel safety deposit boxes extend into the white void.",
       "Exits": {
         "west": "loading_program"
       },
-      "Symbol": "$",
-      "Color": "cyan",
+      "ID": "construct_archive",
       "Items": [],
       "NPCs": [
         {
-          "ID": "archivist",
-          "Name": "The Archivist",
+          "AC": 100,
+          "Aggro": false,
+          "Damage": 0,
+          "DeathTime": "0001-01-01T00:00:00Z",
           "Description": "A silent, faceless program in a grey suit.",
+          "DropMoney": 0,
+          "HP": 999,
+          "ID": "archivist",
+          "Inventory": null,
+          "IsDead": false,
+          "Loot": null,
+          "MaxHP": 0,
+          "Name": "The Archivist",
+          "OriginalRoom": "construct_archive",
           "RoomID": "construct_archive",
           "State": "IDLE",
-          "HP": 999,
-          "MaxHP": 0,
-          "Damage": 0,
-          "AC": 100,
-          "Loot": null,
-          "XP": 0,
-          "DropMoney": 0,
           "Vendor": false,
-          "Inventory": null,
-          "Aggro": false,
+          "XP": 0,
           "quest": {
-            "wanted_item": "",
+            "reward_msg": "",
             "reward_xp": 0,
-            "reward_msg": ""
-          },
-          "OriginalRoom": "construct_archive",
-          "DeathTime": "0001-01-01T00:00:00Z",
-          "IsDead": false
+            "wanted_item": ""
+          }
         }
       ],
-      "ItemMap": {},
-      "NPCMap": {
-        "archivist": {
-          "ID": "archivist",
-          "Name": "The Archivist",
-          "Description": "A silent, faceless program in a grey suit.",
-          "RoomID": "construct_archive",
-          "State": "IDLE",
-          "HP": 999,
-          "MaxHP": 0,
-          "Damage": 0,
-          "AC": 100,
-          "Loot": null,
-          "XP": 0,
-          "DropMoney": 0,
-          "Vendor": false,
-          "Inventory": null,
-          "Aggro": false,
-          "quest": {
-            "wanted_item": "",
-            "reward_xp": 0,
-            "reward_msg": ""
-          },
-          "OriginalRoom": "construct_archive",
-          "DeathTime": "0001-01-01T00:00:00Z",
-          "IsDead": false
-        }
-      }
+      "Symbol": "$"
     },
     "dojo": {
-      "ID": "dojo",
+      "Color": "yellow",
       "Description": "A sparring dojo with tatami mats.",
       "Exits": {
         "south": "loading_program"
       },
-      "Symbol": "O",
-      "Color": "yellow",
+      "ID": "dojo",
       "Items": [
         {
+          "AC": 0,
+          "Damage": 5,
+          "Description": "A dull blade.",
+          "Effect": "",
           "ID": "katana",
           "Name": "Training Katana",
-          "Description": "A dull blade.",
-          "Damage": 5,
-          "AC": 0,
+          "Price": 50,
           "Slot": "hand",
           "Type": "",
-          "Effect": "",
-          "Value": 0,
-          "Price": 50
+          "Value": 0
         }
       ],
       "NPCs": [
         {
-          "ID": "morpheus",
-          "Name": "Morpheus",
-          "Description": "He wears a trenchcoat and sunglasses.",
-          "RoomID": "dojo",
-          "State": "IDLE",
-          "HP": 50,
-          "MaxHP": 0,
-          "Damage": 4,
           "AC": 15,
+          "Aggro": false,
+          "Damage": 4,
+          "DeathTime": "0001-01-01T00:00:00Z",
+          "Description": "He wears a trenchcoat and sunglasses.",
+          "DropMoney": 0,
+          "HP": 50,
+          "ID": "morpheus",
+          "Inventory": null,
+          "IsDead": false,
           "Loot": [
             "red_pill"
           ],
-          "XP": 500,
-          "DropMoney": 0,
-          "Vendor": false,
-          "Inventory": null,
-          "Aggro": false,
-          "quest": {
-            "wanted_item": "sunglasses",
-            "reward_xp": 1000,
-            "reward_msg": "Morpheus nods. 'You are beginning to believe.'"
-          },
+          "MaxHP": 0,
+          "Name": "Morpheus",
           "OriginalRoom": "dojo",
-          "DeathTime": "0001-01-01T00:00:00Z",
-          "IsDead": false
+          "RoomID": "dojo",
+          "State": "IDLE",
+          "Vendor": false,
+          "XP": 500,
+          "quest": {
+            "reward_msg": "Morpheus nods. 'You are beginning to believe.'",
+            "reward_xp": 1000,
+            "wanted_item": "sunglasses"
+          }
         }
       ],
-      "ItemMap": {
-        "katana": {
-          "ID": "katana",
-          "Name": "Training Katana",
-          "Description": "A dull blade.",
-          "Damage": 5,
-          "AC": 0,
-          "Slot": "hand",
-          "Type": "",
-          "Effect": "",
-          "Value": 0,
-          "Price": 50
-        }
-      },
-      "NPCMap": {
-        "morpheus": {
-          "ID": "morpheus",
-          "Name": "Morpheus",
-          "Description": "He wears a trenchcoat and sunglasses.",
-          "RoomID": "dojo",
-          "State": "IDLE",
-          "HP": 50,
-          "MaxHP": 0,
-          "Damage": 4,
-          "AC": 15,
-          "Loot": [
-            "red_pill"
-          ],
-          "XP": 500,
-          "DropMoney": 0,
-          "Vendor": false,
-          "Inventory": null,
-          "Aggro": false,
-          "quest": {
-            "wanted_item": "sunglasses",
-            "reward_xp": 1000,
-            "reward_msg": "Morpheus nods. 'You are beginning to believe.'"
-          },
-          "OriginalRoom": "dojo",
-          "DeathTime": "0001-01-01T00:00:00Z",
-          "IsDead": false
-        }
-      }
+      "Symbol": "O"
     },
     "loading_program": {
-      "ID": "loading_program",
+      "Color": "white",
       "Description": "You are in the Loading Program. The Construct. Infinite white space stretches in all directions.",
       "Exits": {
         "east": "construct_archive",
         "north": "dojo",
         "south": "subway"
       },
-      "Symbol": "+",
-      "Color": "white",
+      "ID": "loading_program",
       "Items": [
         {
+          "AC": 0,
+          "Damage": 1,
+          "Description": "An old school slider phone.",
+          "Effect": "",
           "ID": "phone",
           "Name": "Nokia Phone",
-          "Description": "An old school slider phone.",
-          "Damage": 1,
-          "AC": 0,
+          "Price": 10,
           "Slot": "hand",
           "Type": "",
-          "Effect": "",
-          "Value": 0,
-          "Price": 10
+          "Value": 0
         }
       ],
       "NPCs": [
         {
-          "ID": "merchant",
-          "Name": "The Supplier",
-          "Description": "A glitching, jagged avatar wearing a trenchcoat made of scrolling green code.",
-          "RoomID": "loading_program",
-          "State": "IDLE",
-          "HP": 999,
-          "MaxHP": 0,
-          "Damage": 0,
           "AC": 100,
-          "Loot": null,
-          "XP": 0,
+          "Aggro": false,
+          "Damage": 0,
+          "DeathTime": "0001-01-01T00:00:00Z",
+          "Description": "A glitching, jagged avatar wearing a trenchcoat made of scrolling green code.",
           "DropMoney": 0,
-          "Vendor": true,
+          "HP": 999,
+          "ID": "merchant",
           "Inventory": [
             "coat",
             "katana",
             "red_pill",
             "deck"
           ],
-          "Aggro": false,
-          "quest": {
-            "wanted_item": "",
-            "reward_xp": 0,
-            "reward_msg": ""
-          },
+          "IsDead": false,
+          "Loot": null,
+          "MaxHP": 0,
+          "Name": "The Supplier",
           "OriginalRoom": "loading_program",
-          "DeathTime": "0001-01-01T00:00:00Z",
-          "IsDead": false
+          "RoomID": "loading_program",
+          "State": "IDLE",
+          "Vendor": true,
+          "XP": 0,
+          "quest": {
+            "reward_msg": "",
+            "reward_xp": 0,
+            "wanted_item": ""
+          }
         }
       ],
-      "ItemMap": {},
-      "NPCMap": {
-        "merchant": {
-          "ID": "merchant",
-          "Name": "The Supplier",
-          "Description": "A glitching, jagged avatar wearing a trenchcoat made of scrolling green code.",
-          "RoomID": "loading_program",
-          "State": "IDLE",
-          "HP": 999,
-          "MaxHP": 0,
-          "Damage": 0,
-          "AC": 100,
-          "Loot": null,
-          "XP": 0,
-          "DropMoney": 0,
-          "Vendor": true,
-          "Inventory": [
-            "coat",
-            "katana",
-            "red_pill",
-            "deck"
-          ],
-          "Aggro": false,
-          "quest": {
-            "wanted_item": "",
-            "reward_xp": 0,
-            "reward_msg": ""
-          },
-          "OriginalRoom": "loading_program",
-          "DeathTime": "0001-01-01T00:00:00Z",
-          "IsDead": false
-        }
-      }
+      "Symbol": "+"
     },
     "subway": {
-      "ID": "subway",
+      "Color": "magenta",
       "Description": "A grimy subway station.",
       "Exits": {
         "north": "loading_program",
         "south": "city_1764026757_0_0"
       },
-      "Symbol": "=",
-      "Color": "magenta",
+      "ID": "subway",
       "Items": [],
       "NPCs": [
         {
-          "ID": "agent",
-          "Name": "Agent Smith",
-          "Description": "He is adjusting his tie.",
-          "RoomID": "subway",
-          "State": "IDLE",
-          "HP": 0,
-          "MaxHP": 0,
-          "Damage": 6,
           "AC": 12,
+          "Aggro": true,
+          "Damage": 6,
+          "DeathTime": "2025-11-25T00:43:51.821245588Z",
+          "Description": "He is adjusting his tie.",
+          "DropMoney": 0,
+          "HP": 0,
+          "ID": "agent",
+          "Inventory": null,
+          "IsDead": false,
           "Loot": [
             "sunglasses"
           ],
-          "XP": 200,
-          "DropMoney": 0,
-          "Vendor": false,
-          "Inventory": null,
-          "Aggro": true,
-          "quest": {
-            "wanted_item": "",
-            "reward_xp": 0,
-            "reward_msg": ""
-          },
+          "MaxHP": 0,
+          "Name": "Agent Smith",
           "OriginalRoom": "subway",
-          "DeathTime": "2025-11-25T00:43:51.821245588Z",
-          "IsDead": false
+          "RoomID": "subway",
+          "State": "IDLE",
+          "Vendor": false,
+          "XP": 200,
+          "quest": {
+            "reward_msg": "",
+            "reward_xp": 0,
+            "wanted_item": ""
+          }
         }
       ],
-      "ItemMap": {},
-      "NPCMap": {
-        "agent": {
-          "ID": "agent",
-          "Name": "Agent Smith",
-          "Description": "He is adjusting his tie.",
-          "RoomID": "subway",
-          "State": "IDLE",
-          "HP": 0,
-          "MaxHP": 0,
-          "Damage": 6,
-          "AC": 12,
-          "Loot": [
-            "sunglasses"
-          ],
-          "XP": 200,
-          "DropMoney": 0,
-          "Vendor": false,
-          "Inventory": null,
-          "Aggro": true,
-          "quest": {
-            "wanted_item": "",
-            "reward_xp": 0,
-            "reward_msg": ""
-          },
-          "OriginalRoom": "subway",
-          "DeathTime": "2025-11-25T00:43:51.821245588Z",
-          "IsDead": false
-        }
-      }
+      "Symbol": "="
     }
   }
 }

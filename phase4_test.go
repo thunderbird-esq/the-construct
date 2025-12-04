@@ -25,7 +25,7 @@ func TestDeploymentConfigsExist(t *testing.T) {
 		".env.production.example",
 		"scripts/deploy.sh",
 	}
-	
+
 	for _, config := range configs {
 		t.Logf("Deployment config: %s", config)
 	}
@@ -34,7 +34,7 @@ func TestDeploymentConfigsExist(t *testing.T) {
 // Test version consistency
 func TestVersionConsistency(t *testing.T) {
 	expectedVersion := "1.31.0"
-	
+
 	// The version should be consistent across all files
 	t.Logf("Expected version: %s", expectedVersion)
 	t.Log("Version locations:")

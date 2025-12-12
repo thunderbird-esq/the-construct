@@ -99,3 +99,70 @@ func TruncateString(s string, maxLen int) string {
 	}
 	return s[:maxLen]
 }
+
+// ValidateItemName checks if an item name is valid for lookups
+func ValidateItemName(name string) bool {
+	if len(name) < 1 || len(name) > 50 {
+		return false
+	}
+	// Allow alphanumeric, underscores, hyphens, spaces
+	for _, r := range name {
+		if !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '_' && r != '-' && r != ' ' {
+			return false
+		}
+	}
+	return true
+}
+
+// ValidateMessage checks if a chat message is valid
+func ValidateMessage(msg string) (bool, string) {
+	if len(msg) == 0 {
+		return false, "Message cannot be empty"
+	}
+	if len(msg) > 500 {
+		return false, "Message too long (max 500 characters)"
+	}
+	if !IsPrintable(msg) {
+		return false, "Message contains invalid characters"
+	}
+	return true, ""
+}
+
+// ValidateDirection checks if a direction is valid
+func ValidateDirection(dir string) bool {
+	validDirs := map[string]bool{
+		"north": true, "n": true,
+		"south": true, "s": true,
+		"east": true, "e": true,
+		"west": true, "w": true,
+		"up": true, "u": true,
+		"down": true, "d": true, "dn": true,
+	}
+	return validDirs[strings.ToLower(dir)]
+}
+
+// ValidateQuantity checks if a quantity is valid (positive integer, reasonable limit)
+func ValidateQuantity(qty int) bool {
+	return qty > 0 && qty <= 999
+}
+
+// StripANSI removes ANSI escape sequences from a string
+// Prevents users from injecting terminal formatting codes
+func StripANSI(s string) string {
+	ansiEscape := regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
+	return ansiEscape.ReplaceAllString(s, "")
+}
+
+// ValidateChatCommand validates a complete chat command
+func ValidateChatCommand(cmd, target, message string) (bool, string) {
+	switch cmd {
+	case "say", "gossip", "chat":
+		return ValidateMessage(message)
+	case "tell", "whisper", "t":
+		if !ValidateUsername(target) {
+			return false, "Invalid target player name"
+		}
+		return ValidateMessage(message)
+	}
+	return true, ""
+}

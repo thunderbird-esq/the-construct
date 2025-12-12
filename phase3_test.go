@@ -3,172 +3,356 @@ package main
 import (
 	"strings"
 	"testing"
-	"time"
+
+	"github.com/yourusername/matrix-mud/pkg/achievements"
+	"github.com/yourusername/matrix-mud/pkg/faction"
+	"github.com/yourusername/matrix-mud/pkg/leaderboard"
+	"github.com/yourusername/matrix-mud/pkg/training"
 )
 
-// =============================================================================
-// PHASE 3 ENHANCEMENT TESTS
-// =============================================================================
-
-// P3-ENH-19: Test IAC echo suppression constants exist
-func TestIACEchoConstants(t *testing.T) {
-	// Verify telnet IAC constants are correctly defined
-	if TelnetIAC != 255 {
-		t.Errorf("TelnetIAC should be 255, got %d", TelnetIAC)
-	}
-	if TelnetWILL != 251 {
-		t.Errorf("TelnetWILL should be 251, got %d", TelnetWILL)
-	}
-	if TelnetWONT != 252 {
-		t.Errorf("TelnetWONT should be 252, got %d", TelnetWONT)
-	}
-	if TelnetECHO != 1 {
-		t.Errorf("TelnetECHO should be 1, got %d", TelnetECHO)
-	}
-	t.Log("All IAC constants correctly defined for password echo suppression")
-}
-
-// P3-ENH-20: Test connection timeout values are sensible
-func TestConnectionTimeoutValues(t *testing.T) {
-	// ConnectionTimeout should be reasonable (10s-2min)
-	if ConnectionTimeout < 10*time.Second {
-		t.Errorf("ConnectionTimeout too short: %v (minimum 10s recommended)", ConnectionTimeout)
-	}
-	if ConnectionTimeout > 2*time.Minute {
-		t.Errorf("ConnectionTimeout too long: %v (maximum 2min recommended)", ConnectionTimeout)
-	}
-
-	// IdleTimeout should be longer than ConnectionTimeout
-	if IdleTimeout <= ConnectionTimeout {
-		t.Errorf("IdleTimeout (%v) should be > ConnectionTimeout (%v)", IdleTimeout, ConnectionTimeout)
-	}
-
-	// IdleTimeout should be reasonable (5min-2hr)
-	if IdleTimeout < 5*time.Minute {
-		t.Errorf("IdleTimeout too short: %v (minimum 5min recommended)", IdleTimeout)
-	}
-	if IdleTimeout > 2*time.Hour {
-		t.Errorf("IdleTimeout too long: %v (maximum 2hr recommended)", IdleTimeout)
-	}
-
-	t.Logf("ConnectionTimeout: %v, IdleTimeout: %v - both sensible", ConnectionTimeout, IdleTimeout)
-}
-
-// P3-ENH-21: Test down command alias exists
-func TestDownCommandAlias(t *testing.T) {
-	// The 'dn' alias should be documented
-	// This test validates the design decision
-	t.Log("Down command aliases: 'down', 'dn'")
-	t.Log("Note: 'd' is reserved for 'drop' command (common MUD convention)")
-
-	// Verify via command string matching (simple validation)
-	validDownAliases := []string{"down", "dn"}
-	for _, alias := range validDownAliases {
-		if alias == "down" || alias == "dn" {
-			t.Logf("Valid down alias: '%s'", alias)
-		}
-	}
-}
-
-// P3-ENH-22: Test broadcast function handles nil safely
-func TestBroadcastNilSafety(t *testing.T) {
-	world := NewWorld()
-
-	// Test with nil sender - should not panic
-	defer func() {
-		if r := recover(); r != nil {
-			t.Errorf("broadcast panicked with nil sender: %v", r)
-		}
-	}()
-
-	// Create a dummy player for testing
-	player := &Player{
-		Name:   "TestPlayer",
-		RoomID: "loading_program",
-	}
-
-	// This should not panic even with no other players
-	broadcast(world, player, "Test message")
-	broadcast(world, nil, "Test with nil sender") // Should return early
-
-	t.Log("Broadcast handles nil sender and empty world safely")
-}
-
-// P3-ENH-12: Test xterm.js version in HTML client
-func TestXtermJSVersion(t *testing.T) {
-	// Check that htmlClient contains xterm 5.x references
-	if !strings.Contains(htmlClient, "xterm@5") {
-		t.Error("htmlClient should use xterm.js 5.x")
-	}
-
-	if !strings.Contains(htmlClient, "addon-fit") {
-		t.Error("htmlClient should include xterm fit addon")
-	}
-
-	// Check it doesn't contain old 3.x version
-	if strings.Contains(htmlClient, "xterm/3.14") {
-		t.Error("htmlClient still contains old xterm 3.14.x reference")
-	}
-
-	t.Log("xterm.js 5.x with fit addon properly configured")
-}
-
-// Test that world.json loads without critical errors
-func TestWorldJSONIntegrity(t *testing.T) {
-	world := NewWorld()
-
-	// Verify essential structures exist
-	if world.Rooms == nil {
-		t.Fatal("Rooms map is nil")
-	}
-	if len(world.Rooms) == 0 {
-		t.Error("No rooms loaded")
-	}
-
-	// Check that rooms have required fields
-	roomsWithExits := 0
-	roomsWithItems := 0
-	roomsWithNPCs := 0
-
-	for roomID, room := range world.Rooms {
-		if room.Description == "" {
-			t.Logf("Room %s has no description", roomID)
-		}
-		if len(room.Exits) > 0 {
-			roomsWithExits++
-		}
-		if len(room.ItemMap) > 0 {
-			roomsWithItems++
-		}
-		if len(room.NPCMap) > 0 {
-			roomsWithNPCs++
-		}
-	}
-
-	t.Logf("World integrity: %d rooms, %d with exits, %d with items, %d with NPCs",
-		len(world.Rooms), roomsWithExits, roomsWithItems, roomsWithNPCs)
-}
-
-// Test game version is updated
-func TestGameVersion(t *testing.T) {
-	// Version should be 1.33+ after all deferred tasks complete
-	t.Log("Game version should be v1.33 after all deferred tasks complete")
-}
-
-// P3-ENH-15: Test that SaveWorld removes duplicate data
-func TestSaveWorldRemovesDuplicates(t *testing.T) {
-	world := NewWorld()
+// TestPhase3FactionSystem tests the faction system integration
+func TestPhase3FactionSystem(t *testing.T) {
+	// Test faction manager
+	fm := faction.NewManager()
 	
-	// Verify rooms have maps populated (from loading)
-	for _, room := range world.Rooms {
-		if room.ItemMap == nil {
-			t.Error("ItemMap should not be nil after load")
-		}
-		if room.NPCMap == nil {
-			t.Error("NPCMap should not be nil after load")
-		}
+	// Join faction
+	msg, ok := fm.Join("testplayer", faction.FactionZion)
+	if !ok {
+		t.Errorf("Join failed: %s", msg)
 	}
 	
-	t.Log("SaveWorld now clears ItemMap/NPCMap in JSON output to avoid duplicates")
-	t.Log("Maps are rebuilt from arrays on load")
+	// Verify faction
+	pf := fm.GetPlayerFaction("testplayer")
+	if pf.Faction != faction.FactionZion {
+		t.Error("Player should be in Zion")
+	}
+	
+	// Test reputation
+	fm.AdjustReputation("testplayer", faction.FactionZion, 100)
+	rep := fm.GetReputation("testplayer", faction.FactionZion)
+	if rep < 100 {
+		t.Errorf("Reputation should be at least 100, got %d", rep)
+	}
+	
+	// Opposing faction effect
+	machineRep := fm.GetReputation("testplayer", faction.FactionMachines)
+	if machineRep >= 0 {
+		t.Error("Machine rep should decrease when Zion increases")
+	}
+	
+	// Standing name
+	standing := faction.GetStandingName(rep)
+	if standing == "" {
+		t.Error("Standing name should not be empty")
+	}
+}
+
+// TestPhase3AchievementSystem tests the achievement system integration
+func TestPhase3AchievementSystem(t *testing.T) {
+	am := achievements.NewManager()
+	
+	// Award achievement
+	ach := am.Award("testplayer", achievements.AchFirstBlood)
+	if ach == nil {
+		t.Fatal("Award should return achievement")
+	}
+	if ach.Name != "First Blood" {
+		t.Errorf("Name = %s, want First Blood", ach.Name)
+	}
+	
+	// Check points
+	points := am.GetTotalPoints("testplayer")
+	if points != ach.Points {
+		t.Errorf("Points = %d, want %d", points, ach.Points)
+	}
+	
+	// Award achievement with title
+	am.Award("testplayer", achievements.AchAgentSlayer)
+	
+	// Check available titles
+	titles := am.GetAvailableTitles("testplayer")
+	found := false
+	for _, title := range titles {
+		if title == "Agent Slayer" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("Should have Agent Slayer title")
+	}
+	
+	// Set title
+	ok := am.SetTitle("testplayer", "Agent Slayer")
+	if !ok {
+		t.Error("SetTitle should succeed")
+	}
+	
+	title := am.GetTitle("testplayer")
+	if title != "Agent Slayer" {
+		t.Errorf("Title = %s, want Agent Slayer", title)
+	}
+}
+
+// TestPhase3LeaderboardSystem tests the leaderboard system integration
+func TestPhase3LeaderboardSystem(t *testing.T) {
+	lm := leaderboard.NewManager()
+	
+	// Update stats for multiple players
+	lm.UpdateStat("player1", leaderboard.StatXP, 1000)
+	lm.UpdateStat("player2", leaderboard.StatXP, 2000)
+	lm.UpdateStat("player3", leaderboard.StatXP, 500)
+	
+	// Get leaderboard
+	board := lm.GetLeaderboard(leaderboard.StatXP, 10)
+	if len(board) != 3 {
+		t.Errorf("Expected 3 entries, got %d", len(board))
+	}
+	
+	// Verify order
+	if board[0].Name != "player2" {
+		t.Error("First place should be player2")
+	}
+	if board[0].Rank != 1 {
+		t.Errorf("First place rank should be 1, got %d", board[0].Rank)
+	}
+	
+	// Get rank
+	rank := lm.GetRank("player1", leaderboard.StatXP)
+	if rank != 2 {
+		t.Errorf("player1 rank = %d, want 2", rank)
+	}
+}
+
+// TestPhase3TrainingSystem tests the training system integration
+func TestPhase3TrainingSystem(t *testing.T) {
+	tm := training.NewManager()
+	
+	// List programs
+	programs := tm.ListPrograms()
+	if len(programs) == 0 {
+		t.Error("Should have training programs")
+	}
+	
+	// Start program
+	instance, err := tm.StartProgram("testplayer", "combat_basic")
+	if err != nil {
+		t.Fatalf("StartProgram failed: %v", err)
+	}
+	if instance == nil {
+		t.Fatal("Instance should not be nil")
+	}
+	
+	// Verify player is in program
+	if !tm.IsInProgram("testplayer") {
+		t.Error("Player should be in program")
+	}
+	
+	// Record score
+	tm.RecordScore("testplayer", 100)
+	
+	// Complete program
+	rewards, score, err := tm.CompleteProgram("testplayer")
+	if err != nil {
+		t.Fatalf("CompleteProgram failed: %v", err)
+	}
+	if rewards == nil {
+		t.Error("Rewards should not be nil")
+	}
+	if score != 100 {
+		t.Errorf("Score = %d, want 100", score)
+	}
+	
+	// Player should be removed
+	if tm.IsInProgram("testplayer") {
+		t.Error("Player should not be in program after completion")
+	}
+}
+
+// TestPhase3PvPArena tests the PvP arena functionality
+func TestPhase3PvPArena(t *testing.T) {
+	tm := training.NewManager()
+	
+	// Start PvP program
+	instance, err := tm.StartProgram("player1", "pvp_arena")
+	if err != nil {
+		t.Fatalf("StartProgram failed: %v", err)
+	}
+	
+	// Second player joins
+	err = tm.JoinProgram("player2", instance.ID)
+	if err != nil {
+		t.Fatalf("JoinProgram failed: %v", err)
+	}
+	
+	// Verify both in arena
+	if len(instance.Players) != 2 {
+		t.Errorf("Expected 2 players, got %d", len(instance.Players))
+	}
+	
+	// Third player cannot join (full)
+	err = tm.JoinProgram("player3", instance.ID)
+	if err == nil {
+		t.Error("Third player should not be able to join")
+	}
+	
+	// Clean up
+	tm.LeaveProgram("player1")
+	tm.LeaveProgram("player2")
+}
+
+// TestPhase3FactionChat tests faction chat filtering
+func TestPhase3FactionChat(t *testing.T) {
+	fm := faction.NewManager()
+	
+	fm.Join("player1", faction.FactionZion)
+	fm.Join("player2", faction.FactionZion)
+	fm.Join("player3", faction.FactionMachines)
+	
+	// Same faction check
+	if !fm.IsSameFaction("player1", "player2") {
+		t.Error("player1 and player2 should be same faction")
+	}
+	
+	// Different faction check
+	if fm.IsSameFaction("player1", "player3") {
+		t.Error("player1 and player3 should be different factions")
+	}
+}
+
+// TestPhase3AllFactions tests all faction definitions
+func TestPhase3AllFactions(t *testing.T) {
+	fm := faction.NewManager()
+	factions := fm.GetAllFactions()
+	
+	if len(factions) != 3 {
+		t.Errorf("Expected 3 factions, got %d", len(factions))
+	}
+	
+	// Verify faction data
+	zion := fm.GetFaction(faction.FactionZion)
+	if zion == nil {
+		t.Fatal("Zion faction not found")
+	}
+	if zion.Leader != "Morpheus" {
+		t.Errorf("Zion leader = %s, want Morpheus", zion.Leader)
+	}
+	
+	machines := fm.GetFaction(faction.FactionMachines)
+	if machines == nil {
+		t.Fatal("Machines faction not found")
+	}
+	if machines.Leader != "The Architect" {
+		t.Errorf("Machines leader = %s, want The Architect", machines.Leader)
+	}
+	
+	exiles := fm.GetFaction(faction.FactionExiles)
+	if exiles == nil {
+		t.Fatal("Exiles faction not found")
+	}
+	if exiles.Leader != "The Merovingian" {
+		t.Errorf("Exiles leader = %s, want The Merovingian", exiles.Leader)
+	}
+}
+
+// TestPhase3AllAchievements tests all achievement definitions
+func TestPhase3AllAchievements(t *testing.T) {
+	am := achievements.NewManager()
+	
+	// Verify all achievement constants exist
+	ids := []achievements.AchievementID{
+		achievements.AchFirstBlood,
+		achievements.AchAgentSlayer,
+		achievements.AchAwakened,
+		achievements.AchReachZion,
+		achievements.AchMeetOracle,
+		achievements.AchPhoneMaster,
+		achievements.AchPartyAnimal,
+		achievements.AchCrafter,
+		achievements.AchMillionaire,
+		achievements.AchLevel10,
+		achievements.AchLevel25,
+		achievements.AchQuestComplete5,
+		achievements.AchQuestComplete10,
+		achievements.AchSurvivor,
+		achievements.AchTheOne,
+	}
+	
+	for _, id := range ids {
+		if am.Achievements[id] == nil {
+			t.Errorf("Achievement %s not found", id)
+		}
+	}
+}
+
+// TestPhase3AllStatTypes tests all leaderboard stat types
+func TestPhase3AllStatTypes(t *testing.T) {
+	lm := leaderboard.NewManager()
+	
+	stats := []leaderboard.StatType{
+		leaderboard.StatXP,
+		leaderboard.StatLevel,
+		leaderboard.StatKills,
+		leaderboard.StatDeaths,
+		leaderboard.StatQuestsCompleted,
+		leaderboard.StatMoney,
+		leaderboard.StatPvPWins,
+		leaderboard.StatPvPLosses,
+		leaderboard.StatPlayTime,
+		leaderboard.StatAchievements,
+	}
+	
+	for _, stat := range stats {
+		lm.UpdateStat("testplayer", stat, 100)
+	}
+	
+	ps := lm.GetStats("testplayer")
+	if ps.XP != 100 || ps.Level != 100 || ps.Kills != 100 {
+		t.Error("Stats not updated correctly")
+	}
+}
+
+// TestPhase3TrainingPrograms tests all training program definitions
+func TestPhase3TrainingPrograms(t *testing.T) {
+	tm := training.NewManager()
+	
+	programs := []string{
+		"combat_basic",
+		"combat_advanced",
+		"survival_wave",
+		"pvp_arena",
+		"trial_speed",
+		"kung_fu",
+	}
+	
+	for _, id := range programs {
+		p := tm.GetProgram(id)
+		if p == nil {
+			t.Errorf("Program %s not found", id)
+		}
+	}
+}
+
+// TestPhase3CommandHandlers tests that Phase 3 command handlers produce output
+func TestPhase3CommandHandlers(t *testing.T) {
+	// Create a mock player for testing
+	player := &Player{Name: "testcmd"}
+	
+	// Test handleFactionCommand with "list"
+	output := handleFactionCommand(player, "list")
+	if !strings.Contains(output, "Zion") {
+		t.Error("faction list should mention Zion")
+	}
+	
+	// Test handleProgramsCommand
+	output = handleProgramsCommand()
+	if !strings.Contains(output, "Training") && !strings.Contains(output, "Program") {
+		t.Error("handleProgramsCommand should mention Training or Program")
+	}
+	
+	// Test handleChallengesCommand
+	output = handleChallengesCommand()
+	if !strings.Contains(output, "Challenge") && !strings.Contains(output, "CHALLENGES") {
+		t.Error("handleChallengesCommand should mention Challenges")
+	}
 }

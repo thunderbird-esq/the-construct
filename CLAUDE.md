@@ -2323,6 +2323,102 @@ make help
 
 ---
 
+## Phase 3 Social Layer Packages (v1.48.0)
+
+### pkg/faction
+
+Faction alignment system allowing players to join Zion, Machines, or Exiles.
+
+```go
+import "github.com/yourusername/matrix-mud/pkg/faction"
+
+// Join a faction
+msg, ok := faction.GlobalFaction.Join(playerName, faction.FactionZion)
+
+// Check reputation
+rep := faction.GlobalFaction.GetReputation(playerName, faction.FactionMachines)
+standing := faction.GetStandingName(rep) // "Neutral", "Friendly", etc.
+
+// Adjust reputation (opposing factions affected automatically)
+faction.GlobalFaction.AdjustReputation(playerName, faction.FactionExiles, 50)
+```
+
+**Key Features:**
+- Three factions with unique lore and leaders
+- -1000 to +1000 reputation scale
+- Opposing faction reputation effects
+- Persistent faction data
+
+### pkg/achievements
+
+Achievement and title system for player milestones.
+
+```go
+import "github.com/yourusername/matrix-mud/pkg/achievements"
+
+// Award an achievement
+if ach := achievements.GlobalAchievements.Award(playerName, achievements.AchFirstBlood); ach != nil {
+    // Newly earned! Broadcast to player
+}
+
+// Check if player has achievement
+has := achievements.GlobalAchievements.HasAchievement(playerName, achievements.AchAgentSlayer)
+
+// Get/set titles
+titles := achievements.GlobalAchievements.GetAvailableTitles(playerName)
+achievements.GlobalAchievements.SetTitle(playerName, "The One")
+```
+
+**Key Features:**
+- 16 achievements across 5 categories
+- Point values (10-200) per achievement
+- Unlockable titles
+- Hidden/secret achievements
+
+### pkg/leaderboard
+
+Server-wide statistics and rankings.
+
+```go
+import "github.com/yourusername/matrix-mud/pkg/leaderboard"
+
+// Update stats
+leaderboard.GlobalLeaderboard.UpdateStat(playerName, leaderboard.StatKills, 50)
+leaderboard.GlobalLeaderboard.IncrementStat(playerName, leaderboard.StatQuestsCompleted, 1)
+
+// Get leaderboard
+top10 := leaderboard.GlobalLeaderboard.GetLeaderboard(leaderboard.StatXP, 10)
+
+// Get player rank
+rank := leaderboard.GlobalLeaderboard.GetRank(playerName, leaderboard.StatPvPWins)
+```
+
+**Tracked Stats:** XP, Level, Kills, Deaths, Quests, Money, PvP Wins/Losses, Play Time, Achievements
+
+### pkg/training
+
+Instanced training programs and PvP arenas.
+
+```go
+import "github.com/yourusername/matrix-mud/pkg/training"
+
+// Start a training program
+instance, err := training.GlobalTraining.StartProgram(playerName, "combat_basic")
+
+// Join PvP arena
+err := training.GlobalTraining.JoinProgram(playerName, instanceID)
+
+// Record score during training
+training.GlobalTraining.RecordScore(playerName, 100)
+
+// Complete program and get rewards
+rewards, score, err := training.GlobalTraining.CompleteProgram(playerName)
+```
+
+**Programs:** Basic Combat, Advanced Combat, Survival Wave, PvP Arena, Speed Trial, Kung Fu
+
+---
+
 ## Resources
 
 ### Documentation
@@ -2342,6 +2438,6 @@ make help
 
 ---
 
-**Last Updated**: 2025-11-25
+**Last Updated**: 2025-12-11
 **Claude Code Version**: Latest
-**Project Version**: v1.0.0 (v1.1.0 in development)
+**Project Version**: v1.48.0

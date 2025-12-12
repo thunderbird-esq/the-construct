@@ -1,0 +1,109 @@
+{
+  "recipes": {
+    "health_vial": {
+      "id": "health_vial",
+      "name": "Health Vial",
+      "description": "Combine digital fragments to create a healing solution.",
+      "ingredients": [
+        {"item_id": "trash", "quantity": 3}
+      ],
+      "result": {
+        "item_id": "health_vial",
+        "quantity": 1
+      },
+      "skill_required": 0,
+      "xp_reward": 10
+    },
+    "emp_grenade": {
+      "id": "emp_grenade",
+      "name": "EMP Grenade",
+      "description": "Combine scrap electronics into an electromagnetic pulse device.",
+      "ingredients": [
+        {"item_id": "trash", "quantity": 5},
+        {"item_id": "phone", "quantity": 1}
+      ],
+      "result": {
+        "item_id": "emp_grenade",
+        "quantity": 1
+      },
+      "skill_required": 1,
+      "xp_reward": 25
+    },
+    "cyberdeck": {
+      "id": "cyberdeck",
+      "name": "Cyberdeck",
+      "description": "Assemble a portable hacking unit from salvaged parts.",
+      "ingredients": [
+        {"item_id": "phone", "quantity": 2},
+        {"item_id": "trash", "quantity": 5}
+      ],
+      "result": {
+        "item_id": "deck",
+        "quantity": 1
+      },
+      "skill_required": 2,
+      "xp_reward": 50
+    },
+    "mirror_shades": {
+      "id": "mirror_shades",
+      "name": "Mirror Shades",
+      "description": "Upgrade sunglasses with reflective matrix code.",
+      "ingredients": [
+        {"item_id": "sunglasses", "quantity": 1},
+        {"item_id": "trash", "quantity": 3}
+      ],
+      "result": {
+        "item_id": "mirror_shades",
+        "quantity": 1
+      },
+      "skill_required": 2,
+      "xp_reward": 40
+    },
+    "code_blade": {
+      "id": "code_blade",
+      "name": "Code Blade",
+      "description": "Infuse a katana with pure matrix energy.",
+      "ingredients": [
+        {"item_id": "katana", "quantity": 1},
+        {"item_id": "red_pill", "quantity": 1},
+        {"item_id": "trash", "quantity": 10}
+      ],
+      "result": {
+        "item_id": "code_blade",
+        "quantity": 1
+      },
+      "skill_required": 5,
+      "xp_reward": 100
+    },
+    "operator_coat": {
+      "id": "operator_coat",
+      "name": "Operator's Coat",
+      "description": "Weave a legendary trenchcoat from freed digital threads.",
+      "ingredients": [
+        {"item_id": "coat", "quantity": 1},
+        {"item_id": "red_pill", "quantity": 2},
+        {"item_id": "trash", "quantity": 15}
+      ],
+      "result": {
+        "item_id": "operator_coat",
+        "quantity": 1
+      },
+      "skill_required": 5,
+      "xp_reward": 150
+    },
+    "repair_kit": {
+      "id": "repair_kit",
+      "name": "Repair Kit",
+      "description": "Create a kit to repair damaged equipment.",
+      "ingredients": [
+        {"item_id": "trash", "quantity": 5}
+      ],
+      "result": {
+        "item_id": "repair_kit",
+        "quantity": 1
+      },
+      "skill_required": 1,
+      "xp_reward": 15
+    }
+  }
+}

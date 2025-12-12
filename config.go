@@ -12,6 +12,9 @@ import (
 
 // Game balance constants
 const (
+	// Version is the single source of truth for the application version
+	Version = "1.49.0"
+
 	// MaxInventorySize is the maximum number of items a player can carry
 	MaxInventorySize = 20
 
@@ -43,6 +46,10 @@ var Config = struct {
 	// Security settings
 	AdminBindAddr  string // Default: localhost only
 	AllowedOrigins string // Comma-separated list, or "*" for development
+
+	// Logging settings
+	LogLevel  string // debug, info, warn, error
+	LogPretty bool   // true for console, false for JSON
 }{
 	TelnetPort:     getEnv("TELNET_PORT", "2323"),
 	WebPort:        getEnv("WEB_PORT", "8080"),
@@ -51,6 +58,8 @@ var Config = struct {
 	AdminPass:      getEnvOrGenerate("ADMIN_PASS"),
 	AdminBindAddr:  getEnv("ADMIN_BIND_ADDR", "127.0.0.1:9090"),
 	AllowedOrigins: getEnv("ALLOWED_ORIGINS", "*"),
+	LogLevel:       getEnv("LOG_LEVEL", "info"),
+	LogPretty:      getEnv("LOG_PRETTY", "true") == "true",
 }
 
 // getEnv retrieves an environment variable or returns the fallback value.

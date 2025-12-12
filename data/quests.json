@@ -1,0 +1,225 @@
+{
+  "quests": {
+    "free_your_mind": {
+      "id": "free_your_mind",
+      "name": "Free Your Mind",
+      "description": "Begin your journey to awakening. Find Morpheus and learn the truth about the Matrix.",
+      "giver": "morpheus",
+      "prerequisites": [],
+      "min_level": 1,
+      "repeatable": false,
+      "stages": [
+        {
+          "id": "find_morpheus",
+          "name": "Find Morpheus",
+          "description": "Locate the rebel leader Morpheus in the Dojo.",
+          "objectives": [
+            {"id": "visit_dojo", "type": "visit", "target": "dojo", "count": 1, "description": "Find the Dojo"}
+          ],
+          "dialogue": "You've heard whispers about a man named Morpheus who knows the truth...",
+          "completion": ""
+        },
+        {
+          "id": "make_choice",
+          "name": "The Choice",
+          "description": "Morpheus offers you two pills. Your choice will change everything.",
+          "objectives": [
+            {"id": "take_pill", "type": "choice", "target": "red_pill", "count": 1, "description": "Make your choice: take red or take blue"}
+          ],
+          "dialogue": "This is your last chance. After this, there is no turning back.",
+          "completion": "You have chosen to see how deep the rabbit hole goes."
+        },
+        {
+          "id": "first_combat",
+          "name": "Combat Training",
+          "description": "Prove yourself in combat against a training program.",
+          "objectives": [
+            {"id": "kill_training", "type": "kill", "target": "riot_cop", "count": 1, "description": "Defeat a training opponent"}
+          ],
+          "dialogue": "Now, show me what you've learned. Your mind makes it real.",
+          "completion": "You're beginning to believe."
+        }
+      ],
+      "reward": {
+        "xp": 100,
+        "money": 50,
+        "items": [],
+        "title": "Awakened",
+        "unlock": "the_oracle"
+      }
+    },
+    "the_oracle": {
+      "id": "the_oracle",
+      "name": "The Oracle",
+      "description": "Seek the Oracle and learn what the future holds for you.",
+      "giver": "morpheus",
+      "prerequisites": ["free_your_mind"],
+      "min_level": 3,
+      "repeatable": false,
+      "stages": [
+        {
+          "id": "find_oracle",
+          "name": "Find the Oracle",
+          "description": "Navigate through the city to find the Oracle's apartment.",
+          "objectives": [
+            {"id": "visit_oracle", "type": "visit", "target": "oracle_apartment", "count": 1, "description": "Find the Oracle's apartment"}
+          ],
+          "dialogue": "The Oracle can tell you what you need to know. But first, you must find her. Be careful - the path is guarded.",
+          "completion": ""
+        },
+        {
+          "id": "defeat_seraph",
+          "name": "Prove Yourself to Seraph",
+          "description": "Seraph guards the Oracle. You must prove your worth through combat.",
+          "objectives": [
+            {"id": "beat_seraph", "type": "kill", "target": "seraph", "count": 1, "description": "Defeat Seraph"}
+          ],
+          "dialogue": "You do not truly know someone until you fight them.",
+          "completion": "Good. The Oracle will see you now."
+        },
+        {
+          "id": "hear_prophecy",
+          "name": "The Prophecy",
+          "description": "Speak with the Oracle and receive her wisdom.",
+          "objectives": [
+            {"id": "talk_oracle", "type": "talk", "target": "oracle", "count": 1, "description": "Speak with the Oracle"}
+          ],
+          "dialogue": "",
+          "completion": "Being The One is just like being in love. No one can tell you you're in love, you just know it."
+        }
+      ],
+      "reward": {
+        "xp": 250,
+        "money": 100,
+        "items": [],
+        "title": "Seeker",
+        "unlock": "rescue_morpheus"
+      }
+    },
+    "rescue_morpheus": {
+      "id": "rescue_morpheus",
+      "name": "Rescue Morpheus",
+      "description": "Morpheus has been captured by Agents and taken to a government building. Storm the building and save him.",
+      "giver": "trinity",
+      "prerequisites": ["the_oracle"],
+      "min_level": 5,
+      "repeatable": false,
+      "stages": [
+        {
+          "id": "gather_team",
+          "name": "Assemble at the Helipad",
+          "description": "Meet Trinity at the extraction point.",
+          "objectives": [
+            {"id": "meet_trinity", "type": "visit", "target": "helipad", "count": 1, "description": "Meet Trinity at the helipad"}
+          ],
+          "dialogue": "Morpheus believed something. I'm not sure I believe it anymore, but it doesn't matter. He's the reason I'm alive.",
+          "completion": ""
+        },
+        {
+          "id": "infiltrate",
+          "name": "Infiltrate the Building",
+          "description": "Fight through the government building to reach the interrogation floor.",
+          "objectives": [
+            {"id": "kill_guards", "type": "kill", "target": "security_guard", "count": 3, "description": "Clear the security guards (3)"},
+            {"id": "reach_floor", "type": "visit", "target": "agent_floor", "count": 1, "description": "Reach the Agent floor"}
+          ],
+          "dialogue": "There are only two ways out of this building. One is that scaffold, the other is in their custody. You take their route, and you take your chances.",
+          "completion": "Almost there. Morpheus is just ahead."
+        },
+        {
+          "id": "face_agents",
+          "name": "Face the Agents",
+          "description": "Defeat Agent Smith and free Morpheus.",
+          "objectives": [
+            {"id": "beat_agent", "type": "kill", "target": "agent_smith_boss", "count": 1, "description": "Defeat Agent Smith"}
+          ],
+          "dialogue": "No one has ever faced an Agent and lived. No one except you.",
+          "completion": "You moved like they do. I've never seen anyone move that fast."
+        }
+      ],
+      "reward": {
+        "xp": 500,
+        "money": 250,
+        "items": ["code_blade"],
+        "title": "The One?",
+        "unlock": "the_source"
+      }
+    },
+    "the_source": {
+      "id": "the_source",
+      "name": "The Source",
+      "description": "Reach the Source and confront the Architect. The fate of humanity rests on your choice.",
+      "giver": "oracle",
+      "prerequisites": ["rescue_morpheus"],
+      "min_level": 8,
+      "repeatable": false,
+      "stages": [
+        {
+          "id": "find_doors",
+          "name": "The Hall of Doors",
+          "description": "Find the entrance to the Source, hidden deep within the Matrix.",
+          "objectives": [
+            {"id": "visit_doors", "type": "visit", "target": "hall_of_doors", "count": 1, "description": "Find the Hall of Doors"}
+          ],
+          "dialogue": "The path of The One ends at the Source. There you will find the truth about the Matrix, and yourself.",
+          "completion": ""
+        },
+        {
+          "id": "meet_architect",
+          "name": "The Architect",
+          "description": "Confront the creator of the Matrix.",
+          "objectives": [
+            {"id": "visit_architect", "type": "visit", "target": "architect_chamber", "count": 1, "description": "Enter the Architect's chamber"}
+          ],
+          "dialogue": "",
+          "completion": ""
+        },
+        {
+          "id": "the_choice",
+          "name": "The Final Choice",
+          "description": "The Architect presents two doors. Choose the fate of humanity.",
+          "objectives": [
+            {"id": "talk_architect", "type": "talk", "target": "architect", "count": 1, "description": "Make your choice"}
+          ],
+          "dialogue": "The door to your left leads to the Source, and the salvation of Zion. The door to your right leads back to the Matrix, to her, and to the end of your species.",
+          "completion": "The choice you have already made. Now you must understand it."
+        }
+      ],
+      "reward": {
+        "xp": 1000,
+        "money": 500,
+        "items": ["operator_coat"],
+        "title": "The One",
+        "unlock": ""
+      }
+    },
+    "exile_business": {
+      "id": "exile_business",
+      "name": "Exile Business",
+      "description": "The Merovingian has a job for you. Work for the exiles and earn their favor.",
+      "giver": "merovingian",
+      "prerequisites": [],
+      "min_level": 4,
+      "repeatable": true,
+      "stages": [
+        {
+          "id": "collect_data",
+          "name": "Data Collection",
+          "description": "Collect digital artifacts for the Merovingian.",
+          "objectives": [
+            {"id": "get_trash", "type": "collect", "target": "trash", "count": 10, "description": "Collect Digital Trash (10)"}
+          ],
+          "dialogue": "I am a trafficker of information. I know everything I can. Bring me what I need, and I will reward you.",
+          "completion": "You have proven useful. Perhaps we will do business again."
+        }
+      ],
+      "reward": {
+        "xp": 75,
+        "money": 150,
+        "items": [],
+        "title": "",
+        "unlock": ""
+      }
+    }
+  }
+}

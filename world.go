@@ -6,13 +6,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"math"
 	"math/rand"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/yourusername/matrix-mud/pkg/logging"
 )
 
 // --- Structs ---
@@ -25,8 +26,11 @@ type Item struct {
 	Damage, AC            int
 	Slot, Type, Effect    string
 	Value, Price          int
-	// NEW: Rarity (0=Common, 1=Uncommon, 2=Rare, 3=Legendary)
+	// Rarity (0=Common, 1=Uncommon, 2=Rare, 3=Legendary)
 	Rarity int `json:"rarity"`
+	// Durability system (0 = unbreakable, >0 = current durability)
+	Durability    int `json:"durability,omitempty"`
+	MaxDurability int `json:"max_durability,omitempty"`
 }
 
 // Quest represents an NPC quest that rewards the player for delivering a specific item.
@@ -52,6 +56,8 @@ type NPC struct {
 	OriginalRoom                         string
 	DeathTime                            time.Time
 	IsDead                               bool
+	IsAgent                              bool `json:"is_agent,omitempty"`   // Agent NPCs hunt awakened players
+	TargetPlayer                         string `json:"-"`                  // Player being hunted (runtime only)
 }
 
 // Room represents a location in the game world with connections to other rooms.
@@ -65,6 +71,7 @@ type Room struct {
 	NPCs            []*NPC
 	ItemMap         map[string]*Item
 	NPCMap          map[string]*NPC
+	HasPhone        bool              `json:"has_phone,omitempty"`  // Room has a phone booth for fast travel
 }
 
 // WorldData is a container for serializing the world state to JSON.
@@ -87,6 +94,10 @@ type Player struct {
 	XP, Level                   int
 	Class                       string
 	Money                       int
+	CraftingSkill               int `json:"crafting_skill,omitempty"`
+	Awakened                    bool     `json:"awakened,omitempty"`           // True if player took the red pill
+	Heat                        int      `json:"heat,omitempty"`               // Agent aggro level (0-100)
+	DiscoveredPhones            []string `json:"discovered_phones,omitempty"`  // Phone booth IDs player can call
 }
 
 // World represents the entire game state including all rooms, players, NPCs, and items.
@@ -98,6 +109,7 @@ type World struct {
 	Dialogue      map[string]map[string]string
 	DeadNPCs      []*NPC
 	ItemTemplates map[string]*Item
+	MOTD          []string // Message of the Day
 	mutex         sync.RWMutex
 }
 
@@ -111,14 +123,14 @@ func NewWorld() *World {
 	w := &World{Rooms: make(map[string]*Room), Players: make(map[*Client]*Player), Dialogue: make(map[string]map[string]string), DeadNPCs: make([]*NPC, 0), ItemTemplates: make(map[string]*Item)}
 	w.loadWorldData()
 	w.loadDialogue()
+	w.loadMOTD()
 	return w
 }
 func (w *World) loadWorldData() {
 	file, err := os.ReadFile("data/world.json")
 	if err != nil {
 		// Issue #7 fix: Handle file read errors gracefully
-		log.Printf("WARNING: Could not read data/world.json: %v", err)
-		log.Println("Creating default world...")
+		logging.Warn().Err(err).Msg("Could not read world.json, creating default world")
 		w.createDefaultWorld()
 		return
 	}
@@ -126,8 +138,7 @@ func (w *World) loadWorldData() {
 	var data WorldData
 	if err := json.Unmarshal(file, &data); err != nil {
 		// Issue #7 fix: Handle JSON parse errors gracefully
-		log.Printf("WARNING: Could not parse data/world.json: %v", err)
-		log.Println("Creating default world...")
+		logging.Warn().Err(err).Msg("Could not parse world.json, creating default world")
 		w.createDefaultWorld()
 		return
 	}
@@ -137,16 +148,8 @@ func (w *World) loadWorldData() {
 		w.Rooms = make(map[string]*Room)
 	}
 
-	w.ItemTemplates["phone"] = &Item{ID: "phone", Name: "Nokia Phone", Description: "An old school slider phone.", Damage: 1, Slot: "hand", Price: 10}
-	w.ItemTemplates["coat"] = &Item{ID: "coat", Name: "Leather Trenchcoat", Description: "Black leather. Very cool.", AC: 2, Slot: "body", Price: 100}
-	w.ItemTemplates["katana"] = &Item{ID: "katana", Name: "Training Katana", Description: "A dull blade.", Damage: 5, Slot: "hand", Price: 50}
-	w.ItemTemplates["red_pill"] = &Item{ID: "red_pill", Name: "Red Pill", Description: "A small red pill.", Type: "consumable", Effect: "buff_str", Value: 1, Price: 200}
-	w.ItemTemplates["sunglasses"] = &Item{ID: "sunglasses", Name: "Sunglasses", Description: "Black shades.", AC: 1, Slot: "head", Price: 25}
-	w.ItemTemplates["deck"] = &Item{ID: "deck", Name: "Cyberdeck", Description: "A portable hacking unit.", Slot: "hand", Damage: 2, Price: 150}
-	w.ItemTemplates["boots"] = &Item{ID: "boots", Name: "Combat Boots", Description: "Heavy boots.", Slot: "body", AC: 2, Price: 80}
-	w.ItemTemplates["shades"] = &Item{ID: "shades", Name: "Pilot Shades", Description: "Cool sunglasses.", Slot: "head", AC: 1, Price: 50}
-	w.ItemTemplates["trash"] = &Item{ID: "trash", Name: "Digital Trash", Description: "Useless data.", Price: 1}
-	w.ItemTemplates["baton"] = &Item{ID: "baton", Name: "Police Baton", Description: "Standard issue.", Damage: 3, Slot: "hand", Price: 20}
+	// Load item templates from JSON file
+	w.loadItemTemplates()
 
 	for roomID, room := range w.Rooms {
 		room.ItemMap = make(map[string]*Item)
@@ -161,11 +164,11 @@ func (w *World) loadWorldData() {
 			// Issue #13-14 fix: Ensure NPCs have valid HP values
 			if npc.HP <= 0 {
 				npc.HP = DefaultNPCHP
-				log.Printf("WARNING: NPC %s in room %s had invalid HP, set to default %d", npc.ID, roomID, DefaultNPCHP)
+				logging.Debug().Str("npc", npc.ID).Str("room", roomID).Int("hp", DefaultNPCHP).Msg("NPC had invalid HP, set to default")
 			}
 			if npc.MaxHP <= 0 || npc.MaxHP < npc.HP {
 				npc.MaxHP = npc.HP
-				log.Printf("WARNING: NPC %s in room %s had invalid MaxHP, set to %d", npc.ID, roomID, npc.MaxHP)
+				logging.Debug().Str("npc", npc.ID).Str("room", roomID).Int("max_hp", npc.MaxHP).Msg("NPC had invalid MaxHP, corrected")
 			}
 
 			room.NPCMap[npc.ID] = npc
@@ -191,9 +194,97 @@ func (w *World) createDefaultWorld() {
 		Exits:       make(map[string]string),
 	}
 }
+
+// ItemTemplatesData is the JSON structure for items.json
+type ItemTemplatesData struct {
+	Items map[string]*Item `json:"items"`
+}
+
+// loadItemTemplates loads item templates from data/items.json
+func (w *World) loadItemTemplates() {
+	file, err := os.ReadFile("data/items.json")
+	if err != nil {
+		logging.Warn().Err(err).Msg("Could not read items.json, using defaults")
+		w.loadDefaultItemTemplates()
+		return
+	}
+
+	var data ItemTemplatesData
+	if err := json.Unmarshal(file, &data); err != nil {
+		logging.Warn().Err(err).Msg("Could not parse items.json, using defaults")
+		w.loadDefaultItemTemplates()
+		return
+	}
+
+	// Convert JSON item format to internal Item format
+	for id, item := range data.Items {
+		w.ItemTemplates[id] = &Item{
+			ID:          item.ID,
+			Name:        item.Name,
+			Description: item.Description,
+			Damage:      item.Damage,
+			AC:          item.AC,
+			Slot:        item.Slot,
+			Type:        item.Type,
+			Effect:      item.Effect,
+			Value:       item.Value,
+			Price:       item.Price,
+			Rarity:      item.Rarity,
+		}
+	}
+
+	logging.Info().Int("count", len(w.ItemTemplates)).Msg("Loaded item templates from items.json")
+}
+
+// loadDefaultItemTemplates loads hardcoded item templates as fallback
+func (w *World) loadDefaultItemTemplates() {
+	w.ItemTemplates["phone"] = &Item{ID: "phone", Name: "Nokia Phone", Description: "An old school slider phone.", Damage: 1, Slot: "hand", Price: 10}
+	w.ItemTemplates["coat"] = &Item{ID: "coat", Name: "Leather Trenchcoat", Description: "Black leather. Very cool.", AC: 2, Slot: "body", Price: 100}
+	w.ItemTemplates["katana"] = &Item{ID: "katana", Name: "Training Katana", Description: "A dull blade.", Damage: 5, Slot: "hand", Price: 50}
+	w.ItemTemplates["red_pill"] = &Item{ID: "red_pill", Name: "Red Pill", Description: "A small red pill.", Type: "consumable", Effect: "buff_str", Value: 1, Price: 200}
+	w.ItemTemplates["sunglasses"] = &Item{ID: "sunglasses", Name: "Sunglasses", Description: "Black shades.", AC: 1, Slot: "head", Price: 25}
+	w.ItemTemplates["deck"] = &Item{ID: "deck", Name: "Cyberdeck", Description: "A portable hacking unit.", Slot: "hand", Damage: 2, Price: 150}
+	w.ItemTemplates["boots"] = &Item{ID: "boots", Name: "Combat Boots", Description: "Heavy boots.", Slot: "body", AC: 2, Price: 80}
+	w.ItemTemplates["shades"] = &Item{ID: "shades", Name: "Pilot Shades", Description: "Cool sunglasses.", Slot: "head", AC: 1, Price: 50}
+	w.ItemTemplates["trash"] = &Item{ID: "trash", Name: "Digital Trash", Description: "Useless data.", Price: 1}
+	w.ItemTemplates["baton"] = &Item{ID: "baton", Name: "Police Baton", Description: "Standard issue.", Damage: 3, Slot: "hand", Price: 20}
+	logging.Info().Msg("Loaded default item templates (items.json not available)")
+}
+
 func (w *World) loadDialogue() {
 	file, _ := os.ReadFile("data/dialogue.json")
 	json.Unmarshal(file, &w.Dialogue)
+}
+
+// MOTDData is the JSON structure for motd.json
+type MOTDData struct {
+	MOTD []string `json:"motd"`
+}
+
+// loadMOTD loads the message of the day from data/motd.json
+func (w *World) loadMOTD() {
+	file, err := os.ReadFile("data/motd.json")
+	if err != nil {
+		logging.Info().Msg("No MOTD configured (motd.json not found)")
+		return
+	}
+
+	var data MOTDData
+	if err := json.Unmarshal(file, &data); err != nil {
+		logging.Warn().Err(err).Msg("Could not parse motd.json")
+		return
+	}
+
+	w.MOTD = data.MOTD
+	logging.Info().Int("lines", len(w.MOTD)).Msg("Loaded MOTD")
+}
+
+// GetMOTD returns the formatted message of the day
+func (w *World) GetMOTD() string {
+	if len(w.MOTD) == 0 {
+		return ""
+	}
+	return strings.Join(w.MOTD, "\r\n") + "\r\n"
 }
 
 // --- Persistence ---
@@ -236,6 +327,17 @@ func (w *World) LoadPlayer(name string, client *Client) *Player {
 	p.State = "IDLE"
 	return &p
 }
+// Broadcast sends a message to all players in a room, optionally excluding one player.
+// If exclude is nil, the message is sent to everyone in the room.
+func (w *World) Broadcast(roomID string, exclude *Player, msg string) {
+	for _, p := range w.Players {
+		if p != nil && p.Conn != nil && p.RoomID == roomID {
+			if exclude == nil || p != exclude {
+				p.Conn.Write(msg)
+			}
+		}
+	}
+}
 
 // SaveWorld persists the entire world state to data/world.json.
 // Converts ItemMap and NPCMap to slices for JSON serialization.
@@ -244,7 +346,7 @@ func (w *World) LoadPlayer(name string, client *Client) *Player {
 func (w *World) SaveWorld() {
 	w.mutex.RLock()
 	defer w.mutex.RUnlock()
-	
+
 	// Convert maps to arrays for JSON serialization
 	for _, room := range w.Rooms {
 		room.Items = make([]*Item, 0, len(room.ItemMap))
@@ -260,11 +362,11 @@ func (w *World) SaveWorld() {
 		room.ItemMap = nil
 		room.NPCMap = nil
 	}
-	
+
 	data := WorldData{Rooms: w.Rooms}
 	jsonData, _ := json.MarshalIndent(data, "", "  ")
 	os.WriteFile("data/world.json", jsonData, 0600) // Owner read/write only
-	
+
 	// Restore maps after save (so game continues working)
 	for _, room := range w.Rooms {
 		room.ItemMap = make(map[string]*Item)
@@ -276,7 +378,7 @@ func (w *World) SaveWorld() {
 			room.NPCMap[npc.ID] = npc
 		}
 	}
-	
+
 	fmt.Println("World Saved.")
 }
 
@@ -578,6 +680,10 @@ func (w *World) Update() {
 			}
 		}
 	}
+	
+	// Phase 1: Decay heat and run Agent AI (every ~30 seconds via counter)
+	w.DecayHeat()
+	w.AgentAI()
 }
 
 // --- Skills & Combat ---
@@ -704,6 +810,14 @@ func (w *World) ResolveCombatRound(p *Player) {
 	if damage < 1 {
 		damage = 1
 	}
+	// Focus (bullet time) doubles damage
+	if p.State == "focused" || p.State == "COMBAT" && p.Target != "" {
+		if p.State == "focused" {
+			damage *= 2
+			output += fmt.Sprintf("%s[BULLET TIME]%s ", Cyan, Reset)
+			p.State = "COMBAT" // Reset state after use
+		}
+	}
 	roll := rand.Intn(20) + 1
 	if roll >= targetNPC.AC {
 		targetNPC.HP -= damage
@@ -733,6 +847,10 @@ func (w *World) ResolveCombatRound(p *Player) {
 					output += fmt.Sprintf("\r\n%s dropped %s.", targetNPC.Name, ColorizeItem(drop))
 				}
 			}
+			
+			// Add heat for the kill (Agents attract attention)
+			w.AddHeat(p, HeatPerKill)
+			
 			targetNPC.IsDead = true
 			targetNPC.DeathTime = time.Now()
 			w.DeadNPCs = append(w.DeadNPCs, targetNPC)
@@ -750,6 +868,10 @@ func (w *World) ResolveCombatRound(p *Player) {
 	}
 	if armor, ok := p.Equipment["head"]; ok {
 		playerAC += armor.AC
+	}
+	// Awakened players have a chance to dodge (bonus AC)
+	if p.Awakened {
+		playerAC += 3
 	}
 	npcRoll := rand.Intn(20) + 1
 	if npcRoll >= playerAC {
@@ -1119,6 +1241,8 @@ func (w *World) MovePlayer(p *Player, direction string) string {
 	p.State = "IDLE"
 	if next, ok := w.Rooms[p.RoomID].Exits[direction]; ok {
 		p.RoomID = next
+		// Check for phone booth discovery
+		w.CheckPhoneDiscovery(p)
 		return fmt.Sprintf("You move to %s.", next)
 	}
 	return "No exit."
@@ -1295,4 +1419,196 @@ func (w *World) DeleteEntity(p *Player, target string) string {
 		}
 	}
 	return "Not found."
+}
+
+// --- Crafting System ---
+
+// ListRecipes shows available crafting recipes
+func (w *World) ListRecipes(p *Player) string {
+	var sb strings.Builder
+	sb.WriteString("=== CRAFTING RECIPES ===\r\n")
+	sb.WriteString(fmt.Sprintf("Your Crafting Skill: %d\r\n\r\n", p.CraftingSkill))
+
+	// Recipes are loaded from craftingManager (to be initialized)
+	// For now, show basic info
+	recipes := []struct {
+		name   string
+		skill  int
+		result string
+	}{
+		{"health_vial", 0, "Health Vial (3x Digital Trash)"},
+		{"emp_grenade", 1, "EMP Grenade (5x Trash, 1x Phone)"},
+		{"cyberdeck", 2, "Cyberdeck (2x Phone, 5x Trash)"},
+		{"mirror_shades", 2, "Mirror Shades (1x Sunglasses, 3x Trash)"},
+		{"repair_kit", 1, "Repair Kit (5x Trash)"},
+		{"code_blade", 5, "Code Blade (1x Katana, 1x Red Pill, 10x Trash)"},
+		{"operator_coat", 5, "Operator's Coat (1x Coat, 2x Red Pill, 15x Trash)"},
+	}
+
+	for _, r := range recipes {
+		skillOK := ""
+		if p.CraftingSkill >= r.skill {
+			skillOK = Green + "[OK]" + Reset
+		} else {
+			skillOK = Red + "[Skill " + fmt.Sprintf("%d", r.skill) + "]" + Reset
+		}
+		sb.WriteString(fmt.Sprintf("  %s: %s %s\r\n", r.name, r.result, skillOK))
+	}
+
+	sb.WriteString("\r\nUsage: craft <recipe_name>\r\n")
+	return sb.String()
+}
+
+// Craft attempts to craft an item
+func (w *World) Craft(p *Player, recipeName string) string {
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
+
+	// Recipe definitions
+	type ingredient struct {
+		id  string
+		qty int
+	}
+	type recipe struct {
+		name        string
+		ingredients []ingredient
+		resultID    string
+		skill       int
+		xp          int
+	}
+
+	recipes := map[string]recipe{
+		"health_vial":   {"Health Vial", []ingredient{{"trash", 3}}, "health_vial", 0, 10},
+		"emp_grenade":   {"EMP Grenade", []ingredient{{"trash", 5}, {"phone", 1}}, "emp_grenade", 1, 25},
+		"cyberdeck":     {"Cyberdeck", []ingredient{{"phone", 2}, {"trash", 5}}, "deck", 2, 50},
+		"mirror_shades": {"Mirror Shades", []ingredient{{"sunglasses", 1}, {"trash", 3}}, "mirror_shades", 2, 40},
+		"repair_kit":    {"Repair Kit", []ingredient{{"trash", 5}}, "repair_kit", 1, 15},
+		"code_blade":    {"Code Blade", []ingredient{{"katana", 1}, {"red_pill", 1}, {"trash", 10}}, "code_blade", 5, 100},
+		"operator_coat": {"Operator's Coat", []ingredient{{"coat", 1}, {"red_pill", 2}, {"trash", 15}}, "operator_coat", 5, 150},
+	}
+
+	r, ok := recipes[strings.ToLower(recipeName)]
+	if !ok {
+		return "Unknown recipe. Type 'recipes' to see available recipes."
+	}
+
+	// Check skill
+	if p.CraftingSkill < r.skill {
+		return fmt.Sprintf("You need Crafting Skill %d to craft %s. (You have %d)", r.skill, r.name, p.CraftingSkill)
+	}
+
+	// Count inventory items
+	invCount := make(map[string]int)
+	for _, item := range p.Inventory {
+		invCount[item.ID]++
+	}
+
+	// Check ingredients
+	var missing []string
+	for _, ing := range r.ingredients {
+		if invCount[ing.id] < ing.qty {
+			missing = append(missing, fmt.Sprintf("%dx %s", ing.qty-invCount[ing.id], ing.id))
+		}
+	}
+	if len(missing) > 0 {
+		return fmt.Sprintf("Missing materials: %s", strings.Join(missing, ", "))
+	}
+
+	// Remove ingredients
+	for _, ing := range r.ingredients {
+		removed := 0
+		newInv := make([]*Item, 0, len(p.Inventory))
+		for _, item := range p.Inventory {
+			if item.ID == ing.id && removed < ing.qty {
+				removed++
+				continue // Don't add to new inventory
+			}
+			newInv = append(newInv, item)
+		}
+		p.Inventory = newInv
+	}
+
+	// Create result item
+	tmpl, ok := w.ItemTemplates[r.resultID]
+	if !ok {
+		return "Error: Result item template not found."
+	}
+	newItem := *tmpl
+	// Set durability for equipment items
+	if newItem.Slot != "" {
+		newItem.MaxDurability = 100
+		newItem.Durability = 100
+	}
+	p.Inventory = append(p.Inventory, &newItem)
+
+	// Award XP
+	p.XP += r.xp
+
+	// Small chance to increase crafting skill
+	if rand.Intn(100) < 20 { // 20% chance
+		p.CraftingSkill++
+		return fmt.Sprintf("%sYou crafted %s! (+%d XP) Your crafting skill increased to %d!%s", Green, newItem.Name, r.xp, p.CraftingSkill, Reset)
+	}
+
+	return fmt.Sprintf("%sYou crafted %s! (+%d XP)%s", Green, newItem.Name, r.xp, Reset)
+}
+
+// RepairItem repairs an equipped item using a repair kit
+func (w *World) RepairItem(p *Player, targetSlot string) string {
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
+
+	// Find repair kit
+	kitIdx := -1
+	for i, item := range p.Inventory {
+		if item.ID == "repair_kit" {
+			kitIdx = i
+			break
+		}
+	}
+	if kitIdx == -1 {
+		return "You need a Repair Kit to repair items. Craft one with 'craft repair_kit'."
+	}
+
+	// Find item to repair
+	item, ok := p.Equipment[targetSlot]
+	if !ok {
+		return fmt.Sprintf("Nothing equipped in slot '%s'. Slots: hand, body, head", targetSlot)
+	}
+	if item.MaxDurability == 0 {
+		return fmt.Sprintf("%s doesn't have durability to repair.", item.Name)
+	}
+	if item.Durability >= item.MaxDurability {
+		return fmt.Sprintf("%s is already at full durability.", item.Name)
+	}
+
+	// Use repair kit
+	p.Inventory = append(p.Inventory[:kitIdx], p.Inventory[kitIdx+1:]...)
+
+	// Repair item
+	repaired := 25
+	item.Durability += repaired
+	if item.Durability > item.MaxDurability {
+		item.Durability = item.MaxDurability
+	}
+
+	return fmt.Sprintf("%sRepaired %s! Durability: %d/%d%s", Green, item.Name, item.Durability, item.MaxDurability, Reset)
+}
+
+// DegradeEquipment reduces durability of equipped items after combat
+func (w *World) DegradeEquipment(p *Player) {
+	for _, item := range p.Equipment {
+		if item.MaxDurability > 0 && item.Durability > 0 {
+			item.Durability--
+			if item.Durability == 0 {
+				if p.Conn != nil {
+					p.Conn.Write(fmt.Sprintf("\r\n%sYour %s has broken!%s\r\n", Red, item.Name, Reset))
+				}
+			} else if item.Durability <= 10 {
+				if p.Conn != nil {
+					p.Conn.Write(fmt.Sprintf("\r\n%sYour %s is nearly broken! (Durability: %d)%s\r\n", Yellow, item.Name, item.Durability, Reset))
+				}
+			}
+		}
+	}
 }

@@ -38,7 +38,7 @@ func TestClientConnection(t *testing.T) {
 	}
 
 	response := string(buf[:n])
-	
+
 	// Server should send welcome message containing "Wake up" or "Identify"
 	if !strings.Contains(response, "Wake up") && !strings.Contains(response, "Identify") {
 		t.Errorf("Unexpected server response: %s", response)

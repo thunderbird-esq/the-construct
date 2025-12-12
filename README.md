@@ -11,8 +11,18 @@ A Matrix-themed Multi-User Dungeon (MUD) game written in Go with real-time multi
 - **Inventory & Equipment** - Collect items, weapons, and armor with rarity tiers
 - **Quest system** - Complete quests for NPCs to gain XP and rewards
 - **Banking system** - Store items in The Archive for safekeeping
-- **Web interface** - Monitor the game world via HTTP
+- **Party system** - Team up with other players, share XP
+- **Crafting system** - Create items from recipes using gathered materials
+- **Day/night cycle** - Dynamic time system affecting world descriptions
+- **Session persistence** - Reconnect to your character within 30 minutes
+- **Ability cooldowns** - Strategic skill usage with per-ability cooldowns
+- **Faction system** - Align with Zion, Machines, or Exiles factions
+- **Achievements** - Earn achievements and unlock titles for milestones
+- **Leaderboards** - Server-wide rankings across multiple categories
+- **Training programs** - Practice combat and PvP in instanced arenas
+- **Web interface** - Monitor the game world via HTTP with Matrix-style intro
 - **Admin console** - Manage the game server via dedicated admin port
+- **Prometheus metrics** - `/metrics` endpoint for monitoring
 
 ## Installation
 

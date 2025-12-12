@@ -170,11 +170,3 @@ func TestWorldInitialization(t *testing.T) {
 
 	t.Logf("World initialized with %d rooms, %d item templates", len(world.Rooms), len(world.ItemTemplates))
 }
-
-// Helper function
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}

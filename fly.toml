@@ -1,36 +1,30 @@
 # =============================================================================
-# FLY.IO CONFIGURATION - Matrix MUD
+# FLY.IO CONFIGURATION - Matrix MUD v1.33
 # =============================================================================
-# Deploy with: fly launch --config fly.toml
-# Update with: fly deploy
+# Deploy with: fly deploy
 # =============================================================================
 
 app = "matrix-mud"
-primary_region = "ewr"  # Newark, US East - low latency for East Coast
+primary_region = "ewr"
 
 [build]
   dockerfile = "Dockerfile"
 
-# =============================================================================
-# ENVIRONMENT VARIABLES
-# =============================================================================
-# Set secrets with: fly secrets set ADMIN_PASS=your-secure-password
-# These are non-sensitive defaults only
 [env]
   TELNET_PORT = "2323"
   WEB_PORT = "8080"
   ADMIN_PORT = "9090"
   ADMIN_USER = "admin"
-  ADMIN_BIND_ADDR = "127.0.0.1:9090"  # Localhost only - access via fly proxy
-  ALLOWED_ORIGINS = "*"  # Set to your domain in production
+  ADMIN_BIND_ADDR = "127.0.0.1:9090"
+  ALLOWED_ORIGINS = "*"
   GO_ENV = "production"
 
-# =============================================================================
-# HTTP SERVICE (Web Client)
-# =============================================================================
+# HTTP Service (Web Client) - ports 80/443
 [[services]]
   internal_port = 8080
   protocol = "tcp"
+  auto_stop_machines = false
+  auto_start_machines = true
 
   [[services.ports]]
     handlers = ["http"]
@@ -41,6 +35,11 @@ primary_region = "ewr"  # Newark, US East - low latency for East Coast
     handlers = ["tls", "http"]
     port = 443
 
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 100
+    soft_limit = 80
+
   [[services.http_checks]]
     interval = "15s"
     timeout = "5s"
@@ -48,39 +47,31 @@ primary_region = "ewr"  # Newark, US East - low latency for East Coast
     method = "GET"
     path = "/health"
 
-# =============================================================================
-# TCP SERVICE (Telnet MUD)
-# =============================================================================
+# TCP Service (Telnet MUD) - port 2323
 [[services]]
   internal_port = 2323
   protocol = "tcp"
+  auto_stop_machines = false
+  auto_start_machines = true
 
   [[services.ports]]
     port = 2323
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 50
+    soft_limit = 40
 
   [[services.tcp_checks]]
     interval = "15s"
     timeout = "5s"
     grace_period = "10s"
 
-# =============================================================================
-# PERSISTENT STORAGE
-# =============================================================================
 [mounts]
   source = "matrix_mud_data"
   destination = "/app/data"
 
-# =============================================================================
-# RESOURCES
-# =============================================================================
 [[vm]]
+  memory = "256mb"
   cpu_kind = "shared"
   cpus = 1
-  memory_mb = 256  # Minimal for Go binary
-
-# =============================================================================
-# DEPLOYMENT STRATEGY
-# =============================================================================
-[deploy]
-  strategy = "rolling"
-  release_command = "echo 'Matrix MUD v1.31 deploying...'"

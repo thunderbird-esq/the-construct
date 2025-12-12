@@ -1,0 +1,29 @@
+{
+  "motd": [
+    "",
+    "╔══════════════════════════════════════════════════════════════════════════════╗",
+    "║                                                                              ║",
+    "║                    W E L C O M E   T O   T H E   C O N S T R U C T           ║",
+    "║                                                                              ║",
+    "║                         A Matrix-Themed MUD Experience                       ║",
+    "║                                                                              ║",
+    "╠══════════════════════════════════════════════════════════════════════════════╣",
+    "║                                                                              ║",
+    "║  The Matrix has you...                                                       ║",
+    "║                                                                              ║",
+    "║  NEW FEATURES:                                                               ║",
+    "║  • Type 'help' for comprehensive command help                                ║",
+    "║  • Type 'help <command>' for detailed usage                                  ║",
+    "║  • Visit The Archive to store items in your bank                             ║",
+    "║                                                                              ║",
+    "║  TIPS:                                                                       ║",
+    "║  • Explore the city grid for random encounters                               ║",
+    "║  • Talk to NPCs - they may have quests for you                               ║",
+    "║  • Craft items using 'craft <recipe>' at workbenches                         ║",
+    "║                                                                              ║",
+    "╚══════════════════════════════════════════════════════════════════════════════╝",
+    ""
+  ],
+  "version": "1.44.0",
+  "last_updated": "2025-12-08"
+}

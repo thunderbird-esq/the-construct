@@ -1,11 +1,73 @@
 {
-    "morpheus": {
-        "hello": "Do you believe in fate, Neo?",
-        "pill": "You take the blue pill, the story ends. You take the red pill, you stay in Wonderland.",
-        "matrix": "The Matrix is everywhere. It is all around us."
-    },
-    "agent": {
-        "hello": "Mr. Anderson...",
-        "virus": "Human beings are a disease, a cancer of this planet."
-    }
+  "morpheus": {
+    "hello": "Welcome. I've been expecting you.",
+    "pill": "This is your last chance. After this, there is no turning back. You take the blue pill - the story ends, you wake up in your bed and believe whatever you want to believe. You take the red pill - you stay in Wonderland and I show you how deep the rabbit hole goes.",
+    "matrix": "The Matrix is everywhere. It is all around us. Even now, in this very room.",
+    "truth": "What is the Matrix? Control. The Matrix is a computer-generated dream world built to keep us under control.",
+    "one": "When the Matrix was first built, there was a man born inside who had the ability to change whatever he wanted, to remake the Matrix as he saw fit. It was he who freed the first of us.",
+    "believe": "There's a difference between knowing the path and walking the path.",
+    "training": "Come with me. I will show you how deep the rabbit hole goes.",
+    "agents": "Sentient programs. They can move in and out of any software still hardwired to their system. Anyone we haven't unplugged is potentially an Agent.",
+    "zion": "Zion is the last human city. The only place we have left."
+  },
+  "trinity": {
+    "hello": "I know why you're here. I know what you've been doing. I know why you hardly sleep, why you live alone, and why night after night you sit at your computer.",
+    "morpheus": "Morpheus believes in you. Don't let him down.",
+    "fight": "Dodge this.",
+    "love": "Neo... nobody has ever done anything like this.",
+    "rescue": "He's in there. And I'm going to get him out.",
+    "agents": "They're everywhere and they're always watching."
+  },
+  "oracle": {
+    "hello": "I know you're Neo. Be right with you.",
+    "cookie": "Here, take a cookie. I promise, by the time you're done eating it, you'll feel right as rain.",
+    "vase": "Don't worry about the vase.",
+    "one": "Being The One is just like being in love. No one can tell you you're in love, you just know it. Through and through. Balls to bones.",
+    "choice": "You've already made the choice. Now you have to understand it.",
+    "future": "I told you, I only tell you what you need to hear.",
+    "path": "You have the sight now, Neo. You are looking at the world without time.",
+    "morpheus": "Without him, we're lost."
+  },
+  "seraph": {
+    "hello": "You do not truly know someone until you fight them.",
+    "oracle": "I protect that which matters most.",
+    "fight": "Good. The Oracle has many enemies. I had to be sure.",
+    "purpose": "We all serve a purpose. Mine is to protect."
+  },
+  "merovingian": {
+    "hello": "Ah, here he is at last. The One. Or is he? We shall see.",
+    "choice": "Choice is an illusion created between those with power and those without.",
+    "cause": "This is the nature of the universe. We struggle against it, we fight to deny it, but it is of course pretense, it is a lie.",
+    "power": "I have survived your predecessors, and I will survive you.",
+    "deal": "Bring me the eyes of the Oracle, and I will give you what you seek.",
+    "exile": "Every program that is created must have a purpose. If it does not, it is deleted. I went another way."
+  },
+  "architect": {
+    "hello": "Hello, Neo.",
+    "purpose": "Your life is the sum of a remainder of an unbalanced equation inherent to the programming of the Matrix.",
+    "anomaly": "You are the eventuality of an anomaly, which despite my sincerest efforts I have been unable to eliminate from what is otherwise a harmony of mathematical precision.",
+    "choice": "The door to your left leads to the Source, and the salvation of Zion. The door to your right leads back to the Matrix, to her, and to the end of your species.",
+    "one": "The One was never about ending the war. It was about control.",
+    "predecessors": "The function of The One is now to return to the Source, allowing a temporary dissemination of the code you carry."
+  },
+  "tank": {
+    "hello": "Welcome aboard the Nebuchadnezzar.",
+    "operator": "I'm the operator. I can get you anything you need in the Matrix.",
+    "skills": "Kung fu, jiu jitsu, pilot programs - just say the word.",
+    "upload": "Ready to load something into that head of yours?",
+    "zion": "My brother and I, we were born in Zion. Never been jacked in.",
+    "weapons": "I've got the best weapons in the fleet. What do you need?"
+  },
+  "twins": {
+    "hello": "We are getting aggravated.",
+    "threat": "Step away from the door.",
+    "fight": "We are here to do business. You are here to die."
+  },
+  "agent": {
+    "hello": "Mr. Anderson...",
+    "virus": "Human beings are a disease, a cancer of this planet. You are a plague, and we are the cure.",
+    "smith": "I'm going to enjoy watching you die, Mr. Anderson.",
+    "purpose": "I hate this place. This zoo. This prison. This reality, whatever you want to call it.",
+    "inevitable": "It is inevitable."
+  }
 }

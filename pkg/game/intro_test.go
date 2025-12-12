@@ -129,15 +129,15 @@ func TestRainCharsNotEmpty(t *testing.T) {
 func TestANSIConstants(t *testing.T) {
 	// Verify ANSI constants are valid escape sequences
 	constants := map[string]string{
-		"ANSIReset":      ANSIReset,
-		"ANSIGreen":      ANSIGreen,
+		"ANSIReset":       ANSIReset,
+		"ANSIGreen":       ANSIGreen,
 		"ANSIBrightGreen": ANSIBrightGreen,
-		"ANSIDimGreen":   ANSIDimGreen,
-		"ANSIWhite":      ANSIWhite,
-		"ANSIClear":      ANSIClear,
-		"ANSIHideCursor": ANSIHideCursor,
-		"ANSIShowCursor": ANSIShowCursor,
-		"ANSIHome":       ANSIHome,
+		"ANSIDimGreen":    ANSIDimGreen,
+		"ANSIWhite":       ANSIWhite,
+		"ANSIClear":       ANSIClear,
+		"ANSIHideCursor":  ANSIHideCursor,
+		"ANSIShowCursor":  ANSIShowCursor,
+		"ANSIHome":        ANSIHome,
 	}
 
 	for name, val := range constants {

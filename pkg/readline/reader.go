@@ -10,10 +10,10 @@ import (
 
 // Reader wraps a connection with readline capabilities
 type Reader struct {
-	conn    net.Conn
-	history *History
-	prompt  string
-	editor  *Editor
+	conn     net.Conn
+	history  *History
+	prompt   string
+	editor   *Editor
 	fallback *bufio.Reader
 }
 

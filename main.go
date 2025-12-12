@@ -44,10 +44,10 @@ const (
 
 var (
 	userMutex       sync.Mutex
-	authLimiter     = ratelimit.New(5, 1*time.Minute)  // 5 auth attempts per minute
-	cmdLimiter      = ratelimit.New(10, 1*time.Second) // 10 commands per second per player
-	sessionManager  = session.NewManager()              // Player session management
-	gameClock       = world.DefaultClock()              // Day/night cycle
+	authLimiter     = ratelimit.New(5, 1*time.Minute)    // 5 auth attempts per minute
+	cmdLimiter      = ratelimit.New(10, 1*time.Second)   // 10 commands per second per player
+	sessionManager  = session.NewManager()               // Player session management
+	gameClock       = world.DefaultClock()               // Day/night cycle
 	playerHistories = make(map[string]*readline.History) // Per-player command history
 	historyMutex    sync.RWMutex
 )
@@ -56,7 +56,7 @@ var (
 func getPlayerHistory(playerName string) *readline.History {
 	historyMutex.Lock()
 	defer historyMutex.Unlock()
-	
+
 	if h, ok := playerHistories[playerName]; ok {
 		return h
 	}
@@ -347,8 +347,8 @@ func handleConnection(conn net.Conn, world *World) {
 	introConfig := game.IntroConfig{
 		Width:        80,
 		Height:       24,
-		RainFrames:   40,   // ~2 seconds of pure rain
-		RevealFrames: 80,   // ~4 seconds of reveal
+		RainFrames:   40, // ~2 seconds of pure rain
+		RevealFrames: 80, // ~4 seconds of reveal
 		FrameDelay:   50 * time.Millisecond,
 		FinalPause:   2 * time.Second,
 	}
@@ -632,7 +632,7 @@ func handleConnection(conn net.Conn, world *World) {
 			response = world.SeeCode(player)
 		case "focus":
 			response = world.Focus(player)
-		
+
 		// --- PHONE BOOTH COMMANDS ---
 		case "call":
 			response = world.CallPhone(player, arg)
@@ -821,19 +821,19 @@ func handleQuestCommand(player *Player, arg string) string {
 			return "Usage: quest accept <quest_id>\r\n"
 		}
 		questID := strings.ToLower(parts[1])
-		
+
 		// Check if can start
 		can, reason := quest.GlobalQuests.CanStart(player.Name, questID, player.Level)
 		if !can {
 			return Red + reason + Reset + "\r\n"
 		}
-		
+
 		// Start the quest
 		dialogue, err := quest.GlobalQuests.StartQuest(player.Name, questID)
 		if err != nil {
 			return Red + "Quest not found." + Reset + "\r\n"
 		}
-		
+
 		return Green + "Quest accepted!\r\n" + Reset + dialogue + "\r\n"
 
 	case "abandon":

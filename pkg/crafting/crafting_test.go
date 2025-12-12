@@ -26,7 +26,7 @@ func TestGetRecipeExact(t *testing.T) {
 	if len(m.Recipes) == 0 {
 		t.Skip("No recipes loaded")
 	}
-	
+
 	recipe := m.GetRecipe("health_vial")
 	if recipe == nil {
 		t.Fatal("Should find health_vial recipe")
@@ -41,7 +41,7 @@ func TestGetRecipePartial(t *testing.T) {
 	if len(m.Recipes) == 0 {
 		t.Skip("No recipes loaded")
 	}
-	
+
 	recipe := m.GetRecipe("health")
 	if recipe == nil {
 		t.Fatal("Should find recipe by partial match 'health'")
@@ -53,7 +53,7 @@ func TestGetRecipeCaseInsensitive(t *testing.T) {
 	if len(m.Recipes) == 0 {
 		t.Skip("No recipes loaded")
 	}
-	
+
 	recipe := m.GetRecipe("HEALTH_VIAL")
 	if recipe == nil {
 		t.Fatal("Should find recipe case-insensitively")
@@ -62,7 +62,7 @@ func TestGetRecipeCaseInsensitive(t *testing.T) {
 
 func TestGetRecipeNotFound(t *testing.T) {
 	m := NewManager()
-	
+
 	recipe := m.GetRecipe("nonexistent_recipe_xyz")
 	if recipe != nil {
 		t.Error("Should return nil for nonexistent recipe")
@@ -74,12 +74,12 @@ func TestListRecipes(t *testing.T) {
 	if len(m.Recipes) == 0 {
 		t.Skip("No recipes loaded")
 	}
-	
+
 	recipes := m.ListRecipes()
 	if len(recipes) == 0 {
 		t.Error("Should have at least one recipe")
 	}
-	
+
 	for _, r := range recipes {
 		if r.ID == "" {
 			t.Error("Recipe missing ID")
@@ -102,11 +102,11 @@ func TestRecipeIngredients(t *testing.T) {
 	if recipe == nil {
 		t.Skip("health_vial recipe not found")
 	}
-	
+
 	if len(recipe.Ingredients) == 0 {
 		t.Error("health_vial should have ingredients")
 	}
-	
+
 	for _, ing := range recipe.Ingredients {
 		if ing.ItemID == "" {
 			t.Error("Ingredient missing ItemID")
@@ -123,14 +123,14 @@ func TestCanCraft(t *testing.T) {
 	if recipe == nil {
 		t.Skip("health_vial recipe not found")
 	}
-	
+
 	// With sufficient materials
 	inventory := map[string]int{"trash": 10}
 	canCraft, missing := m.CanCraft(recipe, inventory, 0)
 	if !canCraft {
 		t.Errorf("Should be able to craft with sufficient materials, missing: %v", missing)
 	}
-	
+
 	// Without sufficient materials
 	inventory = map[string]int{"trash": 1}
 	canCraft, missing = m.CanCraft(recipe, inventory, 0)
@@ -148,15 +148,15 @@ func TestCanCraftSkillRequired(t *testing.T) {
 	if recipe == nil {
 		t.Skip("code_blade recipe not found")
 	}
-	
+
 	inventory := map[string]int{"katana": 1, "red_pill": 1, "trash": 10}
-	
+
 	// Without skill
 	canCraft, _ := m.CanCraft(recipe, inventory, 0)
 	if canCraft {
 		t.Error("Should not craft without required skill")
 	}
-	
+
 	// With skill
 	canCraft, _ = m.CanCraft(recipe, inventory, 5)
 	if !canCraft {
@@ -169,7 +169,7 @@ func TestGetRecipeList(t *testing.T) {
 	if len(m.Recipes) == 0 {
 		t.Skip("No recipes loaded")
 	}
-	
+
 	list := m.GetRecipeList()
 	if list == "" {
 		t.Error("Recipe list should not be empty")
@@ -184,7 +184,7 @@ func TestAllRecipesValid(t *testing.T) {
 	if len(m.Recipes) == 0 {
 		t.Skip("No recipes loaded")
 	}
-	
+
 	for id, recipe := range m.Recipes {
 		if recipe.ID != id {
 			t.Errorf("Recipe key %q doesn't match ID %q", id, recipe.ID)

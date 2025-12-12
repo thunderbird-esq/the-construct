@@ -28,34 +28,34 @@ type Metrics struct {
 	NewRegistrations int64
 
 	// Command metrics
-	CommandsExecuted  int64
-	CommandsByType    map[string]int64
-	CommandLatencyMs  float64
-	RateLimitedCmds   int64
+	CommandsExecuted int64
+	CommandsByType   map[string]int64
+	CommandLatencyMs float64
+	RateLimitedCmds  int64
 
 	// Combat metrics
-	CombatsStarted   int64
-	CombatsEnded     int64
-	NPCsKilled       int64
-	PlayerDeaths     int64
-	DamageDealt      int64
-	DamageReceived   int64
+	CombatsStarted int64
+	CombatsEnded   int64
+	NPCsKilled     int64
+	PlayerDeaths   int64
+	DamageDealt    int64
+	DamageReceived int64
 
 	// Economy metrics
-	ItemsBought    int64
-	ItemsSold      int64
+	ItemsBought     int64
+	ItemsSold       int64
 	MoneyCirculated int64
 
 	// World metrics
-	RoomsCount    int64
-	NPCsCount     int64
-	ItemsCount    int64
+	RoomsCount int64
+	NPCsCount  int64
+	ItemsCount int64
 
 	// Server metrics
-	StartTime     time.Time
-	LastUpdate    time.Time
-	UpdateCycles  int64
-	ErrorCount    int64
+	StartTime    time.Time
+	LastUpdate   time.Time
+	UpdateCycles int64
+	ErrorCount   int64
 }
 
 // Global metrics instance

@@ -15,9 +15,9 @@ type RoomVisit struct {
 
 // PlayerSession tracks a player's session
 type PlayerSession struct {
-	PlayerID   string
-	StartTime  time.Time
-	EndTime    time.Time
+	PlayerID     string
+	StartTime    time.Time
+	EndTime      time.Time
 	RoomsVisited []string
 	CommandsUsed map[string]int
 	NPCsKilled   int
@@ -41,8 +41,8 @@ type Tracker struct {
 	Sessions map[string]*PlayerSession
 
 	// Peak concurrent players
-	PeakPlayers     int
-	CurrentPlayers  int
+	PeakPlayers    int
+	CurrentPlayers int
 
 	// Total unique visitors
 	UniqueVisitors map[string]bool

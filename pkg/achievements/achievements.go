@@ -23,22 +23,22 @@ const (
 
 // Achievement definitions
 const (
-	AchFirstBlood     AchievementID = "first_blood"
-	AchAgentSlayer    AchievementID = "agent_slayer"
-	AchPacifist       AchievementID = "pacifist"
-	AchAwakened       AchievementID = "awakened"
-	AchReachZion      AchievementID = "reach_zion"
-	AchMeetOracle     AchievementID = "meet_oracle"
-	AchPhoneMaster    AchievementID = "phone_master"
-	AchPartyAnimal    AchievementID = "party_animal"
-	AchCrafter        AchievementID = "crafter"
-	AchMillionaire    AchievementID = "millionaire"
-	AchLevel10        AchievementID = "level_10"
-	AchLevel25        AchievementID = "level_25"
-	AchQuestComplete5 AchievementID = "quest_complete_5"
+	AchFirstBlood      AchievementID = "first_blood"
+	AchAgentSlayer     AchievementID = "agent_slayer"
+	AchPacifist        AchievementID = "pacifist"
+	AchAwakened        AchievementID = "awakened"
+	AchReachZion       AchievementID = "reach_zion"
+	AchMeetOracle      AchievementID = "meet_oracle"
+	AchPhoneMaster     AchievementID = "phone_master"
+	AchPartyAnimal     AchievementID = "party_animal"
+	AchCrafter         AchievementID = "crafter"
+	AchMillionaire     AchievementID = "millionaire"
+	AchLevel10         AchievementID = "level_10"
+	AchLevel25         AchievementID = "level_25"
+	AchQuestComplete5  AchievementID = "quest_complete_5"
 	AchQuestComplete10 AchievementID = "quest_complete_10"
-	AchSurvivor       AchievementID = "survivor"
-	AchTheOne         AchievementID = "the_one"
+	AchSurvivor        AchievementID = "survivor"
+	AchTheOne          AchievementID = "the_one"
 )
 
 // Achievement represents an earnable achievement

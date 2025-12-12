@@ -13,16 +13,16 @@ import (
 type StatType string
 
 const (
-	StatXP          StatType = "xp"
-	StatLevel       StatType = "level"
-	StatKills       StatType = "kills"
-	StatDeaths      StatType = "deaths"
+	StatXP              StatType = "xp"
+	StatLevel           StatType = "level"
+	StatKills           StatType = "kills"
+	StatDeaths          StatType = "deaths"
 	StatQuestsCompleted StatType = "quests"
-	StatMoney       StatType = "money"
-	StatPvPWins     StatType = "pvp_wins"
-	StatPvPLosses   StatType = "pvp_losses"
-	StatPlayTime    StatType = "play_time"
-	StatAchievements StatType = "achievements"
+	StatMoney           StatType = "money"
+	StatPvPWins         StatType = "pvp_wins"
+	StatPvPLosses       StatType = "pvp_losses"
+	StatPlayTime        StatType = "play_time"
+	StatAchievements    StatType = "achievements"
 )
 
 // PlayerStats holds all tracked statistics for a player

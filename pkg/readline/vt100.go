@@ -11,9 +11,9 @@ const (
 	CursorHome  = "\x1b[H"
 
 	// Line clearing
-	ClearToEnd   = "\x1b[K"  // Clear from cursor to end of line
-	ClearLine    = "\x1b[2K" // Clear entire line
-	ClearScreen  = "\x1b[2J" // Clear entire screen
+	ClearToEnd  = "\x1b[K"  // Clear from cursor to end of line
+	ClearLine   = "\x1b[2K" // Clear entire line
+	ClearScreen = "\x1b[2J" // Clear entire screen
 
 	// Cursor save/restore
 	CursorSave    = "\x1b[s"

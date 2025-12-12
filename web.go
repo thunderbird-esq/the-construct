@@ -17,9 +17,13 @@ var upgrader = websocket.Upgrader{CheckOrigin: checkWebSocketOrigin}
 
 func checkWebSocketOrigin(r *http.Request) bool {
 	origin := r.Header.Get("Origin")
-	if origin == "" || Config.AllowedOrigins == "*" { return true }
+	if origin == "" || Config.AllowedOrigins == "*" {
+		return true
+	}
 	for _, a := range strings.Split(Config.AllowedOrigins, ",") {
-		if strings.TrimSpace(a) == origin { return true }
+		if strings.TrimSpace(a) == origin {
+			return true
+		}
 	}
 	return false
 }
@@ -29,16 +33,27 @@ func filterTelnetIAC(data []byte) []byte {
 	for i := 0; i < len(data); {
 		if data[i] == 255 && i+1 < len(data) {
 			switch data[i+1] {
-			case 255: result = append(result, 255); i += 2
-			case 251, 252, 253, 254: i += 3
-			case 250: i += 2; for i < len(data) && !(data[i] == 255 && i+1 < len(data) && data[i+1] == 240) { i++ }; i += 2
-			default: i += 2
+			case 255:
+				result = append(result, 255)
+				i += 2
+			case 251, 252, 253, 254:
+				i += 3
+			case 250:
+				i += 2
+				for i < len(data) && !(data[i] == 255 && i+1 < len(data) && data[i+1] == 240) {
+					i++
+				}
+				i += 2
+			default:
+				i += 2
 			}
-		} else { result = append(result, data[i]); i++ }
+		} else {
+			result = append(result, data[i])
+			i++
+		}
 	}
 	return result
 }
-
 
 func startWebServer(w *World) {
 	startTime := time.Now()
@@ -64,18 +79,38 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 
 func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	ws, _ := upgrader.Upgrade(w, r, nil)
-	if ws == nil { return }
+	if ws == nil {
+		return
+	}
 	defer ws.Close()
 	tcpConn, err := net.Dial("tcp", "localhost:"+Config.TelnetPort)
-	if err != nil { ws.WriteMessage(websocket.TextMessage, []byte("Connection failed\r\n")); return }
+	if err != nil {
+		ws.WriteMessage(websocket.TextMessage, []byte("Connection failed\r\n"))
+		return
+	}
 	defer tcpConn.Close()
 	go func() {
 		buf := make([]byte, 4096)
-		for { n, e := tcpConn.Read(buf); if e != nil { return }; if f := filterTelnetIAC(buf[:n]); len(f) > 0 { if ws.WriteMessage(websocket.TextMessage, f) != nil { return } } }
+		for {
+			n, e := tcpConn.Read(buf)
+			if e != nil {
+				return
+			}
+			if f := filterTelnetIAC(buf[:n]); len(f) > 0 {
+				if ws.WriteMessage(websocket.TextMessage, f) != nil {
+					return
+				}
+			}
+		}
 	}()
-	for { _, m, e := ws.ReadMessage(); if e != nil { break }; tcpConn.Write(m) }
+	for {
+		_, m, e := ws.ReadMessage()
+		if e != nil {
+			break
+		}
+		tcpConn.Write(m)
+	}
 }
-
 
 const htmlClient = `<!DOCTYPE html>
 <html>

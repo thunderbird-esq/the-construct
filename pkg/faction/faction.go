@@ -42,9 +42,9 @@ type Faction struct {
 
 // PlayerFaction tracks a player's faction standing
 type PlayerFaction struct {
-	Faction     FactionID        `json:"faction"`
-	Reputation  map[FactionID]int `json:"reputation"`
-	JoinedAt    int64            `json:"joined_at"`
+	Faction    FactionID         `json:"faction"`
+	Reputation map[FactionID]int `json:"reputation"`
+	JoinedAt   int64             `json:"joined_at"`
 }
 
 // Manager handles faction operations

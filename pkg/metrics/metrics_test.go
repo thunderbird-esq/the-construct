@@ -44,12 +44,12 @@ func TestRecordCommand(t *testing.T) {
 func TestRecordCombat(t *testing.T) {
 	initialStart := M.CombatsStarted
 	initialEnd := M.CombatsEnded
-	
+
 	RecordCombatStart()
 	if M.CombatsStarted != initialStart+1 {
 		t.Error("CombatsStarted should increment")
 	}
-	
+
 	RecordCombatEnd()
 	if M.CombatsEnded != initialEnd+1 {
 		t.Error("CombatsEnded should increment")
@@ -67,9 +67,9 @@ func TestRecordNPCKill(t *testing.T) {
 func TestRecordDamage(t *testing.T) {
 	initialDealt := M.DamageDealt
 	initialReceived := M.DamageReceived
-	
+
 	RecordDamage(10, 5)
-	
+
 	if M.DamageDealt != initialDealt+10 {
 		t.Error("DamageDealt should increase by 10")
 	}
@@ -81,9 +81,9 @@ func TestRecordDamage(t *testing.T) {
 func TestRecordPurchase(t *testing.T) {
 	initialBought := M.ItemsBought
 	initialMoney := M.MoneyCirculated
-	
+
 	RecordPurchase(100)
-	
+
 	if M.ItemsBought != initialBought+1 {
 		t.Error("ItemsBought should increment")
 	}
@@ -95,9 +95,9 @@ func TestRecordPurchase(t *testing.T) {
 func TestRecordSale(t *testing.T) {
 	initialSold := M.ItemsSold
 	initialMoney := M.MoneyCirculated
-	
+
 	RecordSale(50)
-	
+
 	if M.ItemsSold != initialSold+1 {
 		t.Error("ItemsSold should increment")
 	}
@@ -145,19 +145,19 @@ func TestSetWorldCounts(t *testing.T) {
 
 func TestHandler(t *testing.T) {
 	handler := Handler()
-	
+
 	req := httptest.NewRequest("GET", "/metrics", nil)
 	w := httptest.NewRecorder()
-	
+
 	handler.ServeHTTP(w, req)
-	
+
 	resp := w.Result()
 	if resp.StatusCode != 200 {
 		t.Errorf("Status = %d, want 200", resp.StatusCode)
 	}
-	
+
 	body := w.Body.String()
-	
+
 	// Check for expected metrics
 	expectedMetrics := []string{
 		"matrix_connections_active",
@@ -165,13 +165,13 @@ func TestHandler(t *testing.T) {
 		"matrix_commands_total",
 		"matrix_uptime_seconds",
 	}
-	
+
 	for _, metric := range expectedMetrics {
 		if !strings.Contains(body, metric) {
 			t.Errorf("Missing metric: %s", metric)
 		}
 	}
-	
+
 	// Check content type
 	ct := resp.Header.Get("Content-Type")
 	if !strings.Contains(ct, "text/plain") {

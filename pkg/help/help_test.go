@@ -10,11 +10,11 @@ func TestGetHelp(t *testing.T) {
 		expect bool
 	}{
 		{"look", true},
-		{"l", true},         // alias
+		{"l", true}, // alias
 		{"north", true},
-		{"n", true},         // alias
+		{"n", true}, // alias
 		{"kill", true},
-		{"k", true},         // alias
+		{"k", true}, // alias
 		{"nonexistent", false},
 	}
 

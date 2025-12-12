@@ -38,25 +38,25 @@ type Rewards struct {
 
 // Instance represents an active training program session
 type Instance struct {
-	ID          string
-	Program     *Program
-	Players     map[string]bool // player name -> in combat
-	StartTime   time.Time
-	EndTime     time.Time
-	IsActive    bool
-	IsPvP       bool
-	Scores      map[string]int // player -> score
-	mu          sync.RWMutex
+	ID        string
+	Program   *Program
+	Players   map[string]bool // player name -> in combat
+	StartTime time.Time
+	EndTime   time.Time
+	IsActive  bool
+	IsPvP     bool
+	Scores    map[string]int // player -> score
+	mu        sync.RWMutex
 }
 
 // Challenge represents a combat challenge with leaderboard
 type Challenge struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	BestTime    int      `json:"best_time"`    // seconds
-	BestPlayer  string   `json:"best_player"`
-	Attempts    int      `json:"attempts"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	BestTime    int    `json:"best_time"` // seconds
+	BestPlayer  string `json:"best_player"`
+	Attempts    int    `json:"attempts"`
 }
 
 // Manager handles training programs

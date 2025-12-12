@@ -24,7 +24,7 @@ func TestListPrograms(t *testing.T) {
 
 func TestGetProgram(t *testing.T) {
 	m := NewManager()
-	
+
 	p := m.GetProgram("combat_basic")
 	if p == nil {
 		t.Fatal("GetProgram returned nil")

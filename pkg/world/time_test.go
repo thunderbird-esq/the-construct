@@ -157,7 +157,7 @@ func TestTimeProgressionWraps(t *testing.T) {
 func TestAllTimePeriodsHaveDescriptions(t *testing.T) {
 	// Test each time period has a non-empty description
 	cycleLength := 80 * time.Millisecond
-	
+
 	// Sample at each 1/8th of the cycle
 	for i := 0; i < 8; i++ {
 		offset := time.Duration(float64(cycleLength) * (float64(i) + 0.5) / 8)

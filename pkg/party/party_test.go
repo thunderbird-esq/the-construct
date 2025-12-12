@@ -318,19 +318,19 @@ func TestIsLeader(t *testing.T) {
 
 func TestAreInSameParty(t *testing.T) {
 	m := NewManager()
-	
+
 	// Use unique names with microsecond precision + random component
 	ts := time.Now().UnixMicro()
 	leader := fmt.Sprintf("asp_lead_%d", ts)
 	player2 := fmt.Sprintf("asp_p2_%d", ts+1)
 	other := fmt.Sprintf("asp_oth_%d", ts+2)
-	
+
 	party, err := m.Create(leader)
 	if err != nil {
 		t.Fatalf("Failed to create party: %v", err)
 	}
 	t.Logf("Created party %s with leader %s", party.ID, leader)
-	
+
 	if err := m.Invite(leader, player2); err != nil {
 		t.Fatalf("Invite failed: %v", err)
 	}
@@ -347,7 +347,7 @@ func TestAreInSameParty(t *testing.T) {
 		t.Fatalf("Failed to create other party: %v", err)
 	}
 	t.Logf("Created other party %s with leader %s", otherParty.ID, other)
-	
+
 	if m.AreInSameParty(leader, other) {
 		// Debug: print party IDs
 		leaderParty := m.GetParty(leader)
@@ -359,18 +359,18 @@ func TestAreInSameParty(t *testing.T) {
 
 func TestGetPendingInvites(t *testing.T) {
 	m := NewManager()
-	
+
 	// Use unique names for this test to avoid conflicts with other test runs
 	leader1 := fmt.Sprintf("invites_leader1_%d", time.Now().UnixNano())
 	leader2 := fmt.Sprintf("invites_leader2_%d", time.Now().UnixNano())
 	player := fmt.Sprintf("invites_player_%d", time.Now().UnixNano())
-	
+
 	party1, err := m.Create(leader1)
 	if err != nil {
 		t.Fatalf("Failed to create party1: %v", err)
 	}
 	t.Logf("Created party1 with leader %s, ID: %s", leader1, party1.ID)
-	
+
 	party2, err := m.Create(leader2)
 	if err != nil {
 		t.Fatalf("Failed to create party2: %v", err)
@@ -381,7 +381,7 @@ func TestGetPendingInvites(t *testing.T) {
 	if err1 != nil {
 		t.Errorf("First invite failed: %v (leader1=%s, party1.Leader=%s)", err1, leader1, party1.Leader)
 	}
-	
+
 	err2 := m.Invite(leader2, player)
 	if err2 != nil {
 		t.Errorf("Second invite failed: %v", err2)
@@ -421,7 +421,7 @@ func TestGlobalParty(t *testing.T) {
 	if GlobalParty == nil {
 		t.Error("GlobalParty should be initialized")
 	}
-	
+
 	// Test that GlobalParty works (use unique names to avoid pollution)
 	testPlayer := "globaltest_unique_player"
 	GlobalParty.Create(testPlayer)

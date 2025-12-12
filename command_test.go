@@ -486,7 +486,6 @@ func TestHandleSay(t *testing.T) {
 	t.Logf("HandleSay response: %s", response)
 }
 
-
 // TestLook verifies the look command
 func TestLook(t *testing.T) {
 	world := NewWorld()
@@ -525,15 +524,15 @@ func TestShowScore(t *testing.T) {
 	world := NewWorld()
 
 	player := &Player{
-		Name:   "TestPlayer",
-		HP:     80,
-		MaxHP:  100,
-		MP:     30,
-		MaxMP:  50,
-		Money:  500,
-		XP:     100,
-		Level:  2,
-		Class:  "Hacker",
+		Name:  "TestPlayer",
+		HP:    80,
+		MaxHP: 100,
+		MP:    30,
+		MaxMP: 50,
+		Money: 500,
+		XP:    100,
+		Level: 2,
+		Class: "Hacker",
 	}
 
 	result := world.ShowScore(player)

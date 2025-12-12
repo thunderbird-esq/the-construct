@@ -12,25 +12,25 @@ var rainChars = []rune("ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂ�
 
 // ANSI color codes for intro
 const (
-	ANSIReset     = "\033[0m"
-	ANSIGreen     = "\033[32m"
+	ANSIReset       = "\033[0m"
+	ANSIGreen       = "\033[32m"
 	ANSIBrightGreen = "\033[92m"
-	ANSIDimGreen  = "\033[2;32m"
-	ANSIWhite     = "\033[97m"
-	ANSIClear     = "\033[H\033[2J"
-	ANSIHideCursor = "\033[?25l"
-	ANSIShowCursor = "\033[?25h"
-	ANSIHome      = "\033[H"
+	ANSIDimGreen    = "\033[2;32m"
+	ANSIWhite       = "\033[97m"
+	ANSIClear       = "\033[H\033[2J"
+	ANSIHideCursor  = "\033[?25l"
+	ANSIShowCursor  = "\033[?25h"
+	ANSIHome        = "\033[H"
 )
 
 // IntroConfig holds configuration for the intro animation
 type IntroConfig struct {
-	Width      int           // Terminal width
-	Height     int           // Terminal height  
-	RainFrames int           // Number of pure rain frames
-	RevealFrames int         // Number of frames for art reveal
-	FrameDelay time.Duration // Delay between frames
-	FinalPause time.Duration // Pause after reveal completes
+	Width        int           // Terminal width
+	Height       int           // Terminal height
+	RainFrames   int           // Number of pure rain frames
+	RevealFrames int           // Number of frames for art reveal
+	FrameDelay   time.Duration // Delay between frames
+	FinalPause   time.Duration // Pause after reveal completes
 }
 
 // DefaultIntroConfig returns sensible defaults for telnet clients

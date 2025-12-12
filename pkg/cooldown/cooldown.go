@@ -24,33 +24,33 @@ func NewManager() *Manager {
 // AbilityCooldowns defines the cooldown duration for each ability
 var AbilityCooldowns = map[string]time.Duration{
 	// Hacker skills
-	"glitch":    5 * time.Second,
-	"patch":     15 * time.Second,
-	"overflow":  30 * time.Second,
-	"backdoor":  60 * time.Second,
-	
+	"glitch":   5 * time.Second,
+	"patch":    15 * time.Second,
+	"overflow": 30 * time.Second,
+	"backdoor": 60 * time.Second,
+
 	// Enforcer skills
-	"smash":     3 * time.Second,
-	"fortify":   20 * time.Second,
-	"rampage":   45 * time.Second,
-	"ironwall":  60 * time.Second,
-	
+	"smash":    3 * time.Second,
+	"fortify":  20 * time.Second,
+	"rampage":  45 * time.Second,
+	"ironwall": 60 * time.Second,
+
 	// Operative skills
-	"strike":    4 * time.Second,
-	"vanish":    30 * time.Second,
+	"strike":      4 * time.Second,
+	"vanish":      30 * time.Second,
 	"assassinate": 60 * time.Second,
-	"shadowstep": 20 * time.Second,
-	
+	"shadowstep":  20 * time.Second,
+
 	// Common abilities
-	"flee":      10 * time.Second,
-	"use":       2 * time.Second,
+	"flee": 10 * time.Second,
+	"use":  2 * time.Second,
 }
 
 // Use marks an ability as used, starting its cooldown
 func (m *Manager) Use(playerName, ability string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	
+
 	if m.cooldowns[playerName] == nil {
 		m.cooldowns[playerName] = make(map[string]time.Time)
 	}
@@ -61,22 +61,22 @@ func (m *Manager) Use(playerName, ability string) {
 func (m *Manager) IsReady(playerName, ability string) bool {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	
+
 	playerCDs, ok := m.cooldowns[playerName]
 	if !ok {
 		return true
 	}
-	
+
 	lastUsed, ok := playerCDs[ability]
 	if !ok {
 		return true
 	}
-	
+
 	cooldown, ok := AbilityCooldowns[ability]
 	if !ok {
 		cooldown = 5 * time.Second // Default cooldown
 	}
-	
+
 	return time.Since(lastUsed) >= cooldown
 }
 
@@ -84,22 +84,22 @@ func (m *Manager) IsReady(playerName, ability string) bool {
 func (m *Manager) TimeRemaining(playerName, ability string) time.Duration {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	
+
 	playerCDs, ok := m.cooldowns[playerName]
 	if !ok {
 		return 0
 	}
-	
+
 	lastUsed, ok := playerCDs[ability]
 	if !ok {
 		return 0
 	}
-	
+
 	cooldown, ok := AbilityCooldowns[ability]
 	if !ok {
 		cooldown = 5 * time.Second
 	}
-	
+
 	remaining := cooldown - time.Since(lastUsed)
 	if remaining < 0 {
 		return 0
@@ -111,26 +111,26 @@ func (m *Manager) TimeRemaining(playerName, ability string) time.Duration {
 func (m *Manager) GetAllCooldowns(playerName string) map[string]time.Duration {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	
+
 	result := make(map[string]time.Duration)
-	
+
 	playerCDs, ok := m.cooldowns[playerName]
 	if !ok {
 		return result
 	}
-	
+
 	for ability, lastUsed := range playerCDs {
 		cooldown, ok := AbilityCooldowns[ability]
 		if !ok {
 			cooldown = 5 * time.Second
 		}
-		
+
 		remaining := cooldown - time.Since(lastUsed)
 		if remaining > 0 {
 			result[ability] = remaining
 		}
 	}
-	
+
 	return result
 }
 
@@ -145,7 +145,7 @@ func (m *Manager) Reset(playerName string) {
 func (m *Manager) ResetAbility(playerName, ability string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	
+
 	if playerCDs, ok := m.cooldowns[playerName]; ok {
 		delete(playerCDs, ability)
 	}
@@ -155,9 +155,9 @@ func (m *Manager) ResetAbility(playerName, ability string) {
 func (m *Manager) Cleanup() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	
+
 	maxCooldown := 2 * time.Minute // Longest possible cooldown
-	
+
 	for player, abilities := range m.cooldowns {
 		for ability, lastUsed := range abilities {
 			if time.Since(lastUsed) > maxCooldown {

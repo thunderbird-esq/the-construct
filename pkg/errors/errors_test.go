@@ -148,7 +148,7 @@ func TestIsPermissionDenied(t *testing.T) {
 
 func TestUnwrap(t *testing.T) {
 	ge := NewGameError("Test", ErrNotFound, "context")
-	
+
 	unwrapped := ge.Unwrap()
 	if unwrapped != ErrNotFound {
 		t.Error("Unwrap should return underlying error")

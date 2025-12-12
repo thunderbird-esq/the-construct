@@ -13,9 +13,9 @@ const MaxPartySize = 5
 
 // Party represents a group of players
 type Party struct {
-	ID        string    // Unique party ID
-	Leader    string    // Leader's player name (lowercase)
-	Members   []string  // All members including leader
+	ID        string               // Unique party ID
+	Leader    string               // Leader's player name (lowercase)
+	Members   []string             // All members including leader
 	Invites   map[string]time.Time // Pending invites (player -> invite time)
 	CreatedAt time.Time
 	mu        sync.RWMutex

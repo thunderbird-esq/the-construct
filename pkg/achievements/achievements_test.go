@@ -82,8 +82,8 @@ func TestGetEarnedAchievements(t *testing.T) {
 func TestTotalPoints(t *testing.T) {
 	m := NewManager()
 
-	m.Award("player1", AchFirstBlood)   // 10 points
-	m.Award("player1", AchAwakened)     // 25 points
+	m.Award("player1", AchFirstBlood) // 10 points
+	m.Award("player1", AchAwakened)   // 25 points
 
 	points := m.GetTotalPoints("player1")
 	if points != 35 {

@@ -56,7 +56,7 @@ type NPC struct {
 	OriginalRoom                         string
 	DeathTime                            time.Time
 	IsDead                               bool
-	IsAgent                              bool `json:"is_agent,omitempty"`   // Agent NPCs hunt awakened players
+	IsAgent                              bool   `json:"is_agent,omitempty"` // Agent NPCs hunt awakened players
 	TargetPlayer                         string `json:"-"`                  // Player being hunted (runtime only)
 }
 
@@ -71,7 +71,7 @@ type Room struct {
 	NPCs            []*NPC
 	ItemMap         map[string]*Item
 	NPCMap          map[string]*NPC
-	HasPhone        bool              `json:"has_phone,omitempty"`  // Room has a phone booth for fast travel
+	HasPhone        bool `json:"has_phone,omitempty"` // Room has a phone booth for fast travel
 }
 
 // WorldData is a container for serializing the world state to JSON.
@@ -94,10 +94,10 @@ type Player struct {
 	XP, Level                   int
 	Class                       string
 	Money                       int
-	CraftingSkill               int `json:"crafting_skill,omitempty"`
-	Awakened                    bool     `json:"awakened,omitempty"`           // True if player took the red pill
-	Heat                        int      `json:"heat,omitempty"`               // Agent aggro level (0-100)
-	DiscoveredPhones            []string `json:"discovered_phones,omitempty"`  // Phone booth IDs player can call
+	CraftingSkill               int      `json:"crafting_skill,omitempty"`
+	Awakened                    bool     `json:"awakened,omitempty"`          // True if player took the red pill
+	Heat                        int      `json:"heat,omitempty"`              // Agent aggro level (0-100)
+	DiscoveredPhones            []string `json:"discovered_phones,omitempty"` // Phone booth IDs player can call
 }
 
 // World represents the entire game state including all rooms, players, NPCs, and items.
@@ -327,6 +327,7 @@ func (w *World) LoadPlayer(name string, client *Client) *Player {
 	p.State = "IDLE"
 	return &p
 }
+
 // Broadcast sends a message to all players in a room, optionally excluding one player.
 // If exclude is nil, the message is sent to everyone in the room.
 func (w *World) Broadcast(roomID string, exclude *Player, msg string) {
@@ -680,7 +681,7 @@ func (w *World) Update() {
 			}
 		}
 	}
-	
+
 	// Phase 1: Decay heat and run Agent AI (every ~30 seconds via counter)
 	w.DecayHeat()
 	w.AgentAI()
@@ -847,10 +848,10 @@ func (w *World) ResolveCombatRound(p *Player) {
 					output += fmt.Sprintf("\r\n%s dropped %s.", targetNPC.Name, ColorizeItem(drop))
 				}
 			}
-			
+
 			// Add heat for the kill (Agents attract attention)
 			w.AddHeat(p, HeatPerKill)
-			
+
 			targetNPC.IsDead = true
 			targetNPC.DeathTime = time.Now()
 			w.DeadNPCs = append(w.DeadNPCs, targetNPC)

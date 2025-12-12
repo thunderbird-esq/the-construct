@@ -14,31 +14,31 @@ import (
 type ObjectiveType string
 
 const (
-	ObjKill     ObjectiveType = "kill"     // Kill N of target
-	ObjCollect  ObjectiveType = "collect"  // Collect N of item
-	ObjDeliver  ObjectiveType = "deliver"  // Deliver item to NPC
-	ObjVisit    ObjectiveType = "visit"    // Visit a room
-	ObjTalk     ObjectiveType = "talk"     // Talk to NPC
-	ObjUse      ObjectiveType = "use"      // Use an item
-	ObjChoice   ObjectiveType = "choice"   // Make a choice (red/blue pill)
+	ObjKill    ObjectiveType = "kill"    // Kill N of target
+	ObjCollect ObjectiveType = "collect" // Collect N of item
+	ObjDeliver ObjectiveType = "deliver" // Deliver item to NPC
+	ObjVisit   ObjectiveType = "visit"   // Visit a room
+	ObjTalk    ObjectiveType = "talk"    // Talk to NPC
+	ObjUse     ObjectiveType = "use"     // Use an item
+	ObjChoice  ObjectiveType = "choice"  // Make a choice (red/blue pill)
 )
 
 // Objective represents a single quest objective
 type Objective struct {
 	ID          string        `json:"id"`
 	Type        ObjectiveType `json:"type"`
-	Target      string        `json:"target"`       // NPC ID, item ID, or room ID
-	Count       int           `json:"count"`        // How many (for kill/collect)
-	Description string        `json:"description"`  // Human-readable description
+	Target      string        `json:"target"`      // NPC ID, item ID, or room ID
+	Count       int           `json:"count"`       // How many (for kill/collect)
+	Description string        `json:"description"` // Human-readable description
 }
 
 // Reward represents quest completion rewards
 type Reward struct {
 	XP     int      `json:"xp"`
 	Money  int      `json:"money"`
-	Items  []string `json:"items"`   // Item IDs to give
-	Title  string   `json:"title"`   // Title to unlock
-	Unlock string   `json:"unlock"`  // Quest ID to unlock
+	Items  []string `json:"items"`  // Item IDs to give
+	Title  string   `json:"title"`  // Title to unlock
+	Unlock string   `json:"unlock"` // Quest ID to unlock
 }
 
 // Stage represents a stage of a multi-stage quest
@@ -47,8 +47,8 @@ type Stage struct {
 	Name        string      `json:"name"`
 	Description string      `json:"description"`
 	Objectives  []Objective `json:"objectives"`
-	Dialogue    string      `json:"dialogue"`     // Text shown when starting stage
-	Completion  string      `json:"completion"`   // Text shown when completing stage
+	Dialogue    string      `json:"dialogue"`   // Text shown when starting stage
+	Completion  string      `json:"completion"` // Text shown when completing stage
 }
 
 // Quest represents a complete quest definition
@@ -56,8 +56,8 @@ type Quest struct {
 	ID            string   `json:"id"`
 	Name          string   `json:"name"`
 	Description   string   `json:"description"`
-	Giver         string   `json:"giver"`          // NPC ID who gives quest
-	Prerequisites []string `json:"prerequisites"`  // Quest IDs that must be completed first
+	Giver         string   `json:"giver"`         // NPC ID who gives quest
+	Prerequisites []string `json:"prerequisites"` // Quest IDs that must be completed first
 	Stages        []Stage  `json:"stages"`
 	Reward        Reward   `json:"reward"`
 	Repeatable    bool     `json:"repeatable"`
@@ -66,11 +66,11 @@ type Quest struct {
 
 // Progress tracks a player's quest progress
 type Progress struct {
-	QuestID       string             `json:"quest_id"`
-	CurrentStage  int                `json:"current_stage"`
+	QuestID           string         `json:"quest_id"`
+	CurrentStage      int            `json:"current_stage"`
 	ObjectiveProgress map[string]int `json:"objective_progress"` // objective ID -> count
-	StartedAt     time.Time          `json:"started_at"`
-	CompletedAt   time.Time          `json:"completed_at,omitempty"`
+	StartedAt         time.Time      `json:"started_at"`
+	CompletedAt       time.Time      `json:"completed_at,omitempty"`
 }
 
 // PlayerQuests holds all quest data for a player
@@ -82,8 +82,8 @@ type PlayerQuests struct {
 // Manager handles quest operations
 type Manager struct {
 	mu      sync.RWMutex
-	Quests  map[string]*Quest          // All available quests
-	Players map[string]*PlayerQuests   // Player name -> quest progress
+	Quests  map[string]*Quest        // All available quests
+	Players map[string]*PlayerQuests // Player name -> quest progress
 }
 
 // NewManager creates a new quest manager and loads quests
@@ -206,7 +206,7 @@ func (m *Manager) loadDefaultQuests() {
 						{ID: "kill_guards", Type: ObjKill, Target: "riot_cop", Count: 5, Description: "Clear the guards"},
 						{ID: "reach_floor", Type: ObjVisit, Target: "agent_floor", Count: 1, Description: "Reach the interrogation floor"},
 					},
-					Dialogue:    "There are only two ways out of this building. One is that scaffold, the other is in their custody.",
+					Dialogue: "There are only two ways out of this building. One is that scaffold, the other is in their custody.",
 				},
 				{
 					ID:          "face_agents",
@@ -309,10 +309,10 @@ func (m *Manager) StartQuest(playerName, questID string) (string, error) {
 	}
 
 	progress := &Progress{
-		QuestID:          questID,
-		CurrentStage:     0,
+		QuestID:           questID,
+		CurrentStage:      0,
 		ObjectiveProgress: make(map[string]int),
-		StartedAt:        time.Now(),
+		StartedAt:         time.Now(),
 	}
 
 	m.Players[name].Active[questID] = progress
@@ -405,11 +405,11 @@ func (m *Manager) GetActiveQuests(playerName string) string {
 		}
 
 		sb.WriteString(quest.Name + "\r\n")
-		
+
 		if progress.CurrentStage < len(quest.Stages) {
 			stage := quest.Stages[progress.CurrentStage]
 			sb.WriteString("  Stage: " + stage.Name + "\r\n")
-			
+
 			for _, obj := range stage.Objectives {
 				current := progress.ObjectiveProgress[obj.ID]
 				status := "[ ]"

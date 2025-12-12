@@ -8,12 +8,12 @@ import (
 
 // Combat constants
 const (
-	CombatTickRate  = 500 // milliseconds between combat rounds
-	BaseHitChance   = 65  // percent chance to hit with equal AC
-	CriticalChance  = 5   // percent chance for critical hit
-	CriticalMulti   = 2   // damage multiplier for critical hits
-	FleeChance      = 50  // percent chance to successfully flee
-	RespawnTime     = 60  // seconds until NPC respawns
+	CombatTickRate = 500 // milliseconds between combat rounds
+	BaseHitChance  = 65  // percent chance to hit with equal AC
+	CriticalChance = 5   // percent chance for critical hit
+	CriticalMulti  = 2   // damage multiplier for critical hits
+	FleeChance     = 50  // percent chance to successfully flee
+	RespawnTime    = 60  // seconds until NPC respawns
 )
 
 // CombatResult represents the outcome of a combat action

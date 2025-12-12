@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -254,6 +255,13 @@ func (c *Client) readPassword() (string, error) {
 }
 
 func main() {
+	// Create server context for graceful shutdown
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Connection limiter semaphore
+	connSemaphore := make(chan struct{}, MaxConnections)
+
 	// Use configured port
 	listenAddr := ":" + Config.TelnetPort
 	listener, err := net.Listen("tcp", listenAddr)
@@ -267,8 +275,14 @@ func main() {
 
 	go func() {
 		ticker := time.NewTicker(500 * time.Millisecond)
-		for range ticker.C {
-			world.Update()
+		for {
+			select {
+			case <-ctx.Done():
+				ticker.Stop()
+				return
+			case <-ticker.C:
+				world.Update()
+			}
 		}
 	}()
 
@@ -277,6 +291,7 @@ func main() {
 		Str("telnet_port", Config.TelnetPort).
 		Str("web_port", Config.WebPort).
 		Str("admin_addr", Config.AdminBindAddr).
+		Int("max_connections", MaxConnections).
 		Msg("Matrix Construct Server started")
 
 	// Setup graceful shutdown handler
@@ -290,20 +305,39 @@ func main() {
 			if err != nil {
 				// Check if we're shutting down
 				select {
-				case <-shutdown:
+				case <-ctx.Done():
 					return
 				default:
 					logging.Error().Err(err).Msg("Accept error")
 					continue
 				}
 			}
-			go handleConnection(conn, world)
+
+			// Try to acquire connection slot
+			select {
+			case connSemaphore <- struct{}{}:
+				// Got slot, handle connection
+				go func(c net.Conn) {
+					defer func() { <-connSemaphore }() // Release slot when done
+					handleConnection(ctx, c, world)
+				}(conn)
+			default:
+				// Server full
+				conn.Write([]byte("Server full. Please try again later.\r\n"))
+				conn.Close()
+				logging.Warn().Msg("Connection rejected: server at max capacity")
+			}
 		}
 	}()
 
 	// Wait for shutdown signal
 	<-shutdown
-	logging.Info().Msg("Shutdown signal received, saving all player data...")
+	logging.Info().Msg("Shutdown signal received, canceling context...")
+
+	// Cancel context to signal all goroutines
+	cancel()
+
+	logging.Info().Msg("Saving all player data...")
 
 	// Save all connected players
 	world.mutex.RLock()
@@ -325,7 +359,7 @@ func main() {
 	listener.Close()
 }
 
-func handleConnection(conn net.Conn, world *World) {
+func handleConnection(ctx context.Context, conn net.Conn, world *World) {
 	client := &Client{conn: conn, reader: bufio.NewReader(conn)}
 	defer conn.Close()
 
@@ -434,6 +468,14 @@ func handleConnection(conn net.Conn, world *World) {
 	rl := readline.NewReader(conn, history, "> ")
 
 	for {
+		// Check for server shutdown
+		select {
+		case <-ctx.Done():
+			client.Write("\r\n" + Yellow + "Server shutting down...\r\n" + Reset)
+			return
+		default:
+		}
+
 		input, err := rl.ReadLine()
 		if err != nil {
 			// Could be timeout or disconnect
@@ -733,13 +775,39 @@ func handleConnection(conn net.Conn, world *World) {
 				response = "Save what?\r\n"
 			}
 
+		// --- QOL COMMANDS ---
+		case "brief":
+			player.BriefMode = !player.BriefMode
+			if player.BriefMode {
+				response = "Brief mode ON - room descriptions shortened.\r\n"
+			} else {
+				response = "Brief mode OFF - full room descriptions.\r\n"
+			}
+			world.SavePlayer(player)
+
+		case "theme":
+			if arg == "" {
+				response = fmt.Sprintf("Current theme: %s\r\nAvailable: green, amber, white, none\r\nUsage: theme <name>\r\n", player.ColorTheme)
+			} else {
+				switch strings.ToLower(arg) {
+				case "green", "amber", "white", "none":
+					player.ColorTheme = strings.ToLower(arg)
+					response = fmt.Sprintf("Color theme set to: %s\r\n", player.ColorTheme)
+					world.SavePlayer(player)
+				default:
+					response = "Unknown theme. Available: green, amber, white, none\r\n"
+				}
+			}
+
 		case "quit":
 			return
 		default:
 			response = "Unknown.\r\n"
 		}
 		if response != "" {
-			client.Write(response + "> ")
+			// Apply player's color theme preference
+			themedResponse := ApplyTheme(response, player.ColorTheme)
+			client.Write(themedResponse + "> ")
 		} else {
 			client.Write("> ")
 		}

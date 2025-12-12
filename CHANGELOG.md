@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.50.0] - 2025-12-12 - PHASE 4: Technical Polish Complete
+
+### Added - Context & Connection Management
+- `MaxConnections` constant (100) - limits concurrent player connections
+- Connection limiter semaphore - rejects connections when server is full
+- `context.Context` integration throughout main loop and handleConnection
+- Graceful shutdown with context cancellation propagation
+- Server full message: "Server full. Please try again later."
+
+### Added - Quality of Life Commands
+- `brief` command - Toggle brief mode for shorter room descriptions
+- `theme` command - Change terminal color theme (green/amber/white/none)
+- `Player.BriefMode` field - Persisted preference for short descriptions
+- `Player.ColorTheme` field - Persisted color theme preference
+
+### Added - Terminal Utilities
+- `ApplyTheme()` function - Converts green text to player's preferred theme
+- `stripColors()` function - Removes all ANSI color codes for "none" theme
+- Theme support: green (default), amber, white, none (no colors)
+
+### Added - Tests
+- `TestMaxConnectionsConstant` - Verifies connection limit
+- `TestApplyTheme*` - 6 tests for all theme variations
+- `TestStripColors` - Verifies color stripping
+- `TestBriefModePlayerField` - Verifies player preference field
+- `TestBriefModeLookDescription` - Verifies brief mode affects room descriptions
+
+### Changed
+- Room descriptions truncated to ~50 chars or first sentence in brief mode
+- All game output now respects player's color theme preference
+- World update loop now respects context cancellation
+
+### Verified
+- All 20 packages passing tests
+- go vet clean
+- Build successful
+
 ## [1.49.0] - 2025-12-11 - PHASE 3: Social Layer Finalized
 
 ### Added - Training Rooms

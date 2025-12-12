@@ -310,6 +310,20 @@ var Entries = map[string]*Entry{
 		Examples:    []string{"quit"},
 		Category:    CatSystem,
 	},
+	"brief": {
+		Command:     "brief",
+		Description: "Toggle brief mode for shorter room descriptions.",
+		Usage:       "brief",
+		Examples:    []string{"brief"},
+		Category:    CatSystem,
+	},
+	"theme": {
+		Command:     "theme",
+		Description: "Change your terminal color theme.",
+		Usage:       "theme [green|amber|white|none]",
+		Examples:    []string{"theme", "theme amber", "theme none"},
+		Category:    CatSystem,
+	},
 	// --- FACTION COMMANDS ---
 	"faction": {
 		Command:     "faction",

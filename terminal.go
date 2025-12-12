@@ -2,6 +2,8 @@
 // This file contains terminal/ANSI utilities for text formatting and colorization.
 package main
 
+import "strings"
+
 // ANSI escape codes for terminal text formatting and colorization.
 // These constants are used throughout the application to provide Matrix-themed
 // visual styling with green text, color-coded items by rarity, and clear UI elements.
@@ -36,4 +38,43 @@ func Matrixify(text string) string {
 // important game events or administrative notifications.
 func SystemMsg(text string) string {
 	return White + "[OPERATOR] " + text + Reset + "\r\n"
+}
+
+// ApplyTheme converts default green text to the player's preferred color theme.
+// Supported themes: green (default), amber, white, none
+func ApplyTheme(text, theme string) string {
+	if theme == "" || theme == "green" {
+		return text // Default, no change needed
+	}
+
+	var themeColor string
+	switch theme {
+	case "amber":
+		themeColor = "\033[33m" // Yellow/Amber
+	case "white":
+		themeColor = "\033[97m" // Bright White
+	case "none":
+		// Strip all color codes
+		return stripColors(text)
+	default:
+		return text
+	}
+
+	// Replace green with theme color
+	result := text
+	result = strings.ReplaceAll(result, Green, themeColor)
+	result = strings.ReplaceAll(result, "\033[32m", themeColor)
+	return result
+}
+
+// stripColors removes all ANSI color codes from text
+func stripColors(text string) string {
+	result := text
+	// Remove common ANSI codes
+	codes := []string{Reset, Green, White, Gray, Red, Yellow, Magenta, Cyan,
+		ColorUncommon, ColorRare, ColorEpic, "\033[32m", "\033[33m", "\033[97m"}
+	for _, code := range codes {
+		result = strings.ReplaceAll(result, code, "")
+	}
+	return result
 }

@@ -98,6 +98,8 @@ type Player struct {
 	Awakened                    bool     `json:"awakened,omitempty"`          // True if player took the red pill
 	Heat                        int      `json:"heat,omitempty"`              // Agent aggro level (0-100)
 	DiscoveredPhones            []string `json:"discovered_phones,omitempty"` // Phone booth IDs player can call
+	BriefMode                   bool     `json:"brief_mode,omitempty"`        // Show short room descriptions
+	ColorTheme                  string   `json:"color_theme,omitempty"`       // green, amber, white, none
 }
 
 // World represents the entire game state including all rooms, players, NPCs, and items.
@@ -967,7 +969,19 @@ func (w *World) Look(p *Player, target string) string {
 
 	if target == "" {
 		automap := w.GenerateAutomapInternal(p, 2)
-		desc := fmt.Sprintf("%s\r\n%s*** %s ***%s\r\n%s\r\nExits: ", automap, White, room.ID, Green, room.Description)
+		
+		// Use brief or full description based on player preference
+		roomDesc := room.Description
+		if p.BriefMode && len(roomDesc) > 50 {
+			// Truncate to first sentence or 50 chars
+			if idx := strings.Index(roomDesc, "."); idx > 0 && idx < 60 {
+				roomDesc = roomDesc[:idx+1]
+			} else if len(roomDesc) > 50 {
+				roomDesc = roomDesc[:47] + "..."
+			}
+		}
+		
+		desc := fmt.Sprintf("%s\r\n%s*** %s ***%s\r\n%s\r\nExits: ", automap, White, room.ID, Green, roomDesc)
 		for dir := range room.Exits {
 			desc += fmt.Sprintf("[%s] ", dir)
 		}

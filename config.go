@@ -13,10 +13,13 @@ import (
 // Game balance constants
 const (
 	// Version is the single source of truth for the application version
-	Version = "1.49.0"
+	Version = "1.50.0"
 
 	// MaxInventorySize is the maximum number of items a player can carry
 	MaxInventorySize = 20
+
+	// MaxConnections is the maximum number of concurrent player connections
+	MaxConnections = 100
 
 	// ConnectionTimeout is how long to wait for initial connection handshake
 	ConnectionTimeout = 30 * time.Second

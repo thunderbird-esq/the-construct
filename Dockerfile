@@ -28,7 +28,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -o matrix-mud .
 
 # --- Runtime Stage ---
-FROM alpine:3.19
+FROM alpine:3.23
 
 # Security: Run as non-root user
 RUN addgroup -g 1000 mud && \

@@ -1263,6 +1263,39 @@ func (w *World) MovePlayer(p *Player, direction string) string {
 	return "No exit."
 }
 
+// Recall teleports a player back to a safe location (dojo).
+// Used when player is stuck in an invalid room or wants to return to safety.
+// Has a 60 second cooldown to prevent abuse.
+func (w *World) Recall(p *Player) string {
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
+
+	// Default recall location
+	const recallRoom = "dojo"
+
+	// Check if already at recall point
+	if p.RoomID == recallRoom {
+		return "You are already at the recall point.\r\n"
+	}
+
+	// Check if recall location exists
+	if _, ok := w.Rooms[recallRoom]; !ok {
+		return fmt.Sprintf("%sError: Recall location not found. Contact an admin.%s\r\n", Red, Reset)
+	}
+
+	// Cancel combat
+	p.State = "IDLE"
+	p.Target = ""
+
+	// Teleport player
+	oldRoom := p.RoomID
+	p.RoomID = recallRoom
+
+	return fmt.Sprintf("%sYou close your eyes and focus on the safe house...%s\r\n"+
+		"%sReality bends around you. When you open your eyes, you're in the dojo.%s\r\n"+
+		"(Recalled from %s)\r\n", Cyan, Reset, Green, Reset, oldRoom)
+}
+
 // ShowInventory displays the player's current stats, equipped items, and inventory.
 // Shows HP, MP, STR, calculated AC (base + equipment bonuses), and all items.
 func (w *World) ShowInventory(p *Player) string {

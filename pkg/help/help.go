@@ -302,6 +302,13 @@ var Entries = map[string]*Entry{
 		Examples:    []string{"help", "help kill", "help cast"},
 		Category:    CatSystem,
 	},
+	"recall": {
+		Command:     "recall",
+		Description: "Teleport back to the dojo (safe room). Useful if stuck.",
+		Usage:       "recall",
+		Examples:    []string{"recall"},
+		Category:    CatSystem,
+	},
 	"quit": {
 		Command:     "quit",
 		Aliases:     []string{"exit"},

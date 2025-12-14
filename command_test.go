@@ -628,9 +628,31 @@ func TestAutomapGeneration(t *testing.T) {
 	}
 }
 
-// TestRecall verifies recall command
+// TestRecall verifies recall command teleports player to dojo
 func TestRecall(t *testing.T) {
-	t.Skip("Recall functionality not implemented")
+	world := NewWorld()
+
+	player := &Player{
+		Name:   "TestPlayer",
+		RoomID: "city_12", // Start somewhere other than dojo
+		HP:     100,
+		MaxHP:  100,
+	}
+
+	// Test recall from another room
+	result := world.Recall(player)
+	if player.RoomID != "dojo" {
+		t.Errorf("Player should be in dojo after recall, got %s", player.RoomID)
+	}
+	if !strings.Contains(result, "dojo") {
+		t.Errorf("Recall result should mention dojo: %s", result)
+	}
+
+	// Test recall when already at dojo
+	result = world.Recall(player)
+	if !strings.Contains(result, "already") {
+		t.Errorf("Should indicate already at recall point: %s", result)
+	}
 }
 
 // TestCastSkill verifies skill casting

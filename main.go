@@ -799,6 +799,9 @@ func handleConnection(ctx context.Context, conn net.Conn, world *World) {
 				}
 			}
 
+		case "recall":
+			response = world.Recall(player)
+
 		case "quit":
 			return
 		default:

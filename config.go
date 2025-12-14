@@ -13,7 +13,7 @@ import (
 // Game balance constants
 const (
 	// Version is the single source of truth for the application version
-	Version = "1.51.0"
+	Version = "1.52.0"
 
 	// MaxInventorySize is the maximum number of items a player can carry
 	MaxInventorySize = 20

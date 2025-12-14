@@ -248,30 +248,39 @@ html,body{height:100%;width:100%;background:#0a0a0a;overflow:hidden;position:fix
     position:relative;
     display:flex;
     align-items:center;
+    background:#000800;
+    border:1px solid #1a3a1a;
+    border-radius:4px;
+    padding:0 8px;
+    overflow:hidden;
 }
 
 #prompt{
     color:#33ff33;
     font-family:'Glass TTY VT220',monospace;
     font-size:16px;
-    padding:0 4px;
     text-shadow:0 0 8px #33ff33;
+    flex-shrink:0;
 }
 
+/* Hidden actual input */
 #input{
-    flex:1;
-    padding:8px 4px;
-    font-size:16px;
-    font-family:'Glass TTY VT220',monospace;
-    background:transparent;
-    border:none;
-    color:#33ff33;
-    outline:none;
-    caret-color:transparent;
-    text-shadow:0 0 8px #33ff33;
+    position:absolute;
+    left:-9999px;
+    opacity:0;
 }
 
-/* Custom blinking cursor that follows input */
+/* Visible text mirror */
+#input-mirror{
+    color:#33ff33;
+    font-family:'Glass TTY VT220',monospace;
+    font-size:16px;
+    text-shadow:0 0 8px #33ff33;
+    white-space:pre;
+    padding:8px 0;
+}
+
+/* Blinking cursor immediately after text */
 #cursor{
     display:inline-block;
     width:10px;
@@ -280,7 +289,7 @@ html,body{height:100%;width:100%;background:#0a0a0a;overflow:hidden;position:fix
     animation:cursor-blink 0.6s steps(1) infinite;
     box-shadow:0 0 10px #33ff33,0 0 20px #22cc22;
     vertical-align:middle;
-    margin-left:2px;
+    flex-shrink:0;
 }
 @keyframes cursor-blink{0%,45%{opacity:1}46%,100%{opacity:0.15}}
 
@@ -350,9 +359,10 @@ html,body{height:100%;width:100%;background:#0a0a0a;overflow:hidden;position:fix
 </div>
 <div id="input-bar">
 <div id="input-wrapper">
-    <span id="prompt">&gt;</span>
-    <input type="text" id="input" autocomplete="off" autocapitalize="off" enterkeyhint="send"/>
+    <span id="prompt">&gt;&nbsp;</span>
+    <span id="input-mirror"></span>
     <span id="cursor"></span>
+    <input type="text" id="input" autocomplete="off" autocapitalize="off"/>
 </div>
 <button id="send-btn" onclick="sendInput()">SEND</button>
 </div>
@@ -454,7 +464,7 @@ async function runIntro() {
         }
     }
     
-    // Phase 1: Rain (2 seconds)
+    // Phase 1: Rain (3 seconds - slower)
     for (let frame = 0; frame < 60; frame++) {
         term.write('\x1b[H');
         for (let y = 0; y < rows - 1; y++) {
@@ -473,10 +483,10 @@ async function runIntro() {
             drops[x].y += drops[x].speed;
             if (drops[x].y > rows + 12) drops[x].y = -Math.random() * 10;
         }
-        await sleep(33);
+        await sleep(50);
     }
     
-    // Phase 2: Rain reveals banner (4 seconds)
+    // Phase 2: Rain reveals banner (6 seconds - slower)
     for (let frame = 0; frame < 120; frame++) {
         term.write('\x1b[H');
         for (let y = 0; y < rows - 1; y++) {
@@ -510,11 +520,11 @@ async function runIntro() {
             drops[x].y += drops[x].speed;
             if (drops[x].y > rows + 7) drops[x].y = -Math.random() * 8;
         }
-        await sleep(33);
+        await sleep(50);
     }
     
     // Phase 3: Clean banner display
-    await sleep(300);
+    await sleep(500);
     term.clear();
     for (let y = 0; y < rows - 1; y++) {
         let line = '';
@@ -534,7 +544,7 @@ async function runIntro() {
     }
     
     // Hold banner
-    await sleep(2500);
+    await sleep(3500);
     
     // Transition
     term.writeln('');
@@ -569,13 +579,23 @@ document.addEventListener('visibilitychange', () => {
 });
 
 const input = document.getElementById('input');
-const cursor = document.getElementById('cursor');
+const inputMirror = document.getElementById('input-mirror');
+const inputWrapper = document.getElementById('input-wrapper');
+
+// Sync visible mirror with hidden input
+function updateMirror() {
+    inputMirror.textContent = input.value;
+}
+
+input.addEventListener('input', updateMirror);
+input.addEventListener('keyup', updateMirror);
 
 function sendInput() {
     const t = input.value.trim();
     if (t && socket && socket.readyState === WebSocket.OPEN) {
         socket.send(t + '\n');
         input.value = '';
+        updateMirror();
     }
     input.focus();
 }
@@ -596,6 +616,7 @@ input.addEventListener('keydown', e => {
 // Keep input focused
 input.focus();
 document.addEventListener('click', () => input.focus());
+inputWrapper.addEventListener('click', () => input.focus());
 
 // Reconnect on CRT click
 document.getElementById('crt').addEventListener('click', () => {

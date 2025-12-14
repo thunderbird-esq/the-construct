@@ -21,7 +21,7 @@ func TestInit(t *testing.T) {
 	// Test invalid level falls back to info
 	Init(false, "invalid")
 	Info().Msg("test invalid level fallback")
-	
+
 	// All initializations should complete without panic
 }
 

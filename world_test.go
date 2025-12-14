@@ -312,7 +312,6 @@ func TestNPCsHaveValidHP(t *testing.T) {
 	}
 }
 
-
 // TestListRecipes verifies recipe listing
 func TestListRecipes(t *testing.T) {
 	world := NewWorld()

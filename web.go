@@ -1,4 +1,4 @@
-// Web client with device-adaptive Matrix intro
+// Web client with device-adaptive Matrix intro and CRT effects
 package main
 
 import (
@@ -122,217 +122,339 @@ const htmlClient = `<!DOCTYPE html>
 <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.min.js"></script>
 <style>
-@font-face{font-family:'Glass TTY VT220';src:url('https://raw.githubusercontent.com/svofski/glasstty/master/Glass_TTY_VT220.ttf') format('truetype')}
+@font-face{font-family:'Glass TTY VT220';src:url('https://cdn.jsdelivr.net/gh/svofski/glasstty@master/Glass_TTY_VT220.ttf') format('truetype')}
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;width:100%;background:#000;overflow:hidden;position:fixed}
-#app{display:flex;flex-direction:column;height:100dvh;height:100vh;width:100%}
-#crt{flex:1;min-height:0;position:relative;margin:2px;border-radius:6px;background:#020202;box-shadow:0 0 30px rgba(0,255,65,0.06);overflow:hidden}
-#terminal{position:absolute;top:2px;left:2px;right:2px;bottom:2px}
-.xterm{height:100%!important}.xterm-screen{height:100%!important}
-.xterm .xterm-cursor-block{background-color:#33ff33 !important;box-shadow:0 0 8px #33ff33,0 0 16px #22dd22 !important}
-.xterm-cursor-blink{animation:phosphor-blink 0.7s steps(1) infinite !important}
-@keyframes phosphor-blink{0%,40%{opacity:1}41%,100%{opacity:0.1}}
-#scanlines{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:10;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.04) 0px,rgba(0,0,0,0.04) 1px,transparent 1px,transparent 2px)}
-#input-bar{background:#050505;padding:4px;border-top:1px solid #111;display:flex;gap:4px}
-#input{flex:1;padding:8px;font-size:16px;font-family:'Glass TTY VT220',monospace;background:#020202;border:1px solid #0a0;border-radius:3px;color:#0f0;outline:none;caret-color:#33ff33;animation:input-glow 0.7s steps(1) infinite}
-@keyframes input-glow{0%,40%{box-shadow:inset 0 0 5px rgba(51,255,51,0.3)}41%,100%{box-shadow:inset 0 0 2px rgba(51,255,51,0.1)}}
-#send-btn{padding:8px 12px;background:#0a0;border:none;border-radius:3px;color:#000;font-family:'Glass TTY VT220',monospace;font-weight:bold}
-#controls{display:flex;flex-wrap:wrap;gap:2px;padding:3px;background:#030303}
-.qbtn{flex:1;min-width:38px;padding:6px 2px;background:#080808;border:1px solid #181818;border-radius:3px;color:#0a0;font-family:'Glass TTY VT220',monospace;font-size:9px;text-align:center}
-.qbtn:active{background:#0a0;color:#000}
+html,body{height:100%;width:100%;background:#0a0a0a;overflow:hidden;position:fixed}
+
+/* Main app container */
+#app{display:flex;flex-direction:column;height:100dvh;height:100vh;width:100%;padding:4px}
+
+/* CRT Monitor frame */
+#crt{
+    flex:1;min-height:0;position:relative;
+    border-radius:20px;
+    background:linear-gradient(145deg,#1a1a1a,#0d0d0d);
+    box-shadow:
+        inset 0 0 80px rgba(0,0,0,0.8),
+        0 0 20px rgba(0,255,65,0.1),
+        0 0 60px rgba(0,255,65,0.05);
+    overflow:hidden;
+    border:3px solid #222;
+}
+
+/* Screen area with curvature effect */
+#screen{
+    position:absolute;
+    top:8px;left:8px;right:8px;bottom:8px;
+    border-radius:12px;
+    overflow:hidden;
+    background:#000800;
+}
+
+/* Terminal container */
+#terminal{
+    position:absolute;
+    top:0;left:0;right:0;bottom:0;
+    padding:4px;
+}
+
+.xterm{height:100%!important}
+.xterm-screen{height:100%!important}
+.xterm-viewport{overflow-y:hidden!important}
+
+/* Phosphor cursor glow */
+.xterm .xterm-cursor-block{
+    background-color:#33ff33 !important;
+    box-shadow:0 0 10px #33ff33,0 0 20px #22cc22,0 0 30px #119911 !important;
+}
+.xterm-cursor-blink{animation:phosphor-blink 0.6s steps(1) infinite !important}
+@keyframes phosphor-blink{0%,45%{opacity:1}46%,100%{opacity:0.15}}
+
+/* Scanlines overlay */
+#scanlines{
+    position:absolute;
+    top:0;left:0;right:0;bottom:0;
+    pointer-events:none;
+    z-index:10;
+    background:repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        transparent 1px,
+        rgba(0,0,0,0.3) 1px,
+        rgba(0,0,0,0.3) 2px
+    );
+    animation:scanline-flicker 0.05s infinite;
+}
+@keyframes scanline-flicker{
+    0%{opacity:0.9}
+    50%{opacity:1}
+    100%{opacity:0.9}
+}
+
+/* Screen glow/bloom effect */
+#glow{
+    position:absolute;
+    top:0;left:0;right:0;bottom:0;
+    pointer-events:none;
+    z-index:11;
+    background:radial-gradient(ellipse at center,transparent 0%,rgba(0,20,0,0.2) 80%,rgba(0,0,0,0.5) 100%);
+    mix-blend-mode:multiply;
+}
+
+/* Phosphor flicker */
+#flicker{
+    position:absolute;
+    top:0;left:0;right:0;bottom:0;
+    pointer-events:none;
+    z-index:9;
+    background:transparent;
+    animation:screen-flicker 0.1s infinite;
+    opacity:0.03;
+}
+@keyframes screen-flicker{
+    0%{background:rgba(0,255,0,0.02)}
+    50%{background:transparent}
+    100%{background:rgba(0,255,0,0.01)}
+}
+
+/* RGB subpixel effect on text (subtle) */
+#terminal::before{
+    content:'';
+    position:absolute;
+    top:0;left:0;right:0;bottom:0;
+    background:repeating-linear-gradient(
+        90deg,
+        rgba(255,0,0,0.03) 0px,
+        rgba(0,255,0,0.03) 1px,
+        rgba(0,0,255,0.03) 2px,
+        transparent 3px
+    );
+    pointer-events:none;
+    z-index:5;
+}
+
+/* Input bar styled as part of CRT */
+#input-bar{
+    background:linear-gradient(180deg,#0d0d0d,#1a1a1a);
+    padding:6px 8px;
+    border-top:2px solid #222;
+    display:flex;
+    gap:6px;
+    border-radius:0 0 8px 8px;
+}
+
+#input-wrapper{
+    flex:1;
+    position:relative;
+    display:flex;
+    align-items:center;
+}
+
+#prompt{
+    color:#33ff33;
+    font-family:'Glass TTY VT220',monospace;
+    font-size:16px;
+    padding:0 4px;
+    text-shadow:0 0 8px #33ff33;
+}
+
+#input{
+    flex:1;
+    padding:8px 4px;
+    font-size:16px;
+    font-family:'Glass TTY VT220',monospace;
+    background:transparent;
+    border:none;
+    color:#33ff33;
+    outline:none;
+    caret-color:transparent;
+    text-shadow:0 0 8px #33ff33;
+}
+
+/* Custom blinking cursor that follows input */
+#cursor{
+    display:inline-block;
+    width:10px;
+    height:18px;
+    background:#33ff33;
+    animation:cursor-blink 0.6s steps(1) infinite;
+    box-shadow:0 0 10px #33ff33,0 0 20px #22cc22;
+    vertical-align:middle;
+    margin-left:2px;
+}
+@keyframes cursor-blink{0%,45%{opacity:1}46%,100%{opacity:0.15}}
+
+#send-btn{
+    padding:8px 16px;
+    background:linear-gradient(180deg,#1a1a1a,#0d0d0d);
+    border:1px solid #33ff33;
+    border-radius:4px;
+    color:#33ff33;
+    font-family:'Glass TTY VT220',monospace;
+    font-weight:bold;
+    text-shadow:0 0 8px #33ff33;
+    cursor:pointer;
+}
+#send-btn:hover{background:#33ff33;color:#000;text-shadow:none}
+#send-btn:active{transform:scale(0.98)}
+
+/* Mobile quick buttons */
+#controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:3px;
+    padding:4px;
+    background:#0d0d0d;
+}
+.qbtn{
+    flex:1;
+    min-width:40px;
+    padding:8px 2px;
+    background:linear-gradient(180deg,#1a1a1a,#0d0d0d);
+    border:1px solid #1a3a1a;
+    border-radius:4px;
+    color:#33ff33;
+    font-family:'Glass TTY VT220',monospace;
+    font-size:10px;
+    text-align:center;
+    text-shadow:0 0 5px #33ff33;
+}
+.qbtn:active{background:#33ff33;color:#000;text-shadow:none}
+
 @media(min-width:600px){#controls{display:none}}
+@media(max-width:599px){
+    #crt{border-radius:8px}
+    #screen{top:4px;left:4px;right:4px;bottom:4px;border-radius:6px}
+}
 </style>
 </head>
 <body>
 <div id="app">
-<div id="crt"><div id="terminal"></div><div id="scanlines"></div></div>
+<div id="crt">
+    <div id="screen">
+        <div id="terminal"></div>
+        <div id="flicker"></div>
+        <div id="scanlines"></div>
+        <div id="glow"></div>
+    </div>
+</div>
 <div id="controls">
-<div class="qbtn" ontouchend="cmd('n')">N</div><div class="qbtn" ontouchend="cmd('s')">S</div><div class="qbtn" ontouchend="cmd('e')">E</div><div class="qbtn" ontouchend="cmd('w')">W</div>
-<div class="qbtn" ontouchend="cmd('look')">LOOK</div><div class="qbtn" ontouchend="cmd('inv')">INV</div><div class="qbtn" ontouchend="cmd('get')">GET</div><div class="qbtn" ontouchend="cmd('score')">SCORE</div>
+<div class="qbtn" ontouchend="cmd('n')">N</div>
+<div class="qbtn" ontouchend="cmd('s')">S</div>
+<div class="qbtn" ontouchend="cmd('e')">E</div>
+<div class="qbtn" ontouchend="cmd('w')">W</div>
+<div class="qbtn" ontouchend="cmd('look')">LOOK</div>
+<div class="qbtn" ontouchend="cmd('inv')">INV</div>
+<div class="qbtn" ontouchend="cmd('get')">GET</div>
+<div class="qbtn" ontouchend="cmd('score')">SCORE</div>
 </div>
-<div id="input-bar"><input type="text" id="input" placeholder=">" autocomplete="off" autocapitalize="off" enterkeyhint="send"/><button id="send-btn" onclick="sendInput()">SEND</button></div>
+<div id="input-bar">
+<div id="input-wrapper">
+    <span id="prompt">&gt;</span>
+    <input type="text" id="input" autocomplete="off" autocapitalize="off" enterkeyhint="send"/>
+    <span id="cursor"></span>
 </div>
+<button id="send-btn" onclick="sendInput()">SEND</button>
+</div>
+</div>
+
 <script>
-// Payphone ASCII art - wide angle street scene
-const artDesktop = [
-"                                                                  ;;++++;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;",
-"                                                                 ;+++;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;",
-"                                                                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ;;;;;;;;;;;;;;;; ;;;;;;;;;",
-"                                                                 ;+;                                                           ;;",
-"                                                                  ;;;;  .. .   .                                          .   .;",
-"                                                                  ;+;;              ;;;; ;;;;;;;;;;;;;;;;  ;;;;;;        ;.  ;;;;",
-"                                                                  ;*+;:.; ;.  ;;;;+#@##*;*##+*@@#*+#*+*#*;+#@@@@#+;..    ;;:.:+;;+*+;",
-"                                                                  ;*;;:.; ;   ;  ;;+;;;;.+;+;;;*;;;;;;;*;;++;;;;+*  ;    ;;; ;;;;**##*;",
-"                                                                  ;+;;  ; ;      ;+;;; ;;+;+;+;*;;;+*;+;+;*+****;*;      ;.   .;;*+;;*+",
-"                                                                  ;++;::; ;.. ...;++;;+;+;;+;;;*;;:+;*;+;.++;;;;;+;..  . ;;:..;;;+++;++",
-"                                                                  ;+;;;;; ; ; ; ;;+*#*++;+*#;;***;;;*+*;  ;***#**+;     ;;;; ;:;;++;;;;",
-"                                                                  ;+:;  ;;;;;;;;;;;  ; ;   ;      ;;;   ;          ;;;;;;; ; ;.; +**+;;",
-"                                                                  ;*+;;;;;;+;:;+;:;::++;:++;.:;;;;;;+;::;;:;:.:;;.;;;::::;;;.;++; ;;;;;",
-"                                                                  ;+;;;;;;..; ;.;;  ;;;  ..  .......;;;;;;;;; ;;; ;;:... .;;;;;;;",
-"                                                                  ;+:    ;;+;;;++*+;  ;;++++;;;;;;;;;;;;;;;;;;++++;;;;;+;;;    ;+;;++;",
-"                                                                  ;*;;;;;;:;.;;;;;;;;;;;;;;;;;+++*******+++++;;;;;;;;;;;;;+; ;;;;#;;;;;",
-"                                                                  ;*;;:;;;: ;+;;**;;:;;;;***;*;;+*+*******+++***;;+++++++;;; ;:;;*;;;;",
-"                                                                  ;+;;  ;;;;;.;;++;+++++;+++;*;         ;    *#*;;+******;.  ;.;**+;;",
-"                                                                  ;++;:;; ;;;:;;*;;;;;;;;;**;+ ;;;;;;    . . *#*;+;      ;;. ;+;+*;;;;  ;",
-"                                                                  ;+;;;;;  ;;;+;;+;;.:.;++;;+* ;;+**+;  ;;;;;*#;+*;;.    ;;;;;;;+*;;;;  ;",
-"                                                                   ;.   ;;+; ;;;;+;;;+;;;;:+;+ ;;+++;+       +*+;+;      ; ;   ;;+ ;;;  ;",
-"                                                                  ;+;;;;;;; .;+;;*;;;;; ++;;+*;;.;;;;+       *#;+*;      ;;;.;;;;+;;+;  ;",
-"                                                                  ;+;;;;;;.  ;+;;+;;;;;;;;;;**;;;;;;;;  ;;   *#;**; ;;; ;+;;;;;;++ ;+;; ;",
-"                                                                  ;+.     ;;; ;;;;;;;;;;;;:;+*      ;;       +*+;+;      ;     ;;; ;;;",
-"                                                                  ;+;;;;;.;+;.;;+++++;;;;;;;+*;;;. :;        +#;+*;     ;;;; ;;;;+ ;;;; ;",
-"                                                                  ;++;;+;;;;;;;;+++++++++++;+*;;;;  ;        +#;+*;     ;+;; ;; ;+ ++   ;",
-"                                                                  ;+:  .; ;:; ;;+;++;++;;;:;++;;;::;;        +*+++;     ;;    . ;; ;+   ;",
-"                                                                  ;++;:+; ;+;.;;++++++++++++++ ;;;;;         +**++      ;;;; ;; ;; ;+   ;",
-"                                                                  ;+;;;;;;;;;;;;;;;;;;;;;;;;++  ;;;          +*;*+      ;;;;;;;;;;;;+;; ;",
-"                                                                  ;;.   ; ;   ;;:....... . ;;+               ;+.;;       ;       ;;:+",
-"                                                                  ;+;;;;;;;;;;;;;;+++;;;;;;;;;;;             ;*;++      ;+;;;;;;;;;++ ;",
-"                                                                  ;++;;;;;;;;;;;+++***+;;;;;;;:;             ;*;++      ;+;;.;+ +;;++ ;",
-"                                                                  ;+.  .;;;;;;;+#*++++;;;;;;;  ;;            ;+:+;      ;;   ;. .;;.;",
-"                                                                  ;+;;;;;;; ;+;+;    ;;+;;;;;; ;;            ;+;+;      ;+;;;;;;;;;;+ ;",
-"                                                                  ;++.;+;;; ;+++;     ;++;++;..;;            ;+++;      ;++;.;+.+;;++",
-"                                                                  ;+: ;:;;  ;+;+      ;;;:;;;;.;;            ;+;+;      ;;.  ;. .;;.+",
-"                                                                  ;++.;+;;  ;+++;     ;;;;+;;;;;;            ;+++;      ;;:; ;; :;;++ ; ;",
-"                                                                  ;+;;;;;; ;;;+;;;    ;;++;   ;;;            ;+;+;      ;;;;.;; :;;++ ; ;",
-"                                                                  ;;.;; ;;;;;   ;;                           ;;.;; ;;;; ;; ; ;.  ;;.;",
-"                                                                  ;;;;;;;;;;;;;;;+                           ;+;;;;;++; ;;;;;;; .;;;; ;;;",
-"                                                                  ;;+.:;;;;;::.;;+               ;+**+;      ;++; ;;;++ ;;+; ;; :;;:; ;.",
-"                                                                  ;;: ;.;;;;;  ;;+               ;+++;;;     ;;;;  .;;; ;;.; ;.  ;;.; ;",
-"                                                                  ;+;;;.;;;;.  ;;;    ;;+++;  ;; ;;++;;;     ;;.;  .;;  ;;.; ;;;.;;.; ;",
-"                                                                  ;++.;:;.;:. .:;;    ;+;;++  ;+    ;;;;     ;;+; :;;;  ;;;..;+ :;;:; ;",
-"                                                                  ;++;...  .   ;;;    ;+;;;;  ;;;;;   ;      ;;:.  .;;  ;;:; ;: .;;.; ;",
-" ;;                         ;                                     ;++;.:; ..    +;    ;++++;                 ;;.. ..;;  ;;:; ;; .;;:; ;             ;",
-"                    ;                                             ;++.:;;;;;;:.;;;;    ;;;;                  ;;+;;;;;;  ;;+:.;+.:;;:; ;.",
-"                                                                  ;+;;;;;;;;;;;;                            ;*;;+;;;;;  ;;;;;;;; ;;.; ;",
-];
-
-// Mobile closeup payphone
-const artMobile = [
-"      ..                .......",
-"      ..             . .,,..,..",
-"      ..             ...,. ....",
-"      ..             .....   ..",
-"       .     .:::::, ..........",
-"       .     .**##*+ ... . .,..",
-"       .     .*#%%#*,....  ....",
-"      ..   . .#%#*%*........  ,",
-"      ..     .#%#:+#:  ....  ..",
-"   .  ..     .%%*,:*,..  .....,",
-"    . ..     .##;.:*:      .,.,",
-"   .  ... .  .*:,.+*:.       .;,",
-"   :,,,:,... ,#:.,+*,.  ....,:*;:",
-" ,.+;:+*+:;;,,*;+***,. .::;+**%#*",
-" :,+++#%*++;::+...,*:,.;+*#%%%%%#",
-" ;:*+*#%#+*;:;;.. .+::,+##%%%%%%#",
-" +;#**#%#;++;:+,,,:*::;+*#%%%%%%*",
-" ;:+**##*;;::,*+****:;;+*##%%%%#*",
-" . .,+##*;:..,;,. ,*:,.,:+*###%#+",
-"   . *+*+**;,:;.. .+:,,:;;++++*+:",
-"   . ::;:::,.:;.:::+,.,:,;;::;+:.",
-" ,           .#####+      ,,,,:.",
-" ;.......    .#####+   ........",
-" ++++;++;+;;:;;++++;:;++;;;:;::,,"
-];
-
-const matrixChars = "ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ01";
-
-// Detect device
+const matrixChars = "ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ01234567890";
 const isMobile = /iPhone|Android/i.test(navigator.userAgent) && window.innerWidth < 800;
-console.log('Device:', isMobile ? 'mobile' : 'desktop', window.innerWidth, 'x', window.innerHeight);
-
-// Use smaller font during intro for more detail, then resize for gameplay
-const introFontSize = isMobile ? 8 : 8;
-const gameFontSize = isMobile ? (window.innerWidth < 380 ? 8 : 10) : (window.innerWidth < 1200 ? 10 : 12);
+const fontSize = isMobile ? (window.innerWidth < 380 ? 9 : 11) : (window.innerWidth < 1200 ? 12 : 14);
 
 const term = new Terminal({
     cursorBlink: true,
     cursorStyle: 'block',
-    fontFamily: '"Glass TTY VT220", monospace',
-    fontSize: introFontSize,
-    lineHeight: 1.0,
-    scrollback: 500,
-    theme: { background: '#020202', foreground: '#33ff33', cursor: '#33ff33' }
+    fontFamily: '"Glass TTY VT220", "Courier New", monospace',
+    fontSize: fontSize,
+    lineHeight: 1.1,
+    scrollback: 1000,
+    theme: {
+        background: '#000800',
+        foreground: '#33ff33',
+        cursor: '#33ff33',
+        cursorAccent: '#000000',
+        selectionBackground: '#33ff3344'
+    }
 });
 
 const fitAddon = new FitAddon.FitAddon();
 term.loadAddon(fitAddon);
 term.open(document.getElementById('terminal'));
-setTimeout(() => { fitAddon.fit(); console.log('Terminal:', term.cols, 'x', term.rows); runIntro(); }, 150);
+
+// Track if intro has been shown this session
+let introShown = sessionStorage.getItem('introShown') === 'true';
+let socket = null;
+let introComplete = false;
+
+setTimeout(() => {
+    fitAddon.fit();
+    if (!introShown) {
+        runIntro();
+    } else {
+        introComplete = true;
+        connect();
+    }
+}, 100);
+
 window.addEventListener('resize', () => fitAddon.fit());
 
-let socket = null, introComplete = false;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const green = '\x1b[32m', bright = '\x1b[92m', white = '\x1b[97m', dim = '\x1b[2m\x1b[32m', reset = '\x1b[0m';
 const randChar = () => matrixChars[Math.floor(Math.random() * matrixChars.length)];
 
 async function runIntro() {
-    const art = isMobile ? artMobile : artDesktop;
     const cols = term.cols;
     const rows = term.rows;
-    const artW = Math.max(...art.map(l => l.length));
-    const artH = art.length;
-    console.log('Art:', artW, 'x', artH, 'Terminal:', cols, 'x', rows);
     
     term.clear();
     
-    // THE CONSTRUCT banner config
+    // Initialize rain drops
+    let drops = [];
+    for (let x = 0; x < cols; x++) {
+        drops[x] = { y: -Math.random() * rows * 2, speed: 0.4 + Math.random() * 0.4 };
+    }
+    
+    // Banner text
     const banner = 'T H E   C O N S T R U C T';
     const bannerPad = Math.max(0, Math.floor((cols - banner.length) / 2));
     const lineW = Math.min(cols - 4, banner.length + 10);
     const linePad = Math.max(0, Math.floor((cols - lineW) / 2));
+    const topLine = '═'.repeat(lineW);
     
-    // Position art below banner - banner takes ~12 rows at top
-    const bannerHeight = 12;
-    const artOffsetX = Math.max(0, Math.floor((cols - artW) / 2));
-    const artOffsetY = bannerHeight + Math.max(0, Math.floor((rows - bannerHeight - artH - 2) / 2));
-    
-    // Initialize combined buffer for banner + art
+    // Buffer for reveal
     let buffer = [];
     for (let y = 0; y < rows; y++) {
         buffer[y] = [];
         for (let x = 0; x < cols; x++) {
-            buffer[y][x] = { char: ' ', style: 'art', revealed: false };
+            buffer[y][x] = { char: ' ', style: '', revealed: false };
         }
     }
     
-    // Place banner in buffer (top portion)
-    const topLine = '═'.repeat(lineW);
+    // Place banner in buffer
+    const bannerY = Math.floor(rows / 2) - 2;
     const bannerLines = [
-        { y: 2, text: ' '.repeat(linePad) + topLine, style: 'white' },
-        { y: 5, text: ' '.repeat(bannerPad) + banner, style: 'dim' },
-        { y: 6, text: ' '.repeat(bannerPad) + banner, style: 'green' },
-        { y: 7, text: ' '.repeat(bannerPad) + banner, style: 'bright' },
-        { y: 8, text: ' '.repeat(bannerPad) + banner, style: 'green' },
-        { y: 9, text: ' '.repeat(bannerPad) + banner, style: 'dim' },
-        { y: 11, text: ' '.repeat(linePad) + topLine, style: 'white' }
+        { y: bannerY - 3, text: ' '.repeat(linePad) + topLine, style: 'white' },
+        { y: bannerY - 1, text: ' '.repeat(bannerPad) + banner, style: 'dim' },
+        { y: bannerY, text: ' '.repeat(bannerPad) + banner, style: 'green' },
+        { y: bannerY + 1, text: ' '.repeat(bannerPad) + banner, style: 'bright' },
+        { y: bannerY + 2, text: ' '.repeat(bannerPad) + banner, style: 'green' },
+        { y: bannerY + 3, text: ' '.repeat(bannerPad) + banner, style: 'dim' },
+        { y: bannerY + 5, text: ' '.repeat(linePad) + topLine, style: 'white' }
     ];
     
     for (const bl of bannerLines) {
-        for (let x = 0; x < bl.text.length && x < cols; x++) {
-            if (bl.y < rows && bl.text[x] !== ' ') {
-                buffer[bl.y][x] = { char: bl.text[x], style: bl.style, revealed: false };
+        if (bl.y >= 0 && bl.y < rows) {
+            for (let x = 0; x < bl.text.length && x < cols; x++) {
+                if (bl.text[x] !== ' ') {
+                    buffer[bl.y][x] = { char: bl.text[x], style: bl.style, revealed: false };
+                }
             }
         }
     }
     
-    // Place art in buffer (below banner)
-    for (let y = 0; y < artH; y++) {
-        const line = art[y] || '';
-        for (let x = 0; x < line.length; x++) {
-            const bx = artOffsetX + x;
-            const by = artOffsetY + y;
-            if (by < rows && bx < cols && line[x] !== ' ') {
-                buffer[by][bx] = { char: line[x], style: 'art', revealed: false };
-            }
-        }
-    }
-    
-    // Rain drops
-    let drops = [];
-    for (let x = 0; x < cols; x++) {
-        drops[x] = { y: -Math.random() * rows * 2, speed: 0.3 + Math.random() * 0.4 };
-    }
-    
-    // Phase 1: Pure rain for ~2 seconds (60 frames)
+    // Phase 1: Rain (2 seconds)
     for (let frame = 0; frame < 60; frame++) {
         term.write('\x1b[H');
         for (let y = 0; y < rows - 1; y++) {
@@ -354,8 +476,8 @@ async function runIntro() {
         await sleep(33);
     }
     
-    // Phase 2: Rain reveals banner + art simultaneously (~6 seconds, 180 frames)
-    for (let frame = 0; frame < 180; frame++) {
+    // Phase 2: Rain reveals banner (4 seconds)
+    for (let frame = 0; frame < 120; frame++) {
         term.write('\x1b[H');
         for (let y = 0; y < rows - 1; y++) {
             let line = '';
@@ -363,31 +485,20 @@ async function runIntro() {
                 const cell = buffer[y][x];
                 const d = drops[x].y - y;
                 
-                // Rain head reveals content as it passes
-                if (d >= 0 && d < 2 && !cell.revealed) {
-                    cell.revealed = true;
-                }
+                if (d >= 0 && d < 2) cell.revealed = true;
                 
                 if (cell.revealed && cell.char !== ' ') {
-                    // Show revealed character with appropriate style
                     const c = cell.char;
                     const s = cell.style;
                     if (s === 'white') line += white + c + reset;
                     else if (s === 'bright') line += bright + c + reset;
                     else if (s === 'dim') line += dim + c + reset;
-                    else if (s === 'green') line += green + c + reset;
-                    else if (s === 'art') {
-                        // Art character coloring
-                        if ('.,:'.includes(c)) line += dim + c + reset;
-                        else if (';+*'.includes(c)) line += green + c + reset;
-                        else if ('#%@'.includes(c)) line += bright + c + reset;
-                        else line += green + c + reset;
-                    } else line += green + c + reset;
+                    else line += green + c + reset;
                 } else if (d >= 0 && d < 1) {
                     line += white + randChar() + reset;
                 } else if (d >= 1 && d < 3) {
                     line += bright + randChar() + reset;
-                } else if (d >= 3 && d < 7) {
+                } else if (d >= 3 && d < 6) {
                     line += green + randChar() + reset;
                 } else {
                     line += ' ';
@@ -402,26 +513,19 @@ async function runIntro() {
         await sleep(33);
     }
     
-    // Phase 3: Show final clean image (banner + art)
-    await sleep(500);
+    // Phase 3: Clean banner display
+    await sleep(300);
     term.clear();
     for (let y = 0; y < rows - 1; y++) {
         let line = '';
         for (let x = 0; x < cols; x++) {
             const cell = buffer[y][x];
             if (cell.char !== ' ') {
-                const c = cell.char;
                 const s = cell.style;
-                if (s === 'white') line += white + c + reset;
-                else if (s === 'bright') line += bright + c + reset;
-                else if (s === 'dim') line += dim + c + reset;
-                else if (s === 'green') line += green + c + reset;
-                else if (s === 'art') {
-                    if ('.,:'.includes(c)) line += dim + c + reset;
-                    else if (';+*'.includes(c)) line += green + c + reset;
-                    else if ('#%@'.includes(c)) line += bright + c + reset;
-                    else line += green + c + reset;
-                } else line += green + c + reset;
+                if (s === 'white') line += white + cell.char + reset;
+                else if (s === 'bright') line += bright + cell.char + reset;
+                else if (s === 'dim') line += dim + cell.char + reset;
+                else line += green + cell.char + reset;
             } else {
                 line += ' ';
             }
@@ -429,45 +533,76 @@ async function runIntro() {
         term.writeln(line);
     }
     
-    // 5-second pause to admire the full reveal
-    await sleep(5000);
+    // Hold banner
+    await sleep(2500);
     
-    // Transition to gameplay
+    // Transition
     term.writeln('');
-    term.writeln(green + '                    [ Connection established ]' + reset);
-    
+    term.writeln(green + '              [ Establishing connection... ]' + reset);
     await sleep(1000);
     
-    // Resize font for gameplay
-    term.options.fontSize = gameFontSize;
-    fitAddon.fit();
     term.clear();
-    
+    sessionStorage.setItem('introShown', 'true');
+    introShown = true;
     introComplete = true;
     connect();
 }
 
 function connect() {
     if (socket && socket.readyState === WebSocket.OPEN) return;
-    socket = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws');
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    socket = new WebSocket(proto + '//' + location.host + '/ws');
     socket.onmessage = e => term.write(e.data);
-    socket.onclose = () => { if (introComplete) { term.writeln('\x1b[31m[ Signal lost ]\x1b[0m'); setTimeout(connect, 3000); } };
+    socket.onclose = () => {
+        if (introComplete) {
+            term.writeln('\r\n\x1b[31m[ Signal lost - Reconnecting... ]\x1b[0m');
+            setTimeout(connect, 3000);
+        }
+    };
+    socket.onerror = () => {};
 }
-document.addEventListener('visibilitychange', () => { if (!document.hidden && introComplete && (!socket || socket.readyState !== WebSocket.OPEN)) connect(); });
+
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && introComplete && (!socket || socket.readyState !== WebSocket.OPEN)) {
+        connect();
+    }
+});
 
 const input = document.getElementById('input');
-function sendInput() { const t = input.value.trim(); if (t && socket && socket.readyState === WebSocket.OPEN) { term.write(t + '\r\n'); socket.send(t + '\n'); input.value = ''; } input.focus(); }
-function cmd(s) { if (socket && socket.readyState === WebSocket.OPEN) { term.write(s + '\r\n'); socket.send(s + '\n'); } }
-input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendInput(); } });
+const cursor = document.getElementById('cursor');
 
-let line = '';
-term.onKey(({ key, domEvent }) => {
-    if (window.innerWidth < 600 || !introComplete || !socket || socket.readyState !== WebSocket.OPEN) return;
-    if (domEvent.keyCode === 13) { term.write('\r\n'); socket.send(line + '\n'); line = ''; }
-    else if (domEvent.keyCode === 8) { if (line.length > 0) { line = line.slice(0, -1); term.write('\b \b'); } }
-    else if (!domEvent.altKey && !domEvent.ctrlKey && !domEvent.metaKey) { line += key; term.write(key); }
+function sendInput() {
+    const t = input.value.trim();
+    if (t && socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(t + '\n');
+        input.value = '';
+    }
+    input.focus();
+}
+
+function cmd(s) {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(s + '\n');
+    }
+}
+
+input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        sendInput();
+    }
 });
-document.getElementById('crt').addEventListener('click', () => { if (introComplete) connect(); });
+
+// Keep input focused
+input.focus();
+document.addEventListener('click', () => input.focus());
+
+// Reconnect on CRT click
+document.getElementById('crt').addEventListener('click', () => {
+    if (introComplete && (!socket || socket.readyState !== WebSocket.OPEN)) {
+        connect();
+    }
+});
 </script>
 </body>
 </html>`

@@ -375,18 +375,18 @@ func handleConnection(ctx context.Context, conn net.Conn, world *World) {
 		conn.SetDeadline(time.Now().Add(ConnectionTimeout))
 	} else {
 		conn.SetDeadline(time.Now().Add(ConnectionTimeout + 30*time.Second))
-	}
 
-	// Play Matrix rain intro animation
-	introConfig := game.IntroConfig{
-		Width:        80,
-		Height:       24,
-		RainFrames:   40, // ~2 seconds of pure rain
-		RevealFrames: 80, // ~4 seconds of reveal
-		FrameDelay:   50 * time.Millisecond,
-		FinalPause:   2 * time.Second,
+		// Play Matrix rain intro animation ONLY for direct telnet connections
+		introConfig := game.IntroConfig{
+			Width:        80,
+			Height:       24,
+			RainFrames:   40, // ~2 seconds of pure rain
+			RevealFrames: 80, // ~4 seconds of reveal
+			FrameDelay:   50 * time.Millisecond,
+			FinalPause:   2 * time.Second,
+		}
+		game.PlayIntro(func(s string) { client.Write(s) }, introConfig)
 	}
-	game.PlayIntro(func(s string) { client.Write(s) }, introConfig)
 
 	// Reset timeout for login phase
 	conn.SetDeadline(time.Now().Add(ConnectionTimeout))

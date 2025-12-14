@@ -969,7 +969,7 @@ func (w *World) Look(p *Player, target string) string {
 
 	if target == "" {
 		automap := w.GenerateAutomapInternal(p, 2)
-		
+
 		// Use brief or full description based on player preference
 		roomDesc := room.Description
 		if p.BriefMode && len(roomDesc) > 50 {
@@ -980,7 +980,7 @@ func (w *World) Look(p *Player, target string) string {
 				roomDesc = roomDesc[:47] + "..."
 			}
 		}
-		
+
 		desc := fmt.Sprintf("%s\r\n%s*** %s ***%s\r\n%s\r\nExits: ", automap, White, room.ID, Green, roomDesc)
 		for dir := range room.Exits {
 			desc += fmt.Sprintf("[%s] ", dir)

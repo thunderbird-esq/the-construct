@@ -48,9 +48,9 @@ func (m *mockConn) SetWriteDeadline(t time.Time) error { return nil }
 func TestNewReader(t *testing.T) {
 	conn := newMockConn("")
 	history := NewHistory(10)
-	
+
 	reader := NewReader(conn, history, "> ")
-	
+
 	if reader == nil {
 		t.Fatal("NewReader returned nil")
 	}
@@ -74,9 +74,9 @@ func TestNewReader(t *testing.T) {
 // TestNewSimpleReader verifies SimpleReader creation
 func TestNewSimpleReader(t *testing.T) {
 	conn := newMockConn("")
-	
+
 	reader := NewSimpleReader(conn)
-	
+
 	if reader == nil {
 		t.Fatal("NewSimpleReader returned nil")
 	}
@@ -107,9 +107,9 @@ func TestSimpleReaderReadLine(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			conn := newMockConn(tt.input)
 			reader := NewSimpleReader(conn)
-			
+
 			got, err := reader.ReadLine()
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadLine() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -125,16 +125,16 @@ func TestSimpleReaderReadLine(t *testing.T) {
 func TestSimpleReaderReadPassword(t *testing.T) {
 	conn := newMockConn("secret123\n")
 	reader := NewSimpleReader(conn)
-	
+
 	pass, err := reader.ReadPassword()
-	
+
 	if err != nil {
 		t.Fatalf("ReadPassword() error = %v", err)
 	}
 	if pass != "secret123" {
 		t.Errorf("ReadPassword() = %q, want 'secret123'", pass)
 	}
-	
+
 	// Check that IAC sequences were sent
 	written := conn.writeBuf.Bytes()
 	// Should contain IAC WILL ECHO (255, 251, 1) at start
@@ -158,12 +158,12 @@ func TestSimpleReaderReadPassword(t *testing.T) {
 func TestReaderSetDeadline(t *testing.T) {
 	conn := newMockConn("")
 	reader := NewReader(conn, nil, "> ")
-	
+
 	err := reader.SetDeadline(time.Now().Add(time.Second))
 	if err != nil {
 		t.Errorf("SetDeadline() error = %v", err)
 	}
-	
+
 	err = reader.SetReadDeadline(time.Now().Add(time.Second))
 	if err != nil {
 		t.Errorf("SetReadDeadline() error = %v", err)
@@ -174,11 +174,11 @@ func TestReaderSetDeadline(t *testing.T) {
 func TestReaderBuffered(t *testing.T) {
 	conn := newMockConn("some data")
 	reader := NewReader(conn, nil, "> ")
-	
+
 	// Read some data to buffer it
 	buf := make([]byte, 4)
 	reader.Read(buf)
-	
+
 	// Check buffered
 	buffered := reader.Buffered()
 	t.Logf("Buffered bytes: %d", buffered)
@@ -188,10 +188,10 @@ func TestReaderBuffered(t *testing.T) {
 func TestReaderRead(t *testing.T) {
 	conn := newMockConn("test data")
 	reader := NewReader(conn, nil, "> ")
-	
+
 	buf := make([]byte, 4)
 	n, err := reader.Read(buf)
-	
+
 	if err != nil {
 		t.Errorf("Read() error = %v", err)
 	}
@@ -207,9 +207,9 @@ func TestReaderRead(t *testing.T) {
 func TestReaderReadLineSimple(t *testing.T) {
 	conn := newMockConn("simple line\n")
 	reader := NewReader(conn, nil, "> ")
-	
+
 	line, err := reader.ReadLineSimple()
-	
+
 	if err != nil {
 		t.Errorf("ReadLineSimple() error = %v", err)
 	}

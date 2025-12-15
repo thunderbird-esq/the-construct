@@ -95,6 +95,41 @@ func TestNPCActivityModifierRange(t *testing.T) {
 	}
 }
 
+// TestNPCActivityModifierAllPeriods tests modifier for all time periods
+func TestNPCActivityModifierAllPeriods(t *testing.T) {
+	cycleLength := 800 * time.Millisecond
+	
+	tests := []struct {
+		name     string
+		position float64 // 0-1 position in cycle
+		minMod   float64
+		maxMod   float64
+	}{
+		{"midnight", 0.03, 1.4, 1.6},
+		{"dawn", 0.09, 0.6, 0.8},
+		{"morning", 0.18, 0.8, 1.0},
+		{"noon", 0.30, 0.9, 1.1},
+		{"afternoon", 0.43, 0.9, 1.1},
+		{"dusk", 0.56, 1.0, 1.2},
+		{"evening", 0.68, 1.1, 1.3},
+		{"night", 0.80, 1.3, 1.5},
+	}
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			clock := &GameClock{
+				CycleLength: cycleLength,
+				StartTime:   time.Now().Add(-time.Duration(tt.position * float64(cycleLength))),
+			}
+			
+			mod := clock.NPCActivityModifier()
+			if mod < tt.minMod || mod > tt.maxMod {
+				t.Errorf("%s: NPCActivityModifier = %f, want %f-%f", tt.name, mod, tt.minMod, tt.maxMod)
+			}
+		})
+	}
+}
+
 func TestLightLevelRange(t *testing.T) {
 	clock := NewGameClock(1 * time.Hour)
 	level := clock.LightLevel()
@@ -104,11 +139,79 @@ func TestLightLevelRange(t *testing.T) {
 	}
 }
 
+// TestLightLevelAllPeriods tests light level for all time periods
+func TestLightLevelAllPeriods(t *testing.T) {
+	cycleLength := 800 * time.Millisecond
+	
+	tests := []struct {
+		name     string
+		position float64
+		minLevel int
+		maxLevel int
+	}{
+		{"midnight", 0.03, 5, 15},
+		{"dawn", 0.09, 35, 45},
+		{"morning", 0.18, 65, 75},
+		{"noon", 0.30, 95, 100},
+		{"afternoon", 0.43, 85, 95},
+		{"dusk", 0.56, 45, 55},
+		{"evening", 0.68, 25, 35},
+		{"night", 0.80, 10, 20},
+	}
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			clock := &GameClock{
+				CycleLength: cycleLength,
+				StartTime:   time.Now().Add(-time.Duration(tt.position * float64(cycleLength))),
+			}
+			
+			level := clock.LightLevel()
+			if level < tt.minLevel || level > tt.maxLevel {
+				t.Errorf("%s: LightLevel = %d, want %d-%d", tt.name, level, tt.minLevel, tt.maxLevel)
+			}
+		})
+	}
+}
+
 func TestTimeIconNotEmpty(t *testing.T) {
 	clock := NewGameClock(1 * time.Hour)
 	icon := clock.TimeIcon()
 	if icon == "" {
 		t.Error("TimeIcon should not be empty")
+	}
+}
+
+// TestTimeIconAllPeriods tests icons for all time periods
+func TestTimeIconAllPeriods(t *testing.T) {
+	cycleLength := 800 * time.Millisecond
+	
+	tests := []struct {
+		name     string
+		position float64
+	}{
+		{"midnight", 0.03},
+		{"dawn", 0.09},
+		{"morning", 0.18},
+		{"noon", 0.30},
+		{"afternoon", 0.43},
+		{"dusk", 0.56},
+		{"evening", 0.68},
+		{"night", 0.80},
+	}
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			clock := &GameClock{
+				CycleLength: cycleLength,
+				StartTime:   time.Now().Add(-time.Duration(tt.position * float64(cycleLength))),
+			}
+			
+			icon := clock.TimeIcon()
+			if icon == "" {
+				t.Errorf("%s: TimeIcon should not be empty", tt.name)
+			}
+		})
 	}
 }
 

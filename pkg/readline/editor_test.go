@@ -51,9 +51,9 @@ func (m *editorMockConn) SetWriteDeadline(t time.Time) error { return nil }
 func TestNewEditor(t *testing.T) {
 	conn := newEditorMockConn(nil)
 	history := NewHistory(10)
-	
+
 	editor := NewEditor(conn, history)
-	
+
 	if editor == nil {
 		t.Fatal("NewEditor returned nil")
 	}
@@ -74,9 +74,9 @@ func TestEditorReadLineSimple(t *testing.T) {
 	input := []byte{'h', 'e', 'l', 'l', 'o', 0x0D}
 	conn := newEditorMockConn(input)
 	editor := NewEditor(conn, nil)
-	
+
 	line, err := editor.ReadLine()
-	
+
 	if err != nil {
 		t.Fatalf("ReadLine() error = %v", err)
 	}
@@ -91,16 +91,16 @@ func TestEditorReadLineWithHistory(t *testing.T) {
 	conn := newEditorMockConn(input)
 	history := NewHistory(10)
 	editor := NewEditor(conn, history)
-	
+
 	line, err := editor.ReadLine()
-	
+
 	if err != nil {
 		t.Fatalf("ReadLine() error = %v", err)
 	}
 	if line != "test" {
 		t.Errorf("ReadLine() = %q, want 'test'", line)
 	}
-	
+
 	// Check history was updated
 	if history.Len() != 1 {
 		t.Errorf("History length = %d, want 1", history.Len())
@@ -116,9 +116,9 @@ func TestEditorBackspace(t *testing.T) {
 	input := []byte{'a', 'b', 0x7F, 'c', 0x0D}
 	conn := newEditorMockConn(input)
 	editor := NewEditor(conn, nil)
-	
+
 	line, err := editor.ReadLine()
-	
+
 	if err != nil {
 		t.Fatalf("ReadLine() error = %v", err)
 	}
@@ -132,9 +132,9 @@ func TestEditorCtrlC(t *testing.T) {
 	input := []byte{'a', 'b', 0x03} // 0x03 = Ctrl+C
 	conn := newEditorMockConn(input)
 	editor := NewEditor(conn, nil)
-	
+
 	line, err := editor.ReadLine()
-	
+
 	if err != nil {
 		t.Fatalf("ReadLine() error = %v", err)
 	}
@@ -149,9 +149,9 @@ func TestEditorCtrlD(t *testing.T) {
 	input := []byte{0x04} // 0x04 = Ctrl+D
 	conn := newEditorMockConn(input)
 	editor := NewEditor(conn, nil)
-	
+
 	_, err := editor.ReadLine()
-	
+
 	if err != io.EOF {
 		t.Errorf("Ctrl+D on empty line should return EOF, got %v", err)
 	}
@@ -163,9 +163,9 @@ func TestEditorCtrlU(t *testing.T) {
 	input := []byte{'a', 'b', 'c', 0x15, 'x', 'y', 'z', 0x0D}
 	conn := newEditorMockConn(input)
 	editor := NewEditor(conn, nil)
-	
+
 	line, err := editor.ReadLine()
-	
+
 	if err != nil {
 		t.Fatalf("ReadLine() error = %v", err)
 	}
@@ -181,9 +181,9 @@ func TestEditorArrowKeys(t *testing.T) {
 	input := []byte{'a', 'b', 0x1B, '[', 'D', 'X', 0x0D}
 	conn := newEditorMockConn(input)
 	editor := NewEditor(conn, nil)
-	
+
 	line, err := editor.ReadLine()
-	
+
 	if err != nil {
 		t.Fatalf("ReadLine() error = %v", err)
 	}
@@ -201,14 +201,14 @@ func TestEditorHistoryNavigation(t *testing.T) {
 	history := NewHistory(10)
 	history.Add("first command")
 	history.Add("second command")
-	
+
 	// Input: up arrow + Enter (should get "second command")
 	input := []byte{0x1B, '[', 'A', 0x0D}
 	conn := newEditorMockConn(input)
 	editor := NewEditor(conn, history)
-	
+
 	line, err := editor.ReadLine()
-	
+
 	if err != nil {
 		t.Fatalf("ReadLine() error = %v", err)
 	}
@@ -223,9 +223,9 @@ func TestEditorEmptyLine(t *testing.T) {
 	conn := newEditorMockConn(input)
 	history := NewHistory(10)
 	editor := NewEditor(conn, history)
-	
+
 	line, err := editor.ReadLine()
-	
+
 	if err != nil {
 		t.Fatalf("ReadLine() error = %v", err)
 	}
@@ -242,9 +242,9 @@ func TestEditorLFTerminator(t *testing.T) {
 	input := []byte{'h', 'i', 0x0A} // 0x0A = LF
 	conn := newEditorMockConn(input)
 	editor := NewEditor(conn, nil)
-	
+
 	line, err := editor.ReadLine()
-	
+
 	if err != nil {
 		t.Fatalf("ReadLine() error = %v", err)
 	}

@@ -24,7 +24,7 @@ COPY pkg/ ./pkg/
 
 # Build static binary with optimizations
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -ldflags="-w -s -X main.Version=1.31.0" \
+    -ldflags="-w -s" \
     -o matrix-mud .
 
 # --- Runtime Stage ---

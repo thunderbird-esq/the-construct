@@ -8,7 +8,7 @@ import (
 // TestTakePillNotAwakened verifies red pill awakening
 func TestTakePillNotAwakened(t *testing.T) {
 	world := NewWorld()
-	
+
 	player := &Player{
 		Name:      "Neo",
 		RoomID:    "dojo",
@@ -18,7 +18,7 @@ func TestTakePillNotAwakened(t *testing.T) {
 		Strength:  10,
 		Inventory: []*Item{},
 	}
-	
+
 	// Add red pill to room
 	room := world.Rooms[player.RoomID]
 	if room == nil {
@@ -30,9 +30,9 @@ func TestTakePillNotAwakened(t *testing.T) {
 		room.ItemMap = make(map[string]*Item)
 	}
 	room.ItemMap["red_pill"] = redPill
-	
+
 	result := world.TakePill(player, "red")
-	
+
 	if !player.Awakened {
 		t.Error("Player should be awakened after taking red pill")
 	}
@@ -50,15 +50,15 @@ func TestTakePillNotAwakened(t *testing.T) {
 // TestTakePillAlreadyAwakened verifies cannot re-awaken
 func TestTakePillAlreadyAwakened(t *testing.T) {
 	world := NewWorld()
-	
+
 	player := &Player{
 		Name:     "Neo",
 		RoomID:   "dojo",
 		Awakened: true,
 	}
-	
+
 	result := world.TakePill(player, "red")
-	
+
 	if !strings.Contains(result, "already seen the truth") {
 		t.Errorf("Should indicate already awakened: %s", result)
 	}
@@ -67,16 +67,16 @@ func TestTakePillAlreadyAwakened(t *testing.T) {
 // TestTakePillNoPill verifies error when pill not present
 func TestTakePillNoPill(t *testing.T) {
 	world := NewWorld()
-	
+
 	player := &Player{
 		Name:      "Neo",
 		RoomID:    "dojo",
 		Awakened:  false,
 		Inventory: []*Item{},
 	}
-	
+
 	result := world.TakePill(player, "red")
-	
+
 	if !strings.Contains(result, "don't see") {
 		t.Errorf("Should indicate pill not found: %s", result)
 	}
@@ -85,20 +85,20 @@ func TestTakePillNoPill(t *testing.T) {
 // TestTakeBluePill verifies blue pill effect
 func TestTakeBluePill(t *testing.T) {
 	world := NewWorld()
-	
+
 	player := &Player{
 		Name:      "Thomas",
 		RoomID:    "dojo",
 		Awakened:  false,
 		Inventory: []*Item{},
 	}
-	
+
 	// Add blue pill to inventory
 	bluePill := &Item{ID: "blue_pill", Name: "Blue Pill"}
 	player.Inventory = append(player.Inventory, bluePill)
-	
+
 	result := world.TakePill(player, "blue")
-	
+
 	if player.Awakened {
 		t.Error("Player should NOT be awakened after taking blue pill")
 	}
@@ -110,15 +110,15 @@ func TestTakeBluePill(t *testing.T) {
 // TestTakePillInvalidColor verifies error for invalid pill color
 func TestTakePillInvalidColor(t *testing.T) {
 	world := NewWorld()
-	
+
 	player := &Player{
 		Name:     "Neo",
 		RoomID:   "dojo",
 		Awakened: false,
 	}
-	
+
 	result := world.TakePill(player, "green")
-	
+
 	// The function checks for the pill first, so it says "don't see a green pill"
 	if !strings.Contains(result, "don't see") {
 		t.Errorf("Should indicate pill not found: %s", result)
@@ -128,15 +128,15 @@ func TestTakePillInvalidColor(t *testing.T) {
 // TestTakePillNilRoom verifies handling of invalid room
 func TestTakePillNilRoom(t *testing.T) {
 	world := NewWorld()
-	
+
 	player := &Player{
 		Name:     "Neo",
 		RoomID:   "nonexistent_room",
 		Awakened: false,
 	}
-	
+
 	result := world.TakePill(player, "red")
-	
+
 	if !strings.Contains(result, "cannot do that") {
 		t.Errorf("Should indicate cannot do that here: %s", result)
 	}
@@ -145,21 +145,21 @@ func TestTakePillNilRoom(t *testing.T) {
 // TestRemoveItemFromRoom verifies item removal from room
 func TestRemoveItemFromRoom(t *testing.T) {
 	world := NewWorld()
-	
+
 	room := &Room{
 		ID:      "test_room",
 		Items:   []*Item{},
 		ItemMap: make(map[string]*Item),
 	}
-	
+
 	item1 := &Item{ID: "item1", Name: "Item 1"}
 	item2 := &Item{ID: "item2", Name: "Item 2"}
 	room.Items = append(room.Items, item1, item2)
 	room.ItemMap["item1"] = item1
 	room.ItemMap["item2"] = item2
-	
+
 	world.removeItemFromRoom(room, item1)
-	
+
 	if len(room.Items) != 1 {
 		t.Errorf("Room should have 1 item, got %d", len(room.Items))
 	}
@@ -174,17 +174,17 @@ func TestRemoveItemFromRoom(t *testing.T) {
 // TestRemoveItemFromInventory verifies item removal from inventory
 func TestRemoveItemFromInventory(t *testing.T) {
 	world := NewWorld()
-	
+
 	item1 := &Item{ID: "item1", Name: "Item 1"}
 	item2 := &Item{ID: "item2", Name: "Item 2"}
-	
+
 	player := &Player{
 		Name:      "Test",
 		Inventory: []*Item{item1, item2},
 	}
-	
+
 	world.removeItemFromInventory(player, item1)
-	
+
 	if len(player.Inventory) != 1 {
 		t.Errorf("Inventory should have 1 item, got %d", len(player.Inventory))
 	}
@@ -196,7 +196,7 @@ func TestRemoveItemFromInventory(t *testing.T) {
 // TestMaybeSpawnAgent verifies agent spawning logic
 func TestMaybeSpawnAgent(t *testing.T) {
 	world := NewWorld()
-	
+
 	// Non-awakened player should not spawn agents
 	player1 := &Player{
 		Name:     "Bluepill",
@@ -204,10 +204,10 @@ func TestMaybeSpawnAgent(t *testing.T) {
 		Awakened: false,
 		Heat:     100, // Max heat but not awakened
 	}
-	
+
 	world.maybeSpawnAgent(player1)
 	// Should not panic, agent only spawns for awakened players
-	
+
 	// Awakened player with low heat
 	player2 := &Player{
 		Name:     "Neo",
@@ -215,7 +215,7 @@ func TestMaybeSpawnAgent(t *testing.T) {
 		Awakened: true,
 		Heat:     10, // Low heat
 	}
-	
+
 	world.maybeSpawnAgent(player2)
 	// Should not spawn (heat too low)
 }
@@ -223,7 +223,7 @@ func TestMaybeSpawnAgent(t *testing.T) {
 // TestMoveNPC verifies NPC movement
 func TestMoveNPC(t *testing.T) {
 	world := NewWorld()
-	
+
 	// Create an NPC in a room with exits
 	npc := &NPC{
 		ID:           "test_npc",
@@ -232,38 +232,38 @@ func TestMoveNPC(t *testing.T) {
 		MaxHP:        50,
 		OriginalRoom: "loading_program",
 	}
-	
+
 	fromRoom := world.Rooms["loading_program"]
 	if fromRoom == nil {
 		t.Skip("loading_program room not found")
 	}
-	
+
 	// Find a connected room
 	var toRoomID string
 	for _, exitRoom := range fromRoom.Exits {
 		toRoomID = exitRoom
 		break
 	}
-	
+
 	if toRoomID == "" {
 		t.Skip("No exits from loading_program")
 	}
-	
+
 	toRoom := world.Rooms[toRoomID]
 	if toRoom == nil {
 		t.Skip("Target room not found")
 	}
-	
+
 	// Add NPC to from room
 	fromRoom.NPCs = append(fromRoom.NPCs, npc)
 	if fromRoom.NPCMap == nil {
 		fromRoom.NPCMap = make(map[string]*NPC)
 	}
 	fromRoom.NPCMap[npc.ID] = npc
-	
+
 	// moveNPC requires from, to, and direction
 	world.moveNPC(npc, fromRoom, toRoom, "south")
-	
+
 	// NPC should be moved (verify no panic)
 	t.Log("moveNPC completed without panic")
 }
@@ -271,12 +271,12 @@ func TestMoveNPC(t *testing.T) {
 // TestDecayHeat verifies heat decay for all players
 func TestDecayHeat(t *testing.T) {
 	world := NewWorld()
-	
+
 	// DecayHeat operates on world.Players which uses *Client keys
 	// We can't easily add players without clients, but we can call it
 	// to ensure it doesn't panic with empty players
 	world.DecayHeat()
-	
+
 	// Test passed if no panic
 	t.Log("DecayHeat completed without panic")
 }
@@ -284,11 +284,11 @@ func TestDecayHeat(t *testing.T) {
 // TestAgentAI verifies agent AI behavior
 func TestAgentAI(t *testing.T) {
 	world := NewWorld()
-	
+
 	// AgentAI operates on all agents, takes no parameters
 	// Should not panic without players
 	world.AgentAI()
-	
+
 	t.Log("AgentAI completed without panic")
 }
 

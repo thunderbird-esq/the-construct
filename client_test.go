@@ -36,8 +36,10 @@ func (m *mockConn) Close() error {
 	return nil
 }
 
-func (m *mockConn) LocalAddr() net.Addr                { return &net.TCPAddr{} }
-func (m *mockConn) RemoteAddr() net.Addr               { return &net.TCPAddr{IP: net.ParseIP("127.0.0.1"), Port: 12345} }
+func (m *mockConn) LocalAddr() net.Addr { return &net.TCPAddr{} }
+func (m *mockConn) RemoteAddr() net.Addr {
+	return &net.TCPAddr{IP: net.ParseIP("127.0.0.1"), Port: 12345}
+}
 func (m *mockConn) SetDeadline(t time.Time) error      { return nil }
 func (m *mockConn) SetReadDeadline(t time.Time) error  { return nil }
 func (m *mockConn) SetWriteDeadline(t time.Time) error { return nil }
@@ -55,7 +57,7 @@ func TestClientWrite(t *testing.T) {
 	}
 
 	client.Write("Hello, World!")
-	
+
 	if conn.output() != "Hello, World!" {
 		t.Errorf("Write output = %q, want %q", conn.output(), "Hello, World!")
 	}
@@ -70,7 +72,7 @@ func TestClientSuppressEcho(t *testing.T) {
 	}
 
 	client.suppressEcho()
-	
+
 	output := conn.writeBuf.Bytes()
 	// Should send IAC WILL ECHO (255, 251, 1)
 	if len(output) != 3 || output[0] != TelnetIAC || output[1] != TelnetWILL || output[2] != TelnetECHO {
@@ -87,7 +89,7 @@ func TestClientResumeEcho(t *testing.T) {
 	}
 
 	client.resumeEcho()
-	
+
 	output := conn.writeBuf.Bytes()
 	// Should send IAC WONT ECHO (255, 252, 1)
 	if len(output) != 3 || output[0] != TelnetIAC || output[1] != TelnetWONT || output[2] != TelnetECHO {
@@ -107,7 +109,7 @@ func TestClientReadPassword(t *testing.T) {
 	if err != nil {
 		t.Fatalf("readPassword error: %v", err)
 	}
-	
+
 	if password != "secretpassword" {
 		t.Errorf("password = %q, want %q", password, "secretpassword")
 	}
@@ -190,10 +192,10 @@ func TestBroadcastWithPlayers(t *testing.T) {
 	// Create mock clients
 	conn1 := newMockConn("")
 	client1 := &Client{conn: conn1, reader: bufio.NewReader(conn1)}
-	
+
 	conn2 := newMockConn("")
 	client2 := &Client{conn: conn2, reader: bufio.NewReader(conn2)}
-	
+
 	conn3 := newMockConn("")
 	client3 := &Client{conn: conn3, reader: bufio.NewReader(conn3)}
 

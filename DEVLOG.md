@@ -1197,3 +1197,143 @@ Bumped to v1.50.0
 **Last Updated**: 2025-12-12
 **Project Status**: Active Development
 **Current Version**: v1.50.0
+
+
+---
+
+## 2025-12-15 - Option A: Content Expansion Complete
+
+### Session Summary
+
+Implemented comprehensive content expansion (Option A) including enhanced dialogue trees, dungeon instances, and expanded crafting system.
+
+### A2: NPC Dialogue Trees - pkg/dialogue
+
+Created new `pkg/dialogue` package with branching conversation system:
+
+1. **Dialogue Infrastructure**
+   - `Node` struct: ID, Type, Speaker, Text, Choices, NextNode, Action
+   - `Tree` struct: NPC-specific dialogue trees with root node
+   - `Session` tracking: Player's current dialogue state
+   - `Manager`: Handles all dialogue operations with thread-safety
+
+2. **Node Types**
+   - `NodeText`: Simple text display, auto-advance
+   - `NodeChoice`: Player selects from multiple options
+   - `NodeAction`: Triggers game actions (give item, start quest)
+   - `NodeEnd`: Terminates dialogue
+
+3. **Default Dialogue Trees Created**
+   - **Morpheus**: Matrix explanation, prophecy, training options
+   - **The Oracle**: Cookie offering, prophecy, fate discussion
+   - **The Architect**: Final choice presentation (Zion vs Trinity)
+   - **The Merovingian**: Keymaker negotiation, cause/effect philosophy
+
+4. **Features**
+   - Branching conversations with multiple paths
+   - Actions trigger on choice selection (quest start, item give)
+   - Session persistence during dialogue
+   - Case-insensitive player name handling
+
+### A3: Dungeon/Instance System - pkg/instance
+
+Created new `pkg/instance` package for instanced dungeon content:
+
+1. **Instance Infrastructure**
+   - `Template`: Defines instance structure (rooms, NPCs, rewards)
+   - `Instance`: Active instance with player progress
+   - `InstanceRoom`: Room state with NPC health tracking
+   - `Manager`: Creates/manages instances, tracks players
+
+2. **Default Instance Templates**
+   - **Training Gauntlet** (Easy, Level 1): 3 rooms, solo, 15 min
+   - **Government Building Raid** (Normal, Level 3): 4 rooms, 4 players, 30 min
+   - **Club Hel Depths** (Hard, Level 5): 4 rooms, 4 players, 45 min
+
+3. **Instance Mechanics**
+   - Room clearing: Must defeat all NPCs to proceed
+   - Boss rooms: Final challenge with special rewards
+   - Progress tracking: Kill count, room status
+   - Reward system: XP, money, items, titles on completion
+
+4. **Difficulty Scaling**
+   - Easy (1x), Normal (2x), Hard (3x), Boss (4x) multipliers
+   - NPC HP and damage scale with difficulty
+   - Different NPCs have different base stats
+
+### A4: Item Crafting Expansion
+
+Expanded `data/items.json` with 15+ new items:
+
+1. **New Consumables**
+   - `stim_pack`: Combat healing (50 HP)
+   - `focus_serum`: Damage buff
+   - `matrix_sight`: Enemy detection
+   - `bullet_time`: Dodge buff
+
+2. **New Weapons**
+   - `hardened_katana`: 8 damage, durable
+   - `viral_blade`: 10 damage + poison
+   - `agent_buster`: 15 damage + Agent bonus
+
+3. **New Armor**
+   - `reinforced_coat`: 4 AC
+   - `matrix_weave`: 3 AC + dodge
+
+4. **Legendary "The One" Set**
+   - `neos_shades`: 3 AC, set bonus
+   - `morpheus_katana`: 18 damage, set bonus
+   - `trinity_coat`: 6 AC, set bonus
+
+5. **Crafting Materials**
+   - `matrix_code_fragment`: Drops from Agents
+   - `exile_soul_shard`: Drops from Exile bosses
+   - `prime_core`: Ultra-rare, legendary recipes
+
+6. **Quest Items**
+   - `cookie`: Oracle's gift
+   - `white_rabbit`: Quest token
+   - `cell_key`: Keymaker's cell
+   - `master_key`: Opens any door
+
+### Expanded Recipes (data/recipes.json)
+
+Added 19 total recipes organized by tier:
+
+**Tier 1 (Skill 0-1)**
+- health_vial, emp_grenade, repair_kit
+
+**Tier 2 (Skill 2-3)**
+- stim_pack, mirror_shades, cyberdeck, hardened_katana, reinforced_coat
+
+**Tier 3 (Skill 3-4)**
+- focus_serum, matrix_sight, viral_blade, matrix_weave
+
+**Tier 4 (Skill 4-5)**
+- bullet_time, agent_buster, code_blade, operator_coat
+
+**Legendary (Skill 6)**
+- neos_shades, morpheus_katana, trinity_coat
+
+### Test Coverage
+
+New packages with full test suites:
+- `pkg/dialogue`: 82.3% coverage (15 tests)
+- `pkg/instance`: 82.2% coverage (22 tests)
+
+### Verification
+
+- All 25 packages passing tests
+- New packages: dialogue, instance
+- go vet clean
+- Build successful
+
+### Version
+
+Bumped to v1.60.0
+
+---
+
+**Last Updated**: 2025-12-15
+**Project Status**: Active Development
+**Current Version**: v1.60.0

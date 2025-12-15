@@ -1660,3 +1660,23 @@ func (w *World) DegradeEquipment(p *Player) {
 		}
 	}
 }
+
+// GetItemTemplate returns an item template by ID
+func (w *World) GetItemTemplate(itemID string) *Item {
+	w.mutex.RLock()
+	defer w.mutex.RUnlock()
+	if template, ok := w.ItemTemplates[itemID]; ok {
+		return template
+	}
+	return nil
+}
+
+// GetNPCDialogue returns the dialogue map for an NPC
+func (w *World) GetNPCDialogue(npcID string) map[string]string {
+	w.mutex.RLock()
+	defer w.mutex.RUnlock()
+	if dialogue, ok := w.Dialogue[npcID]; ok {
+		return dialogue
+	}
+	return nil
+}

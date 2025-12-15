@@ -14,6 +14,66 @@
       "skill_required": 0,
       "xp_reward": 10
     },
+    "stim_pack": {
+      "id": "stim_pack",
+      "name": "Stim Pack",
+      "description": "Create a powerful combat stimulant.",
+      "ingredients": [
+        {"item_id": "health_vial", "quantity": 2},
+        {"item_id": "trash", "quantity": 5}
+      ],
+      "result": {
+        "item_id": "stim_pack",
+        "quantity": 1
+      },
+      "skill_required": 2,
+      "xp_reward": 25
+    },
+    "focus_serum": {
+      "id": "focus_serum",
+      "name": "Focus Serum",
+      "description": "Distill combat focus into liquid form.",
+      "ingredients": [
+        {"item_id": "red_pill", "quantity": 1},
+        {"item_id": "trash", "quantity": 8}
+      ],
+      "result": {
+        "item_id": "focus_serum",
+        "quantity": 1
+      },
+      "skill_required": 3,
+      "xp_reward": 40
+    },
+    "matrix_sight": {
+      "id": "matrix_sight",
+      "name": "Matrix Sight",
+      "description": "Create a solution that reveals the code.",
+      "ingredients": [
+        {"item_id": "matrix_code_fragment", "quantity": 1},
+        {"item_id": "trash", "quantity": 5}
+      ],
+      "result": {
+        "item_id": "matrix_sight",
+        "quantity": 1
+      },
+      "skill_required": 3,
+      "xp_reward": 50
+    },
+    "bullet_time": {
+      "id": "bullet_time",
+      "name": "Bullet Time Vial",
+      "description": "Slow time itself.",
+      "ingredients": [
+        {"item_id": "matrix_code_fragment", "quantity": 2},
+        {"item_id": "focus_serum", "quantity": 1}
+      ],
+      "result": {
+        "item_id": "bullet_time",
+        "quantity": 1
+      },
+      "skill_required": 4,
+      "xp_reward": 75
+    },
     "emp_grenade": {
       "id": "emp_grenade",
       "name": "EMP Grenade",
@@ -58,6 +118,83 @@
       },
       "skill_required": 2,
       "xp_reward": 40
+    },
+    "hardened_katana": {
+      "id": "hardened_katana",
+      "name": "Hardened Katana",
+      "description": "Reinforce a katana for better durability.",
+      "ingredients": [
+        {"item_id": "katana", "quantity": 1},
+        {"item_id": "trash", "quantity": 10}
+      ],
+      "result": {
+        "item_id": "hardened_katana",
+        "quantity": 1
+      },
+      "skill_required": 3,
+      "xp_reward": 60
+    },
+    "viral_blade": {
+      "id": "viral_blade",
+      "name": "Viral Blade",
+      "description": "Infuse a blade with corrupting code.",
+      "ingredients": [
+        {"item_id": "hardened_katana", "quantity": 1},
+        {"item_id": "matrix_code_fragment", "quantity": 2}
+      ],
+      "result": {
+        "item_id": "viral_blade",
+        "quantity": 1
+      },
+      "skill_required": 4,
+      "xp_reward": 80
+    },
+    "agent_buster": {
+      "id": "agent_buster",
+      "name": "Agent Buster",
+      "description": "Create a weapon designed to exploit Agent vulnerabilities.",
+      "ingredients": [
+        {"item_id": "viral_blade", "quantity": 1},
+        {"item_id": "exile_soul_shard", "quantity": 1},
+        {"item_id": "matrix_code_fragment", "quantity": 3}
+      ],
+      "result": {
+        "item_id": "agent_buster",
+        "quantity": 1
+      },
+      "skill_required": 5,
+      "xp_reward": 150
+    },
+    "reinforced_coat": {
+      "id": "reinforced_coat",
+      "name": "Reinforced Coat",
+      "description": "Add hidden armor to a trenchcoat.",
+      "ingredients": [
+        {"item_id": "coat", "quantity": 1},
+        {"item_id": "trash", "quantity": 15}
+      ],
+      "result": {
+        "item_id": "reinforced_coat",
+        "quantity": 1
+      },
+      "skill_required": 3,
+      "xp_reward": 60
+    },
+    "matrix_weave": {
+      "id": "matrix_weave",
+      "name": "Matrix Weave Vest",
+      "description": "Weave code threads into protective armor.",
+      "ingredients": [
+        {"item_id": "coat", "quantity": 1},
+        {"item_id": "matrix_code_fragment", "quantity": 2},
+        {"item_id": "trash", "quantity": 10}
+      ],
+      "result": {
+        "item_id": "matrix_weave",
+        "quantity": 1
+      },
+      "skill_required": 4,
+      "xp_reward": 80
     },
     "code_blade": {
       "id": "code_blade",
@@ -104,6 +241,54 @@
       },
       "skill_required": 1,
       "xp_reward": 15
+    },
+    "neos_shades": {
+      "id": "neos_shades",
+      "name": "Neo's Sunglasses",
+      "description": "Craft the legendary sunglasses of The One.",
+      "ingredients": [
+        {"item_id": "mirror_shades", "quantity": 1},
+        {"item_id": "prime_core", "quantity": 1},
+        {"item_id": "matrix_code_fragment", "quantity": 5}
+      ],
+      "result": {
+        "item_id": "neos_shades",
+        "quantity": 1
+      },
+      "skill_required": 6,
+      "xp_reward": 300
+    },
+    "morpheus_katana": {
+      "id": "morpheus_katana",
+      "name": "Morpheus's Katana",
+      "description": "Forge the legendary blade of the rebel leader.",
+      "ingredients": [
+        {"item_id": "code_blade", "quantity": 1},
+        {"item_id": "prime_core", "quantity": 1},
+        {"item_id": "exile_soul_shard", "quantity": 2}
+      ],
+      "result": {
+        "item_id": "morpheus_katana",
+        "quantity": 1
+      },
+      "skill_required": 6,
+      "xp_reward": 350
+    },
+    "trinity_coat": {
+      "id": "trinity_coat",
+      "name": "Trinity's Coat",
+      "description": "Create the legendary coat of Trinity.",
+      "ingredients": [
+        {"item_id": "operator_coat", "quantity": 1},
+        {"item_id": "prime_core", "quantity": 1},
+        {"item_id": "matrix_code_fragment", "quantity": 5}
+      ],
+      "result": {
+        "item_id": "trinity_coat",
+        "quantity": 1
+      },
+      "skill_required": 6,
+      "xp_reward": 350
     }
   }
 }

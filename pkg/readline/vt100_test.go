@@ -115,9 +115,64 @@ func TestMoveCursor(t *testing.T) {
 		t.Error("MoveCursor(-1, ...) should return empty")
 	}
 
-	// Valid movement
-	left := MoveCursor(1, KeyLeft)
-	if left == "" {
-		t.Error("MoveCursor(1, KeyLeft) should not be empty")
+	// Valid movement - all directions
+	tests := []struct {
+		name      string
+		n         int
+		direction Key
+		wantEmpty bool
+	}{
+		{"left 1", 1, KeyLeft, false},
+		{"right 1", 1, KeyRight, false},
+		{"up 1", 1, KeyUp, false},
+		{"down 1", 1, KeyDown, false},
+		{"left 5", 5, KeyLeft, false},
+		{"invalid direction", 1, KeyNone, true},
+		{"invalid direction 2", 1, KeyEnter, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := MoveCursor(tt.n, tt.direction)
+			if tt.wantEmpty && result != "" {
+				t.Errorf("MoveCursor(%d, %v) = %q, want empty", tt.n, tt.direction, result)
+			}
+			if !tt.wantEmpty && result == "" {
+				t.Errorf("MoveCursor(%d, %v) should not be empty", tt.n, tt.direction)
+			}
+		})
+	}
+}
+
+// TestParseEscapeSequenceHomeEnd tests alternative home/end sequences
+func TestParseEscapeSequenceHomeEnd(t *testing.T) {
+	tests := []struct {
+		name string
+		buf  []byte
+		want Key
+	}{
+		{"Home ESC[1~", []byte{0x1B, '[', '1', '~'}, KeyHome},
+		{"End ESC[4~", []byte{0x1B, '[', '4', '~'}, KeyEnd},
+		{"Home SS3", []byte{0x1B, 'O', 'H'}, KeyHome},
+		{"End SS3", []byte{0x1B, 'O', 'F'}, KeyEnd},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := parseEscapeSequence(tt.buf)
+			if got != tt.want {
+				t.Errorf("parseEscapeSequence(%v) = %v, want %v", tt.buf, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestParseEscapeSequenceUnknown tests unknown sequences return KeyEscape
+func TestParseEscapeSequenceUnknown(t *testing.T) {
+	// ESC followed by unknown character
+	buf := []byte{0x1B, 'X', 'Y'}
+	got := parseEscapeSequence(buf)
+	if got != KeyEscape {
+		t.Errorf("Unknown sequence should return KeyEscape, got %v", got)
 	}
 }

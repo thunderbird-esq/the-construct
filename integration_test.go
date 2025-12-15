@@ -27,7 +27,7 @@ func TestAuthenticateFunction(t *testing.T) {
 
 	// Test rate limiting by making repeated calls
 	testUser := "test_auth_user_" + fmt.Sprintf("%d", time.Now().UnixNano())
-	
+
 	// First few attempts should be allowed
 	for i := 0; i < 3; i++ {
 		if !authLimiter.Allow(testUser) {
@@ -83,13 +83,13 @@ func TestHandleConnectionSetup(t *testing.T) {
 func TestWebServerEndpoints(t *testing.T) {
 	req := httptest.NewRequest("GET", "/health", nil)
 	w := httptest.NewRecorder()
-	
+
 	handleHealth(w, req)
-	
+
 	if w.Code != http.StatusOK {
 		t.Errorf("Health endpoint returned %d, want 200", w.Code)
 	}
-	
+
 	body := w.Body.String()
 	if !strings.Contains(body, "healthy") {
 		t.Error("Health response should contain 'healthy'")
@@ -103,13 +103,13 @@ func TestWebServerEndpoints(t *testing.T) {
 func TestServeHomeEndpoint(t *testing.T) {
 	req := httptest.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
-	
+
 	serveHome(w, req)
-	
+
 	if w.Code != http.StatusOK {
 		t.Errorf("Home endpoint returned %d, want 200", w.Code)
 	}
-	
+
 	body := w.Body.String()
 	if !strings.Contains(body, "<!DOCTYPE html>") {
 		t.Error("Home should return HTML")
@@ -143,7 +143,7 @@ func TestWebSocketOriginValidation(t *testing.T) {
 			if tt.origin != "" {
 				req.Header.Set("Origin", tt.origin)
 			}
-			
+
 			got := checkWebSocketOrigin(req)
 			if got != tt.want {
 				t.Errorf("checkWebSocketOrigin() = %v, want %v", got, tt.want)
@@ -181,16 +181,16 @@ func TestTelnetIACFiltering(t *testing.T) {
 // TestStartAdminServerConfig verifies admin server configuration
 func TestStartAdminServerConfig(t *testing.T) {
 	world := NewWorld()
-	
+
 	origAdminWorld := adminWorld
 	defer func() { adminWorld = origAdminWorld }()
-	
+
 	if Config.AdminBindAddr == "" {
 		t.Error("AdminBindAddr should have default value")
 	}
-	
+
 	adminWorld = world
-	
+
 	if adminWorld == nil {
 		t.Error("adminWorld should be set")
 	}
@@ -199,7 +199,7 @@ func TestStartAdminServerConfig(t *testing.T) {
 // TestCombatTargetSetup tests combat target configuration
 func TestCombatTargetSetup(t *testing.T) {
 	world := NewWorld()
-	
+
 	player := &Player{
 		Name:     "CombatTester",
 		RoomID:   "dojo",
@@ -214,7 +214,7 @@ func TestCombatTargetSetup(t *testing.T) {
 		npc := room.NPCs[0]
 		player.Target = npc.ID // Target is a string (NPC ID)
 		t.Logf("Set target to NPC ID: %s", player.Target)
-		
+
 		if player.Target != npc.ID {
 			t.Errorf("Target = %q, want %q", player.Target, npc.ID)
 		}
@@ -266,7 +266,7 @@ func TestSuppressResumeEcho(t *testing.T) {
 	clientConn.SetReadDeadline(time.Now().Add(time.Second))
 	buf := make([]byte, 10)
 	n, _ := clientConn.Read(buf)
-	
+
 	// Should receive IAC WILL ECHO (255, 251, 1)
 	if n >= 3 && buf[0] == 255 && buf[1] == 251 && buf[2] == 1 {
 		t.Log("Received correct IAC WILL ECHO")
@@ -286,11 +286,11 @@ func TestSuppressResumeEcho(t *testing.T) {
 func TestGetPlayerHistoryIntegration(t *testing.T) {
 	name1 := fmt.Sprintf("player_%d", time.Now().UnixNano())
 	name2 := fmt.Sprintf("player_%d", time.Now().UnixNano()+1)
-	
+
 	h1 := getPlayerHistory(name1)
 	h2 := getPlayerHistory(name1)
 	h3 := getPlayerHistory(name2)
-	
+
 	if h1 != h2 {
 		t.Error("Same player should get same history instance")
 	}
@@ -318,7 +318,7 @@ func TestParseCommandIntegration(t *testing.T) {
 	for _, tt := range tests {
 		cmd, arg := parseCommand(tt.input)
 		if cmd != tt.wantCmd || arg != tt.wantArg {
-			t.Errorf("parseCommand(%q) = (%q, %q), want (%q, %q)", 
+			t.Errorf("parseCommand(%q) = (%q, %q), want (%q, %q)",
 				tt.input, cmd, arg, tt.wantCmd, tt.wantArg)
 		}
 	}

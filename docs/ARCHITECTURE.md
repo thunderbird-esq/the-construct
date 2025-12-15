@@ -161,7 +161,7 @@ defer world.mutex.RUnlock()
    │
    ├──> Authenticate User
    │    ├──> Check users.json
-   │    ├──> Verify password (⚠️ plaintext, TODO: bcrypt)
+   │    ├──> Verify password (bcrypt hash comparison)
    │    └──> Create account if new
    │
    ├──> Load Player Data

@@ -222,7 +222,7 @@ Time 20-30min: Integration & Validation
 | Task ID | Description | Priority | Agent | Status |
 |---------|-------------|----------|-------|--------|
 | P3-ENH-12 | Update xterm.js 3.14.5 → 5.x | MEDIUM | frontend-dev | ✅ |
-| P3-ENH-15 | Fix duplicate NPC/Item data in JSON | LOW | data-fixer | ⏭️ DEFERRED |
+| P3-ENH-15 | Fix duplicate NPC/Item data in JSON | LOW | data-fixer | ✅ N/A |
 | P3-ENH-18 | Implement skipped tests | LOW | test-engineer | ⏭️ DEFERRED |
 | P3-ENH-19 | Add password echo suppression (IAC) | HIGH | golang-pro | ✅ |
 | P3-ENH-20 | Implement actual connection timeouts | MEDIUM | golang-pro | ✅ |
@@ -304,8 +304,13 @@ conn.SetDeadline(time.Now().Add(IdleTimeout))
 
 #### P3-ENH-15: Fix Duplicate JSON Data
 **File**: data/world.json
-**Problem**: Both arrays (Items, NPCs) and maps (ItemMap, NPCMap) exist
-**Solution**: Remove arrays, keep maps only
+**Status**: ✅ NOT A BUG - Working as designed
+**Analysis**: The "duplicate" data concern was a misunderstanding:
+- Arrays (Items, NPCs) store actual data in JSON
+- Maps (ItemMap, NPCMap) are set to `null` before JSON serialization
+- Maps are runtime-only for O(1) lookups, recreated on load from arrays
+- SaveWorld() correctly rebuilds arrays from maps, then nils maps before save
+**Conclusion**: No changes needed. Design is correct and efficient.
 **Test**: `TestWorldJSONStructure`
 
 #### P3-ENH-18: Implement Skipped Tests

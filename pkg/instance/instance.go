@@ -23,36 +23,36 @@ const (
 
 // RoomTemplate defines a room within an instance
 type RoomTemplate struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	NPCIDs      []string `json:"npcs"`      // NPC IDs to spawn
-	ItemIDs     []string `json:"items"`     // Item IDs to spawn
+	ID          string            `json:"id"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	NPCIDs      []string          `json:"npcs"`  // NPC IDs to spawn
+	ItemIDs     []string          `json:"items"` // Item IDs to spawn
 	Exits       map[string]string `json:"exits"` // direction -> room template ID
-	IsBossRoom  bool     `json:"boss_room"`
-	Objective   string   `json:"objective"` // Optional objective text
+	IsBossRoom  bool              `json:"boss_room"`
+	Objective   string            `json:"objective"` // Optional objective text
 }
 
 // RewardDef defines instance completion rewards
 type RewardDef struct {
-	XP     int      `json:"xp"`
-	Money  int      `json:"money"`
-	Items  []string `json:"items"`
-	Title  string   `json:"title"`
+	XP    int      `json:"xp"`
+	Money int      `json:"money"`
+	Items []string `json:"items"`
+	Title string   `json:"title"`
 }
 
 // Template defines an instance template
 type Template struct {
-	ID           string         `json:"id"`
-	Name         string         `json:"name"`
-	Description  string         `json:"description"`
-	Difficulty   Difficulty     `json:"difficulty"`
-	MinLevel     int            `json:"min_level"`
-	MaxPlayers   int            `json:"max_players"`
-	TimeLimit    int            `json:"time_limit"`    // Minutes
-	EntryRoom    string         `json:"entry_room"`    // Starting room template ID
+	ID            string         `json:"id"`
+	Name          string         `json:"name"`
+	Description   string         `json:"description"`
+	Difficulty    Difficulty     `json:"difficulty"`
+	MinLevel      int            `json:"min_level"`
+	MaxPlayers    int            `json:"max_players"`
+	TimeLimit     int            `json:"time_limit"` // Minutes
+	EntryRoom     string         `json:"entry_room"` // Starting room template ID
 	RoomTemplates []RoomTemplate `json:"rooms"`
-	Rewards      RewardDef      `json:"rewards"`
+	Rewards       RewardDef      `json:"rewards"`
 }
 
 // InstanceRoom represents a room in an active instance
@@ -69,12 +69,12 @@ type InstanceRoom struct {
 
 // InstanceNPC represents an NPC in an instance
 type InstanceNPC struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	HP       int    `json:"hp"`
-	MaxHP    int    `json:"max_hp"`
-	Damage   int    `json:"damage"`
-	IsAlive  bool   `json:"alive"`
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	HP      int    `json:"hp"`
+	MaxHP   int    `json:"max_hp"`
+	Damage  int    `json:"damage"`
+	IsAlive bool   `json:"alive"`
 }
 
 // Instance represents an active instance
@@ -96,9 +96,9 @@ type Instance struct {
 // Manager handles instance operations
 type Manager struct {
 	mu        sync.RWMutex
-	Templates map[string]*Template     // Template ID -> Template
-	Instances map[string]*Instance     // Instance ID -> Instance
-	PlayerMap map[string]string        // Player name -> Instance ID
+	Templates map[string]*Template // Template ID -> Template
+	Instances map[string]*Instance // Instance ID -> Instance
+	PlayerMap map[string]string    // Player name -> Instance ID
 	nextID    int
 }
 

@@ -226,8 +226,8 @@ func TestChoiceAction(t *testing.T) {
 	m.StartDialogue("TestPlayer", "oracle")
 
 	// Navigate to farewell: greeting -> no_cookie -> after_cookie -> farewell
-	m.SelectChoice("TestPlayer", 1) // No, thank you -> no_cookie
-	m.SelectChoice("TestPlayer", 0) // Continue (text node auto-advance)
+	m.SelectChoice("TestPlayer", 1)                    // No, thank you -> no_cookie
+	m.SelectChoice("TestPlayer", 0)                    // Continue (text node auto-advance)
 	node, action, _ := m.SelectChoice("TestPlayer", 2) // I need to go -> farewell
 
 	_ = node

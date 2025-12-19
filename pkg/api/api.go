@@ -123,47 +123,47 @@ type Server struct {
 	rateLimiter *RateLimiter
 	server      *http.Server
 	version     string
-	
+
 	// Data providers (set by main application)
-	GetOnlinePlayers   func() []PlayerInfo
-	GetPlayerByName    func(name string) *PlayerInfo
-	GetServerStatus    func() *ServerStatus
-	GetRooms           func() []RoomInfo
-	GetRoom            func(id string) *RoomInfo
-	GetNPCs            func() []NPCInfo
-	GetItems           func() []ItemInfo
-	GetLeaderboard     func(category string, limit int) []LeaderboardEntry
+	GetOnlinePlayers    func() []PlayerInfo
+	GetPlayerByName     func(name string) *PlayerInfo
+	GetServerStatus     func() *ServerStatus
+	GetRooms            func() []RoomInfo
+	GetRoom             func(id string) *RoomInfo
+	GetNPCs             func() []NPCInfo
+	GetItems            func() []ItemInfo
+	GetLeaderboard      func(category string, limit int) []LeaderboardEntry
 	SendMessageToPlayer func(name, message string) error
 }
 
 // PlayerInfo represents player data for API responses
 type PlayerInfo struct {
-	Name         string    `json:"name"`
-	Class        string    `json:"class"`
-	Level        int       `json:"level"`
-	XP           int       `json:"xp"`
-	HP           int       `json:"hp"`
-	MaxHP        int       `json:"max_hp"`
-	MP           int       `json:"mp"`
-	MaxMP        int       `json:"max_mp"`
-	Money        int       `json:"money"`
-	RoomID       string    `json:"room_id"`
-	Title        string    `json:"title,omitempty"`
-	Faction      string    `json:"faction,omitempty"`
-	Online       bool      `json:"online"`
-	LastSeen     time.Time `json:"last_seen,omitempty"`
+	Name     string    `json:"name"`
+	Class    string    `json:"class"`
+	Level    int       `json:"level"`
+	XP       int       `json:"xp"`
+	HP       int       `json:"hp"`
+	MaxHP    int       `json:"max_hp"`
+	MP       int       `json:"mp"`
+	MaxMP    int       `json:"max_mp"`
+	Money    int       `json:"money"`
+	RoomID   string    `json:"room_id"`
+	Title    string    `json:"title,omitempty"`
+	Faction  string    `json:"faction,omitempty"`
+	Online   bool      `json:"online"`
+	LastSeen time.Time `json:"last_seen,omitempty"`
 }
 
 // ServerStatus represents server status
 type ServerStatus struct {
-	Status       string    `json:"status"`
-	Version      string    `json:"version"`
-	Uptime       string    `json:"uptime"`
-	PlayersOnline int      `json:"players_online"`
-	TotalPlayers int       `json:"total_players"`
-	TotalRooms   int       `json:"total_rooms"`
-	TotalNPCs    int       `json:"total_npcs"`
-	StartedAt    time.Time `json:"started_at"`
+	Status        string    `json:"status"`
+	Version       string    `json:"version"`
+	Uptime        string    `json:"uptime"`
+	PlayersOnline int       `json:"players_online"`
+	TotalPlayers  int       `json:"total_players"`
+	TotalRooms    int       `json:"total_rooms"`
+	TotalNPCs     int       `json:"total_npcs"`
+	StartedAt     time.Time `json:"started_at"`
 }
 
 // RoomInfo represents room data
@@ -202,11 +202,11 @@ type ItemInfo struct {
 
 // LeaderboardEntry represents a leaderboard entry
 type LeaderboardEntry struct {
-	Rank   int    `json:"rank"`
-	Name   string `json:"name"`
-	Value  int    `json:"value"`
-	Class  string `json:"class,omitempty"`
-	Title  string `json:"title,omitempty"`
+	Rank  int    `json:"rank"`
+	Name  string `json:"name"`
+	Value int    `json:"value"`
+	Class string `json:"class,omitempty"`
+	Title string `json:"title,omitempty"`
 }
 
 // NewServer creates a new API server
@@ -230,7 +230,7 @@ func NewServer(config *Config, version string) *Server {
 func (s *Server) registerRoutes() {
 	// Health (no auth)
 	s.mux.HandleFunc("/api/health", s.handleHealth)
-	
+
 	// Status (no auth)
 	s.mux.HandleFunc("/api/status", s.handleStatus)
 
@@ -306,7 +306,7 @@ func (s *Server) validateAPIKey(key string) *APIKey {
 // setCORSHeaders sets CORS headers
 func (s *Server) setCORSHeaders(w http.ResponseWriter, r *http.Request) {
 	origin := r.Header.Get("Origin")
-	
+
 	// Check if origin is allowed
 	allowed := false
 	for _, o := range s.config.CORSOrigins {

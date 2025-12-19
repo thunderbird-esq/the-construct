@@ -87,7 +87,7 @@ func (r *WorldRepository) GetAllState() (map[string]string, error) {
 // SaveNPCState saves or updates NPC state
 func (r *WorldRepository) SaveNPCState(state *NPCState) error {
 	customData, _ := json.Marshal(state.CustomData)
-	
+
 	_, err := r.db.Exec(`
 		INSERT INTO npc_state (npc_id, room_id, hp, is_dead, respawn_at, custom_data, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -198,7 +198,7 @@ func (r *WorldRepository) DeleteNPCState(npcID string) error {
 func (r *WorldRepository) SaveRoomState(state *RoomState) error {
 	items, _ := json.Marshal(state.Items)
 	customData, _ := json.Marshal(state.CustomData)
-	
+
 	_, err := r.db.Exec(`
 		INSERT INTO room_state (room_id, items, custom_data, updated_at)
 		VALUES (?, ?, ?, ?)

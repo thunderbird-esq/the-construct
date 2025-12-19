@@ -50,24 +50,24 @@ type WebhookDelivery struct {
 
 // WebhookManager manages webhook subscriptions and delivery
 type WebhookManager struct {
-	mu           sync.RWMutex
-	webhooks     map[string]*WebhookConfig
-	deliveries   []*WebhookDelivery
-	eventBus     *EventBus
-	serverID     string
-	httpClient   *http.Client
-	subID        string
+	mu                 sync.RWMutex
+	webhooks           map[string]*WebhookConfig
+	deliveries         []*WebhookDelivery
+	eventBus           *EventBus
+	serverID           string
+	httpClient         *http.Client
+	subID              string
 	maxDeliveryHistory int
 }
 
 // NewWebhookManager creates a new webhook manager
 func NewWebhookManager(eventBus *EventBus, serverID string) *WebhookManager {
 	return &WebhookManager{
-		webhooks:     make(map[string]*WebhookConfig),
-		deliveries:   make([]*WebhookDelivery, 0),
-		eventBus:     eventBus,
-		serverID:     serverID,
-		httpClient:   &http.Client{Timeout: 10 * time.Second},
+		webhooks:           make(map[string]*WebhookConfig),
+		deliveries:         make([]*WebhookDelivery, 0),
+		eventBus:           eventBus,
+		serverID:           serverID,
+		httpClient:         &http.Client{Timeout: 10 * time.Second},
 		maxDeliveryHistory: 1000,
 	}
 }
@@ -291,7 +291,7 @@ func (wm *WebhookManager) storeDelivery(delivery *WebhookDelivery) {
 	defer wm.mu.Unlock()
 
 	wm.deliveries = append(wm.deliveries, delivery)
-	
+
 	// Trim old deliveries
 	if len(wm.deliveries) > wm.maxDeliveryHistory {
 		wm.deliveries = wm.deliveries[len(wm.deliveries)-wm.maxDeliveryHistory:]

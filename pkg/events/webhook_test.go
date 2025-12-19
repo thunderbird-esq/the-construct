@@ -201,8 +201,8 @@ func TestWebhookEventFilter(t *testing.T) {
 	})
 
 	eb.Publish(NewEvent(EventPlayerJoin))
-	eb.Publish(NewEvent(EventPlayerLeave))  // Should be filtered
-	eb.Publish(NewEvent(EventNPCKill))      // Should be filtered
+	eb.Publish(NewEvent(EventPlayerLeave)) // Should be filtered
+	eb.Publish(NewEvent(EventNPCKill))     // Should be filtered
 
 	time.Sleep(100 * time.Millisecond)
 

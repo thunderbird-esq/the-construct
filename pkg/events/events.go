@@ -13,35 +13,35 @@ type EventType string
 
 const (
 	// Player events
-	EventPlayerJoin       EventType = "player.join"
-	EventPlayerLeave      EventType = "player.leave"
-	EventPlayerDeath      EventType = "player.death"
-	EventPlayerLevelUp    EventType = "player.level_up"
-	EventPlayerMove       EventType = "player.move"
-	EventPlayerChat       EventType = "player.chat"
-	EventPlayerCommand    EventType = "player.command"
+	EventPlayerJoin    EventType = "player.join"
+	EventPlayerLeave   EventType = "player.leave"
+	EventPlayerDeath   EventType = "player.death"
+	EventPlayerLevelUp EventType = "player.level_up"
+	EventPlayerMove    EventType = "player.move"
+	EventPlayerChat    EventType = "player.chat"
+	EventPlayerCommand EventType = "player.command"
 
 	// Combat events
-	EventCombatStart      EventType = "combat.start"
-	EventCombatEnd        EventType = "combat.end"
-	EventCombatHit        EventType = "combat.hit"
-	EventCombatMiss       EventType = "combat.miss"
-	EventNPCKill          EventType = "combat.npc_kill"
-	EventPvPKill          EventType = "combat.pvp_kill"
+	EventCombatStart EventType = "combat.start"
+	EventCombatEnd   EventType = "combat.end"
+	EventCombatHit   EventType = "combat.hit"
+	EventCombatMiss  EventType = "combat.miss"
+	EventNPCKill     EventType = "combat.npc_kill"
+	EventPvPKill     EventType = "combat.pvp_kill"
 
 	// Item events
-	EventItemPickup       EventType = "item.pickup"
-	EventItemDrop         EventType = "item.drop"
-	EventItemEquip        EventType = "item.equip"
-	EventItemUnequip      EventType = "item.unequip"
-	EventItemCraft        EventType = "item.craft"
-	EventItemUse          EventType = "item.use"
+	EventItemPickup  EventType = "item.pickup"
+	EventItemDrop    EventType = "item.drop"
+	EventItemEquip   EventType = "item.equip"
+	EventItemUnequip EventType = "item.unequip"
+	EventItemCraft   EventType = "item.craft"
+	EventItemUse     EventType = "item.use"
 
 	// Quest events
-	EventQuestStart       EventType = "quest.start"
-	EventQuestProgress    EventType = "quest.progress"
-	EventQuestComplete    EventType = "quest.complete"
-	EventQuestFail        EventType = "quest.fail"
+	EventQuestStart    EventType = "quest.start"
+	EventQuestProgress EventType = "quest.progress"
+	EventQuestComplete EventType = "quest.complete"
+	EventQuestFail     EventType = "quest.fail"
 
 	// Social events
 	EventPartyCreate      EventType = "party.create"
@@ -53,23 +53,23 @@ const (
 	EventFactionRepChange EventType = "faction.rep_change"
 
 	// Economy events
-	EventTradeStart       EventType = "trade.start"
-	EventTradeComplete    EventType = "trade.complete"
-	EventTradeCancel      EventType = "trade.cancel"
-	EventAuctionCreate    EventType = "auction.create"
-	EventAuctionBid       EventType = "auction.bid"
-	EventAuctionSold      EventType = "auction.sold"
-	EventShopBuy          EventType = "shop.buy"
-	EventShopSell         EventType = "shop.sell"
+	EventTradeStart    EventType = "trade.start"
+	EventTradeComplete EventType = "trade.complete"
+	EventTradeCancel   EventType = "trade.cancel"
+	EventAuctionCreate EventType = "auction.create"
+	EventAuctionBid    EventType = "auction.bid"
+	EventAuctionSold   EventType = "auction.sold"
+	EventShopBuy       EventType = "shop.buy"
+	EventShopSell      EventType = "shop.sell"
 
 	// Achievement events
-	EventAchievement      EventType = "achievement.unlock"
+	EventAchievement EventType = "achievement.unlock"
 
 	// System events
-	EventServerStart      EventType = "server.start"
-	EventServerStop       EventType = "server.stop"
-	EventServerBroadcast  EventType = "server.broadcast"
-	EventAdminAction      EventType = "admin.action"
+	EventServerStart     EventType = "server.start"
+	EventServerStop      EventType = "server.stop"
+	EventServerBroadcast EventType = "server.broadcast"
+	EventAdminAction     EventType = "admin.action"
 )
 
 // Event represents a game event
@@ -130,14 +130,14 @@ type Subscription struct {
 
 // EventBus manages event subscriptions and publishing
 type EventBus struct {
-	mu            sync.RWMutex
-	subscribers   map[EventType][]*Subscription
-	allHandlers   []*Subscription
-	eventQueue    chan *Event
-	workerCount   int
-	running       bool
-	wg            sync.WaitGroup
-	nextSubID     int
+	mu          sync.RWMutex
+	subscribers map[EventType][]*Subscription
+	allHandlers []*Subscription
+	eventQueue  chan *Event
+	workerCount int
+	running     bool
+	wg          sync.WaitGroup
+	nextSubID   int
 }
 
 // NewEventBus creates a new event bus
@@ -146,11 +146,11 @@ func NewEventBus(workerCount int) *EventBus {
 		workerCount = 4
 	}
 	return &EventBus{
-		subscribers:  make(map[EventType][]*Subscription),
-		allHandlers:  make([]*Subscription, 0),
-		eventQueue:   make(chan *Event, 1000),
-		workerCount:  workerCount,
-		nextSubID:    1,
+		subscribers: make(map[EventType][]*Subscription),
+		allHandlers: make([]*Subscription, 0),
+		eventQueue:  make(chan *Event, 1000),
+		workerCount: workerCount,
+		nextSubID:   1,
 	}
 }
 

@@ -185,7 +185,7 @@ func TestAuditCleanup(t *testing.T) {
 	defer db.Close()
 
 	repo.LogAction(1, "Player", AuditLogin, "Old log")
-	
+
 	// Cleanup logs older than 1 hour (our logs are < 1 second old)
 	deleted, err := repo.Cleanup(time.Hour)
 	if err != nil {

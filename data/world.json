@@ -1044,19 +1044,6 @@
       "Color": "red",
       "Items": [
         {
-          "ID": "red_pill",
-          "Name": "Red Pill",
-          "Description": "A small red pill. Truth awaits.",
-          "Damage": 0,
-          "AC": 0,
-          "Slot": "",
-          "Type": "consumable",
-          "Effect": "awaken",
-          "Value": 0,
-          "Price": 0,
-          "rarity": 3
-        },
-        {
           "ID": "blue_pill",
           "Name": "Blue Pill",
           "Description": "A small blue pill. Blissful ignorance.",
@@ -1065,6 +1052,19 @@
           "Slot": "",
           "Type": "consumable",
           "Effect": "forget",
+          "Value": 0,
+          "Price": 0,
+          "rarity": 3
+        },
+        {
+          "ID": "red_pill",
+          "Name": "Red Pill",
+          "Description": "A small red pill. Truth awaits.",
+          "Damage": 0,
+          "AC": 0,
+          "Slot": "",
+          "Type": "consumable",
+          "Effect": "awaken",
           "Value": 0,
           "Price": 0,
           "rarity": 3

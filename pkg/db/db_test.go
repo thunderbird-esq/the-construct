@@ -39,9 +39,9 @@ func TestRunMigrations(t *testing.T) {
 	}
 
 	// Check tables exist
-	tables := []string{"players", "player_inventory", "player_quests", 
+	tables := []string{"players", "player_inventory", "player_quests",
 		"player_achievements", "world_state", "audit_log", "sessions"}
-	
+
 	for _, table := range tables {
 		var name string
 		err := db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name=?", table).Scan(&name)
@@ -108,13 +108,13 @@ func TestStats(t *testing.T) {
 func TestEncodeDecodeJSON(t *testing.T) {
 	input := map[string]int{"a": 1, "b": 2}
 	encoded := encodeJSON(input)
-	
+
 	var decoded map[string]int
 	err := decodeJSON(encoded, &decoded)
 	if err != nil {
 		t.Errorf("decodeJSON failed: %v", err)
 	}
-	
+
 	if decoded["a"] != 1 || decoded["b"] != 2 {
 		t.Error("JSON round-trip failed")
 	}

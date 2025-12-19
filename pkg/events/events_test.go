@@ -9,7 +9,7 @@ import (
 
 func TestNewEvent(t *testing.T) {
 	event := NewEvent(EventPlayerJoin)
-	
+
 	if event.Type != EventPlayerJoin {
 		t.Errorf("Type = %s, want player.join", event.Type)
 	}
@@ -70,11 +70,11 @@ func TestNewEventBus(t *testing.T) {
 
 func TestEventBusStartStop(t *testing.T) {
 	eb := NewEventBus(2)
-	
+
 	eb.Start()
 	// Should be idempotent
 	eb.Start()
-	
+
 	eb.Stop()
 	// Should be idempotent
 	eb.Stop()

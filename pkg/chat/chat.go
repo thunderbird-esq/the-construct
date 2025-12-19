@@ -46,12 +46,12 @@ type Channel struct {
 // Manager handles all chat operations
 type Manager struct {
 	mu             sync.RWMutex
-	Channels       map[string]*Channel      // channel ID -> channel
-	PlayerChannels map[string][]string      // player name -> channel IDs
+	Channels       map[string]*Channel        // channel ID -> channel
+	PlayerChannels map[string][]string        // player name -> channel IDs
 	Ignored        map[string]map[string]bool // player -> ignored players
-	MessageHistory map[string][]Message     // channel ID -> recent messages
+	MessageHistory map[string][]Message       // channel ID -> recent messages
 	messageID      int64
-	rateLimits     map[string][]time.Time   // player -> message timestamps
+	rateLimits     map[string][]time.Time // player -> message timestamps
 }
 
 // Profanity filter patterns

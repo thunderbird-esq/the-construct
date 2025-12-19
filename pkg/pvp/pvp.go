@@ -45,55 +45,55 @@ const (
 
 // ArenaPlayer represents a player in an arena match
 type ArenaPlayer struct {
-	Name      string
-	Team      int
-	HP        int
-	MaxHP     int
-	Damage    int
-	Kills     int
-	Deaths    int
-	Assists   int
-	Score     int
-	IsAlive   bool
+	Name         string
+	Team         int
+	HP           int
+	MaxHP        int
+	Damage       int
+	Kills        int
+	Deaths       int
+	Assists      int
+	Score        int
+	IsAlive      bool
 	LastDamageBy string
-	JoinedAt  time.Time
+	JoinedAt     time.Time
 }
 
 // Arena represents an active arena match
 type Arena struct {
-	ID          string
-	Type        ArenaType
-	State       ArenaState
-	Players     map[string]*ArenaPlayer
-	Teams       map[int][]string // team number -> player names
-	MaxPlayers  int
-	MinPlayers  int
-	StartTime   time.Time
-	EndTime     time.Time
-	Duration    time.Duration
-	Winner      string // player name or "Team X"
-	WinnerTeam  int
-	Ranked      bool
-	mu          sync.RWMutex
+	ID         string
+	Type       ArenaType
+	State      ArenaState
+	Players    map[string]*ArenaPlayer
+	Teams      map[int][]string // team number -> player names
+	MaxPlayers int
+	MinPlayers int
+	StartTime  time.Time
+	EndTime    time.Time
+	Duration   time.Duration
+	Winner     string // player name or "Team X"
+	WinnerTeam int
+	Ranked     bool
+	mu         sync.RWMutex
 }
 
 // PlayerStats tracks a player's PvP statistics
 type PlayerStats struct {
-	Name           string
-	Rating         int
-	Tier           RankTier
-	Wins           int
-	Losses         int
-	Kills          int
-	Deaths         int
-	Assists        int
-	WinStreak      int
-	BestWinStreak  int
-	TotalMatches   int
-	LastMatchTime  time.Time
-	SeasonRating   int
-	SeasonWins     int
-	SeasonLosses   int
+	Name          string
+	Rating        int
+	Tier          RankTier
+	Wins          int
+	Losses        int
+	Kills         int
+	Deaths        int
+	Assists       int
+	WinStreak     int
+	BestWinStreak int
+	TotalMatches  int
+	LastMatchTime time.Time
+	SeasonRating  int
+	SeasonWins    int
+	SeasonLosses  int
 }
 
 // QueueEntry represents a player in the matchmaking queue
@@ -124,14 +124,14 @@ type Tournament struct {
 
 // TournamentMatch represents a match in a tournament bracket
 type TournamentMatch struct {
-	ID       string
-	Player1  string
-	Player2  string
-	Winner   string
-	Score1   int
-	Score2   int
-	ArenaID  string
-	Played   bool
+	ID      string
+	Player1 string
+	Player2 string
+	Winner  string
+	Score1  int
+	Score2  int
+	ArenaID string
+	Played  bool
 }
 
 // TournamentRewards defines tournament prizes
@@ -622,19 +622,19 @@ func (m *Manager) LeaveArena(playerName string) error {
 	for arenaID, arena := range m.Arenas {
 		if player, ok := arena.Players[name]; ok {
 			arena.mu.Lock()
-			
+
 			// Mark as dead/disconnected
 			player.IsAlive = false
 			player.Deaths++
-			
+
 			// Check if match should end
 			m.checkMatchEnd(arena)
-			
+
 			// Remove from arena if ended
 			if arena.State == StateEnded {
 				delete(m.Arenas, arenaID)
 			}
-			
+
 			arena.mu.Unlock()
 			return nil
 		}
@@ -649,8 +649,8 @@ func (m *Manager) GetStats(playerName string) string {
 	var sb strings.Builder
 	sb.WriteString("=== PVP STATISTICS ===\r\n\r\n")
 	sb.WriteString(fmt.Sprintf("Rating: %d (%s)\r\n", stats.Rating, stats.Tier))
-	sb.WriteString(fmt.Sprintf("Record: %d-%d (%.1f%% win rate)\r\n", 
-		stats.Wins, stats.Losses, 
+	sb.WriteString(fmt.Sprintf("Record: %d-%d (%.1f%% win rate)\r\n",
+		stats.Wins, stats.Losses,
 		float64(stats.Wins)/float64(max(1, stats.Wins+stats.Losses))*100))
 	sb.WriteString(fmt.Sprintf("K/D/A: %d/%d/%d\r\n", stats.Kills, stats.Deaths, stats.Assists))
 	sb.WriteString(fmt.Sprintf("Best Win Streak: %d\r\n", stats.BestWinStreak))

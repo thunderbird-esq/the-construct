@@ -90,7 +90,7 @@ jobs:
       run: go build -v -ldflags="-s -w" -o bin/matrix-mud .
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v5
       with:
         name: matrix-mud-${{ runner.os }}
         path: bin/matrix-mud

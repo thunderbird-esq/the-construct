@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/yourusername/matrix-mud/pkg/dialogue"
+	"github.com/yourusername/matrix-mud/pkg/events"
 	"github.com/yourusername/matrix-mud/pkg/instance"
 	"github.com/yourusername/matrix-mud/pkg/quest"
 )
@@ -311,6 +313,13 @@ func checkLevelUp(player *Player) {
 		player.Level++
 		player.MaxHP += 10
 		player.HP = player.MaxHP
+
+		// Emit level up event
+		events.GlobalEventBus.Publish(&events.Event{
+			Type:       events.EventPlayerLevelUp,
+			Timestamp:  time.Now(),
+			PlayerName: player.Name,
+		})
 		xpForLevel = player.Level * 100
 	}
 }

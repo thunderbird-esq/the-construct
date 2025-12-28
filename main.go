@@ -17,7 +17,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/yourusername/matrix-mud/pkg/achievements"
+	"github.com/yourusername/matrix-mud/pkg/accessibility"
 	"github.com/yourusername/matrix-mud/pkg/analytics"
+	"github.com/yourusername/matrix-mud/pkg/chat"
 	"github.com/yourusername/matrix-mud/pkg/cooldown"
 	"github.com/yourusername/matrix-mud/pkg/faction"
 	"github.com/yourusername/matrix-mud/pkg/game"
@@ -26,11 +28,15 @@ import (
 	"github.com/yourusername/matrix-mud/pkg/logging"
 	"github.com/yourusername/matrix-mud/pkg/metrics"
 	"github.com/yourusername/matrix-mud/pkg/party"
+	"github.com/yourusername/matrix-mud/pkg/pvp"
 	"github.com/yourusername/matrix-mud/pkg/quest"
 	"github.com/yourusername/matrix-mud/pkg/ratelimit"
 	"github.com/yourusername/matrix-mud/pkg/readline"
 	"github.com/yourusername/matrix-mud/pkg/session"
+	"github.com/yourusername/matrix-mud/pkg/trade"
 	"github.com/yourusername/matrix-mud/pkg/training"
+	"github.com/yourusername/matrix-mud/pkg/tutorial"
+	"github.com/yourusername/matrix-mud/pkg/events"
 	"github.com/yourusername/matrix-mud/pkg/validation"
 	"github.com/yourusername/matrix-mud/pkg/world"
 )
@@ -270,6 +276,10 @@ func main() {
 	}
 
 	world := NewWorld()
+
+	// Start event bus for Discord/webhook integration
+	events.GlobalEventBus.Start()
+
 	go startWebServer(world)
 	go startAdminServer(world)
 
@@ -430,6 +440,9 @@ func handleConnection(ctx context.Context, conn net.Conn, world *World) {
 		world.SavePlayer(player)
 	}
 
+	// Auto-join default chat channels for all players
+	chat.GlobalChat.AutoJoinDefaultChannels(player.Name)
+
 	world.mutex.Lock()
 	world.Players[client] = player
 	world.mutex.Unlock()
@@ -508,6 +521,63 @@ func handleConnection(ctx context.Context, conn net.Conn, world *World) {
 		// Record command for metrics
 		metrics.RecordCommand(cmd)
 
+		// --- SPECIAL STATE HANDLING ---
+		// Handle dialogue numeric input and instance state before normal commands
+
+		// 1. Check if player is in dialogue (numeric input for choices)
+		if IsInDialogue(player.Name) {
+			// Check if input is a number (dialogue choice)
+			if choice, err := strconv.Atoi(input); err == nil {
+				response := HandleDialogueChoice(world, player, strconv.Itoa(choice))
+				client.Write(Matrixify(response) + "> ")
+				continue
+			}
+			// "bye" also works to end dialogue from anywhere
+			if strings.ToLower(input) == "bye" {
+				response := HandleByeCommand(player)
+				client.Write(response + "> ")
+				continue
+			}
+			// Any other command while in dialogue shows hint
+			client.Write("You're in a conversation. Enter a number to choose, or 'bye' to end.\r\n> ")
+			continue
+		}
+
+		// 2. Check if player is in an instance
+		if IsInInstance(player.Name) {
+			// Handle directional movement in instance
+			if isDirection := map[string]bool{
+				"north": true, "n": true,
+				"south": true, "s": true,
+				"east": true, "e": true,
+				"west": true, "w": true,
+				"up": true, "u": true,
+				"down": true, "dn": true,
+			}[cmd]; isDirection {
+				result, ok := HandleInstanceMove(player, cmd)
+				if ok {
+					client.Write(result + "> ")
+					continue
+				}
+				// If not ok, fall through to normal command processing
+			}
+			// Handle attack in instance
+			if cmd == "kill" || cmd == "k" || cmd == "attack" || cmd == "a" {
+				result, _ := HandleInstanceAttack(world, player, arg)
+				client.Write(Matrixify(result) + "> ")
+				continue
+			}
+			// Handle look in instance
+			if cmd == "look" || cmd == "l" {
+				result, ok := HandleInstanceLook(player)
+				if ok {
+					client.Write(result + "> ")
+					continue
+				}
+				// If not ok, fall through to normal look
+			}
+		}
+
 		var response string
 		switch cmd {
 		case "look", "l":
@@ -538,7 +608,19 @@ func handleConnection(ctx context.Context, conn net.Conn, world *World) {
 		case "score", "sc", "balance", "bal":
 			response = Matrixify(world.ShowScore(player))
 		case "kill", "k", "attack", "a":
-			response = Matrixify(world.StartCombat(player, arg))
+			// Check if player is in PvP arena first
+			if arena := pvp.GlobalPvP.GetPlayerArena(player.Name); arena != nil {
+				if arg == "" {
+					response = "Attack who?\r\n"
+				} else if result, err := pvp.GlobalPvP.AttackPlayer(arena.ID, player.Name, arg); err != nil {
+					response = err.Error() + "\r\n"
+				} else {
+					response = result + "\r\n"
+				}
+			} else {
+				// Normal combat
+				response = Matrixify(world.StartCombat(player, arg))
+			}
 		case "cast", "c":
 			skillParts := strings.Fields(arg)
 			if len(skillParts) > 0 {
@@ -802,12 +884,461 @@ func handleConnection(ctx context.Context, conn net.Conn, world *World) {
 		case "recall":
 			response = world.Recall(player)
 
+		// --- CHAT CHANNEL COMMANDS ---
+		case "channels":
+			// List available channels
+			response = chat.GlobalChat.ListChannels(player.Name)
+
+		case "/join", "join":
+			// Join a chat channel
+			if arg == "" {
+				response = "Usage: /join <channel>\r\nAvailable: global, trade, help\r\n"
+			} else if err := chat.GlobalChat.JoinChannel(player.Name, arg); err != nil {
+				response = err.Error() + "\r\n"
+			} else {
+				response = fmt.Sprintf("Joined channel: %s\r\n", arg)
+			}
+
+		case "/leave", "leave":
+			// Leave a chat channel
+			if arg == "" {
+				response = "Usage: /leave <channel>\r\n"
+			} else if err := chat.GlobalChat.LeaveChannel(player.Name, arg); err != nil {
+				response = err.Error() + "\r\n"
+			} else {
+				response = fmt.Sprintf("Left channel: %s\r\n", arg)
+			}
+
+		case "/g", "/global":
+			// Send to global channel
+			if arg == "" {
+				response = "Usage: /g <message>\r\n"
+			} else if recipients, err := chat.GlobalChat.SendMessage(player.Name, "global", arg); err != nil {
+				response = err.Error() + "\r\n"
+			} else {
+				// Broadcast to recipients
+				msg := chat.FormatMessage(chat.Message{
+					Sender:    player.Name,
+					Content:   arg,
+					Timestamp: time.Now(),
+				}, "Global")
+				broadcastChatMessage(world, msg, recipients)
+				response = "" // Don't echo to sender
+			}
+
+		case "/t", "/trade":
+			// Send to trade channel
+			if arg == "" {
+				response = "Usage: /t <message>\r\n"
+			} else if recipients, err := chat.GlobalChat.SendMessage(player.Name, "trade", arg); err != nil {
+				response = err.Error() + "\r\n"
+			} else {
+				msg := chat.FormatMessage(chat.Message{
+					Sender:    player.Name,
+					Content:   arg,
+					Timestamp: time.Now(),
+				}, "Trade")
+				broadcastChatMessage(world, msg, recipients)
+				response = ""
+			}
+
+		case "/h", "/help":
+			// Send to help channel (use arg2 to avoid conflict with help command)
+			if arg == "" {
+				response = "Usage: /h <message>\r\n"
+			} else if recipients, err := chat.GlobalChat.SendMessage(player.Name, "help", arg); err != nil {
+				response = err.Error() + "\r\n"
+			} else {
+				msg := chat.FormatMessage(chat.Message{
+					Sender:    player.Name,
+					Content:   arg,
+					Timestamp: time.Now(),
+				}, "Help")
+				broadcastChatMessage(world, msg, recipients)
+				response = ""
+			}
+
+		case "/chat":
+			// Send to specific channel: /chat <channel> <message>
+			parts := strings.Fields(arg)
+			if len(parts) < 2 {
+				response = "Usage: /chat <channel> <message>\r\n"
+			} else {
+				channelID := parts[0]
+				content := strings.Join(parts[1:], " ")
+				if recipients, err := chat.GlobalChat.SendMessage(player.Name, channelID, content); err != nil {
+					response = err.Error() + "\r\n"
+				} else {
+					channel := chat.GlobalChat.GetChannel(channelID)
+					msg := chat.FormatMessage(chat.Message{
+						Sender:    player.Name,
+						Content:   content,
+						Timestamp: time.Now(),
+					}, channel.Name)
+					broadcastChatMessage(world, msg, recipients)
+					response = ""
+				}
+			}
+
+		// --- TRADE & AUCTION COMMANDS ---
+		case "trade":
+			// Direct player trading
+			parts := strings.Fields(arg)
+			if len(parts) == 0 {
+				// Show trade status
+				if t := trade.GlobalTrade.GetTrade(player.Name); t != nil {
+					response = trade.GlobalTrade.FormatTrade(t, player.Name)
+				} else {
+					response = "No active trade.\r\nUsage: trade request <player>, trade accept, trade decline, trade add/remove/money/confirm/cancel\r\n"
+				}
+			} else {
+				subCmd := strings.ToLower(parts[0])
+				switch subCmd {
+				case "request":
+					if len(parts) < 2 {
+						response = "Usage: trade request <player>\r\n"
+					} else if t, err := trade.GlobalTrade.InitiateTrade(player.Name, parts[1]); err != nil {
+						response = err.Error() + "\r\n"
+					} else {
+						response = fmt.Sprintf("Trade request sent to %s.\r\n", parts[1])
+						// Notify other player if online
+						for _, p := range world.Players {
+							if strings.ToLower(p.Name) == strings.ToLower(parts[1]) && p.Conn != nil {
+								p.Conn.Write(fmt.Sprintf("\r\n%s%s has requested a trade with you.\r\nType 'trade accept' to begin.\r\n> ", Cyan, player.Name))
+								break
+							}
+						}
+						_ = t // Trade initiated
+					}
+				case "accept":
+					if err := trade.GlobalTrade.AcceptTrade(player.Name); err != nil {
+						response = err.Error() + "\r\n"
+					} else {
+						response = trade.GlobalTrade.FormatTrade(trade.GlobalTrade.GetTrade(player.Name), player.Name)
+					}
+				case "decline":
+					if err := trade.GlobalTrade.DeclineTrade(player.Name); err != nil {
+						response = err.Error() + "\r\n"
+					} else {
+						response = "Trade declined.\r\n"
+					}
+				case "cancel":
+					if err := trade.GlobalTrade.CancelTrade(player.Name); err != nil {
+						response = err.Error() + "\r\n"
+					} else {
+						response = "Trade canceled.\r\n"
+					}
+				case "add":
+					if len(parts) < 2 {
+						response = "Usage: trade add <item>\r\n"
+					} else {
+						itemName := strings.Join(parts[1:], " ")
+						// Find item in inventory
+						var item *Item
+						for _, i := range player.Inventory {
+							if strings.Contains(strings.ToLower(i.Name), strings.ToLower(itemName)) {
+								item = i
+								break
+							}
+						}
+						if item == nil {
+							response = "You don't have that item.\r\n"
+						} else if err := trade.GlobalTrade.AddItem(player.Name, item.ID, item.Name, 1); err != nil {
+							response = err.Error() + "\r\n"
+						} else {
+							response = fmt.Sprintf("Added %s to trade.\r\n", item.Name)
+						}
+					}
+				case "remove":
+					if len(parts) < 2 {
+						response = "Usage: trade remove <item_id>\r\n"
+					} else if err := trade.GlobalTrade.RemoveItem(player.Name, parts[1]); err != nil {
+						response = err.Error() + "\r\n"
+					} else {
+						response = "Item removed from trade.\r\n"
+					}
+				case "money":
+					if len(parts) < 2 {
+						response = "Usage: trade money <amount>\r\n"
+					} else if amount, err := strconv.Atoi(parts[1]); err != nil {
+						response = "Invalid amount.\r\n"
+					} else if err := trade.GlobalTrade.SetMoney(player.Name, amount); err != nil {
+						response = err.Error() + "\r\n"
+					} else {
+						response = fmt.Sprintf("Set money offer to %d.\r\n", amount)
+					}
+				case "confirm":
+					if completed, err := trade.GlobalTrade.ConfirmTrade(player.Name); err != nil {
+						response = err.Error() + "\r\n"
+					} else if completed {
+						response = "Trade completed!\r\n"
+						// TODO: Actually exchange items and money
+					} else {
+						response = "Trade confirmed. Waiting for other party...\r\n"
+					}
+				default:
+					response = "Unknown trade command. Usage: trade request/accept/decline/cancel/add/remove/money/confirm\r\n"
+				}
+			}
+
+		case "auction":
+			// Auction house
+			parts := strings.Fields(arg)
+			if len(parts) == 0 {
+				response = "Usage: auction list, auction sell <item> <price> <buyout>, auction bid <id> <amount>, auction buyout <id>\r\n"
+			} else {
+				subCmd := strings.ToLower(parts[0])
+				switch subCmd {
+				case "list", "search":
+					search := ""
+					if len(parts) > 1 {
+						search = strings.Join(parts[1:], " ")
+					}
+					listings := trade.GlobalTrade.SearchAuctions(search, "", 0)
+					response = trade.GlobalTrade.FormatListings(listings)
+				case "sell":
+					if len(parts) < 3 {
+						response = "Usage: auction sell <item> <start_price> <buyout_price>\r\n"
+					} else {
+						itemName := parts[1]
+						startPrice, _ := strconv.Atoi(parts[2])
+						buyoutPrice := startPrice * 2
+						if len(parts) > 3 {
+							buyoutPrice, _ = strconv.Atoi(parts[3])
+						}
+						// Find item in inventory
+						var item *Item
+						for _, i := range player.Inventory {
+							if strings.Contains(strings.ToLower(i.Name), strings.ToLower(itemName)) {
+								item = i
+								break
+							}
+						}
+						if item == nil {
+							response = "You don't have that item.\r\n"
+						} else if listing, err := trade.GlobalTrade.CreateListing(player.Name, item.ID, item.Name, 1, startPrice, buyoutPrice, 24*time.Hour, "general"); err != nil {
+							response = err.Error() + "\r\n"
+						} else {
+							response = fmt.Sprintf("Listed %s on auction (ID: %s).\r\n", item.Name, listing.ID)
+							// Remove from inventory
+							for i, inv := range player.Inventory {
+								if inv == item {
+									player.Inventory = append(player.Inventory[:i], player.Inventory[i+1:]...)
+									break
+								}
+							}
+						}
+					}
+				case "bid":
+					if len(parts) < 3 {
+						response = "Usage: auction bid <listing_id> <amount>\r\n"
+					} else if amount, err := strconv.Atoi(parts[2]); err != nil {
+						response = "Invalid amount.\r\n"
+					} else if err := trade.GlobalTrade.PlaceBid(player.Name, parts[1], amount); err != nil {
+						response = err.Error() + "\r\n"
+					} else {
+						response = "Bid placed!\r\n"
+					}
+				case "buyout":
+					if len(parts) < 2 {
+						response = "Usage: auction buyout <listing_id>\r\n"
+					} else if err := trade.GlobalTrade.Buyout(player.Name, parts[1]); err != nil {
+						response = err.Error() + "\r\n"
+					} else {
+						response = "Item purchased!\r\n"
+						// TODO: Add item to player inventory
+					}
+				default:
+					response = "Unknown auction command. Usage: auction list/sell/bid/buyout\r\n"
+				}
+			}
+
+		// --- PVP & ARENA COMMANDS ---
+		case "arena", "pvp":
+			// PvP arena commands
+			parts := strings.Fields(arg)
+			if len(parts) == 0 {
+				response = "Usage: arena queue <type>, arena leave, arena stats, arena rankings\r\nTypes: duel, team, ffa, koth\r\n"
+			} else {
+				subCmd := strings.ToLower(parts[0])
+				switch subCmd {
+				case "queue", "join":
+					arenaType := pvp.ArenaDuel
+					if len(parts) > 1 {
+						arenaType = pvp.ArenaType(strings.ToLower(parts[1]))
+					}
+					if arenaID, err := pvp.GlobalPvP.QueueForArena(player.Name, arenaType, 2); err != nil {
+						response = err.Error() + "\r\n"
+					} else if arenaID != "" {
+						response = fmt.Sprintf("Arena match starting! ID: %s\r\n", arenaID)
+					} else {
+						response = "Queued for arena. Waiting for opponents...\r\n"
+					}
+				case "leave":
+					if err := pvp.GlobalPvP.LeaveQueue(player.Name); err != nil {
+						response = err.Error() + "\r\n"
+					} else {
+						response = "Left queue.\r\n"
+					}
+				case "stats":
+					response = pvp.GlobalPvP.GetStats(player.Name)
+				case "rankings", "ranking":
+					response = pvp.GlobalPvP.GetRankings(10)
+				default:
+					response = "Unknown arena command. Usage: arena queue/leave/stats/rankings\r\n"
+				}
+			}
+
+		case "duel":
+			// Quick duel challenge
+			if arg == "" {
+				response = "Usage: duel <player>\r\n"
+			} else if arenaID, err := pvp.GlobalPvP.QueueForArena(player.Name, pvp.ArenaDuel, 2); err != nil {
+				response = err.Error() + "\r\n"
+			} else {
+				response = fmt.Sprintf("Duel queued. Waiting for %s to accept...\r\n", arg)
+				// Notify other player
+				for _, p := range world.Players {
+					if strings.ToLower(p.Name) == strings.ToLower(arg) && p.Conn != nil {
+						p.Conn.Write(fmt.Sprintf("\r\n%s%s has challenged you to a duel!\r\nType 'arena queue duel' to accept.\r\n> ", Red, player.Name))
+						break
+					}
+				}
+				_ = arenaID
+			}
+
+		// --- ACCESSIBILITY COMMANDS ---
+		case "accessibility", "a11y":
+			// Accessibility settings
+			parts := strings.Fields(arg)
+			if len(parts) == 0 {
+				settings := accessibility.GlobalManager.GetSettings(player.Name)
+				response = fmt.Sprintf("=== ACCESSIBILITY SETTINGS ===\r\n\r\n"+
+					"Screen Reader: %v\r\n"+
+					"High Contrast: %v\r\n"+
+					"Large Text: %v\r\n"+
+					"Reduced Motion: %v\r\n"+
+					"Colorblind Mode: %s\r\n"+
+					"Simplified Output: %v\r\n"+
+					"Font Scale: %.1f\r\n\r\n"+
+					"Usage: accessibility <setting> <value>\r\n"+
+					"Settings: screenreader, highcontrast, largetext, reducedmotion, colorblind, simplified, fontscale\r\n",
+					settings.ScreenReaderMode, settings.HighContrast, settings.LargeText,
+					settings.ReducedMotion, settings.ColorblindMode, settings.SimplifiedOutput, settings.FontScale)
+			} else {
+				setting := strings.ToLower(parts[0])
+				if len(parts) < 2 {
+					response = "Usage: accessibility <setting> <value>\r\n"
+				} else {
+					value := strings.ToLower(parts[1])
+					var valueInterface interface{}
+
+					switch setting {
+					case "screenreader", "screen_reader":
+						valueInterface = value == "on" || value == "true" || value == "1"
+					case "highcontrast", "high_contrast":
+						valueInterface = value == "on" || value == "true" || value == "1"
+					case "largetext", "large_text":
+						valueInterface = value == "on" || value == "true" || value == "1"
+					case "reducedmotion", "reduced_motion":
+						valueInterface = value == "on" || value == "true" || value == "1"
+					case "simplified", "simplified_output":
+						valueInterface = value == "on" || value == "true" || value == "1"
+					case "colorblind", "colorblind_mode":
+						valueInterface = value
+					case "fontscale", "font_scale":
+						if scale, err := strconv.ParseFloat(value, 64); err == nil {
+							valueInterface = scale
+						} else {
+							response = "Invalid font scale. Use 1.0, 1.5, etc.\r\n"
+						}
+					default:
+						response = "Unknown setting. Available: screenreader, highcontrast, largetext, reducedmotion, colorblind, simplified, fontscale\r\n"
+					}
+
+					if response == "" {
+						if accessibility.GlobalManager.UpdateSetting(player.Name, setting, valueInterface) {
+							response = fmt.Sprintf("Accessibility setting '%s' updated.\r\n", setting)
+						} else {
+							response = "Failed to update setting. Check value format.\r\n"
+						}
+					}
+				}
+			}
+
+		// --- TUTORIAL COMMANDS ---
+		case "tutorial":
+			parts := strings.Fields(arg)
+			if len(parts) == 0 {
+				// Show current tutorial step
+				response = tutorial.GlobalManager.FormatStepDisplay(player.Name)
+			} else {
+				subCmd := strings.ToLower(parts[0])
+				switch subCmd {
+				case "start":
+					if len(parts) < 2 {
+						response = "Usage: tutorial start <tutorial_id>\r\n"
+					} else if _, err := tutorial.GlobalManager.StartTutorial(player.Name, parts[1]); err != nil {
+						response = err.Error() + "\r\n"
+					} else {
+						response = fmt.Sprintf("Tutorial '%s' started.\r\n", parts[1])
+					}
+				case "skip":
+					if skipped, msg := tutorial.GlobalManager.SkipStep(player.Name); skipped {
+						response = msg + "\r\n"
+					} else {
+						response = msg + "\r\n"
+					}
+				case "list":
+					tutorials := tutorial.GlobalManager.GetAvailableTutorials(player.Name)
+					var sb strings.Builder
+					sb.WriteString("=== AVAILABLE TUTORIALS ===\r\n\r\n")
+					for _, t := range tutorials {
+						sb.WriteString(fmt.Sprintf("%s: %s\r\n", t.ID, t.Name))
+					}
+					response = sb.String()
+				case "progress":
+					progress := tutorial.GlobalManager.GetProgress(player.Name)
+					var sb strings.Builder
+					sb.WriteString("=== TUTORIAL PROGRESS ===\r\n\r\n")
+					for tutID, prog := range progress {
+						status := "In Progress"
+						if !prog.CompletedAt.IsZero() {
+							status = "Completed"
+						}
+						sb.WriteString(fmt.Sprintf("%s: %s (Step %d/%d) - %s\r\n",
+							tutID, tutID, prog.CurrentStep, len(prog.StepsComplete), status))
+					}
+					response = sb.String()
+				default:
+					response = "Usage: tutorial, tutorial start <id>, tutorial skip, tutorial list, tutorial progress\r\n"
+				}
+			}
+
+		case "hint":
+			response = tutorial.GlobalManager.GetHint(player.Name)
+
+		// --- DIALOGUE & INSTANCE COMMANDS (from content_expansion.go) ---
+		case "talk":
+			// Talk to NPCs using the dialogue system
+			response = HandleTalkCommand(world, player, arg)
+		case "bye":
+			// End dialogue conversation
+			if byeResp := HandleByeCommand(player); byeResp != "" {
+				response = byeResp
+			}
+		case "instance":
+			// Instance/dungeon commands
+			response = HandleInstanceCommand(world, player, arg)
+
 		case "quit":
 			return
 		default:
 			response = "Unknown.\r\n"
 		}
 		if response != "" {
+			// Apply accessibility processing
+			response = accessibility.GlobalManager.ProcessOutput(player.Name, response)
 			// Apply player's color theme preference
 			themedResponse := ApplyTheme(response, player.ColorTheme)
 			client.Write(themedResponse + "> ")
@@ -827,6 +1358,24 @@ func broadcast(w *World, sender *Player, msg string) {
 	for _, p := range w.Players {
 		if p != nil && p.Conn != nil && p.RoomID == sender.RoomID && p != sender {
 			p.Conn.Write(formatted)
+		}
+	}
+}
+
+// broadcastChatMessage sends a chat message to specific recipients
+func broadcastChatMessage(w *World, msg string, recipients []string) {
+	w.mutex.RLock()
+	defer w.mutex.RUnlock()
+
+	for _, p := range w.Players {
+		if p != nil && p.Conn != nil {
+			// Check if player is in recipients list
+			for _, recipient := range recipients {
+				if strings.ToLower(p.Name) == strings.ToLower(recipient) {
+					p.Conn.Write("\r\n" + Cyan + msg + Reset + "\r\n> ")
+					break
+				}
+			}
 		}
 	}
 }
